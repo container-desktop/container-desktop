@@ -21,6 +21,8 @@ namespace ContainerDesktop
     {
         private readonly SystemTrayIcon _systemTrayIcon;
         private MainWindow _window;
+        private readonly IServiceScope _rootScope;
+        private readonly IServiceProvider _rootServiceProvider;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -38,13 +40,14 @@ namespace ContainerDesktop
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(configuration);
             ConfigureServices(services);
-            ServiceProvider = services.BuildServiceProvider();
+            _rootServiceProvider = services.BuildServiceProvider();
+            _rootScope = _rootServiceProvider.CreateScope();
+            ServiceProvider = _rootScope.ServiceProvider;
             Environment.SetEnvironmentVariable("INSTALLDIR", AppContext.BaseDirectory.TrimEnd('\\'), EnvironmentVariableTarget.Process);
             var contextMenuBuilder = new ContextMenuBuilder()
                 .AddMenuItem("Quit Container Desktop", () =>
                 {
-                    _systemTrayIcon.Dispose();
-                    _window.QuitApplication();
+                    QuitApplication();
                 });
             _systemTrayIcon = new SystemTrayIcon("app.ico", contextMenuBuilder);
             _systemTrayIcon.Activate += (s, e) => _window.Activate();
@@ -70,8 +73,16 @@ namespace ContainerDesktop
             }
             catch
             {
-                _window.QuitApplication();
+                QuitApplication();
             }
+        }
+
+        private void QuitApplication()
+        {
+            _rootScope.Dispose();
+            (_rootServiceProvider as IDisposable)?.Dispose();
+            _systemTrayIcon.Dispose();
+            _window.QuitApplication();
         }
 
         private void VerifyConfiguration()

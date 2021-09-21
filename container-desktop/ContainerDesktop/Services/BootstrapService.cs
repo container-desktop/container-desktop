@@ -55,10 +55,11 @@ namespace ContainerDesktop.Services
 
         private void StopProxy()
         {
-            if (PInvoke.Kernel32.GenerateConsoleCtrlEvent(PInvoke.Kernel32.ControlType.CTRL_C_EVENT, (uint)_proxyProcess.Id))
-            {
-                _proxyProcess.WaitForExit(2000);
-            }
+            // TODO: Not working
+            //if (PInvoke.Kernel32.GenerateConsoleCtrlEvent(PInvoke.Kernel32.ControlType.CTRL_C_EVENT, (uint)_proxyProcess.Id))
+            //{
+            //    _proxyProcess.WaitForExit(2000);
+            //}
             if (!_proxyProcess.HasExited)
             {
                 _proxyProcess.Kill();
