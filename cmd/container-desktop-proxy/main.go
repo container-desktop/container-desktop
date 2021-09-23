@@ -13,7 +13,7 @@ import (
 	rt "runtime"
 	"strings"
 
-	"github.com/markrexwinkel/container-desktop/internal/util"
+	"github.com/container-desktop/container-desktop/internal/util"
 
 	"github.com/spf13/cobra"
 )

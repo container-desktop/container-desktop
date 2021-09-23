@@ -29,7 +29,7 @@ namespace ContainerDesktop.Services
         public void Dispose()
         {
             StopProxy();
-            _proxyProcess.Dispose();
+            _proxyProcess?.Dispose();
         }
 
         private void InitializeAndStartDaemon()
@@ -55,12 +55,7 @@ namespace ContainerDesktop.Services
 
         private void StopProxy()
         {
-            // TODO: Not working
-            //if (PInvoke.Kernel32.GenerateConsoleCtrlEvent(PInvoke.Kernel32.ControlType.CTRL_C_EVENT, (uint)_proxyProcess.Id))
-            //{
-            //    _proxyProcess.WaitForExit(2000);
-            //}
-            if (!_proxyProcess.HasExited)
+            if (_proxyProcess?.HasExited == false)
             {
                 _proxyProcess.Kill();
             }

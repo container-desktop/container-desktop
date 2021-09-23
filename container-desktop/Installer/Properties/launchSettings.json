@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "Installer (install)": {
+      "commandName": "Project"
+    },
+    "Installer (uninstall)": {
+      "commandName": "Project",
+      "commandLineArgs": "uninstall"
+    }
+  }
+}

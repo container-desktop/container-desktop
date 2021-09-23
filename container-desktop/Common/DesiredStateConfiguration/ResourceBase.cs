@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ContainerDesktop.Common.DesiredStateConfiguration
 {
@@ -14,7 +10,11 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
 
         public bool Enabled { get; set; } = true;
 
-        public virtual bool NeedsElevation { get; } = false;
+        public string Description { get; set; }
+        
+        public bool NoUninstall { get; set; }
+        public bool RequiresReboot { get; set; }
+
         public abstract void Set(ConfigurationContext context);
 
         public abstract bool Test(ConfigurationContext context);

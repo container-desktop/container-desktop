@@ -11,16 +11,27 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
             _wslService = wslService;
         }
 
-        public override bool NeedsElevation => true;
-
         public override void Set(ConfigurationContext context)
         {
-            _wslService.Enable();
+            if (context.Uninstall)
+            {
+                //TODO:
+                //_wslService.Disable();
+            }
+            else
+            {
+                _wslService.Enable();
+            }
         }
 
         public override bool Test(ConfigurationContext context)
         {
-            return _wslService.IsEnabled();
+            var enabled = _wslService.IsEnabled();
+            if(context.Uninstall)
+            {
+                enabled = !enabled;
+            }
+            return enabled;
         }
     }
 }

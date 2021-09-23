@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <RootNamespace>ContainerDesktop</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x64</Platforms>
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
+    <UseWPF>true</UseWPF>
     <UserSecretsId>d303237e-f4f0-4fb8-8654-3bf1e5d75c96</UserSecretsId>
-    <!--<StartupObject>ContainerDesktop.MyProgram</StartupObject>-->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="app.ico" />
@@ -27,7 +28,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-preview1" />
     <PackageReference Include="PInvoke.Kernel32" Version="0.7.104" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
     <Manifest Include="$(ApplicationManifest)" />
@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Installer.Cli\Installer.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

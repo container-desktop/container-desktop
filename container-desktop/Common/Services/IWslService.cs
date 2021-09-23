@@ -11,6 +11,7 @@ namespace ContainerDesktop.Common.Services
         bool Import(string distributionName, string installLocation, string rootfsFileName);
         bool Terminate();
         bool Unregister();
+        bool Unregister(string distroName);
         bool ExecuteCommand(string command);
         bool ExecuteCommand(string command, string distroName);
         bool IsInstalled(string distroName);

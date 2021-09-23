@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace ContainerDesktop.Services
 {
     [Serializable]
-    internal class BootstrapException : Exception
+    public class BootstrapException : Exception
     {
         public BootstrapException()
         {

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <RootNamespace>ContainerDesktop.Common</RootNamespace>
     <AssemblyName>ContainerDesktop.Common</AssemblyName>
   </PropertyGroup>

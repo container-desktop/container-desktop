@@ -18,10 +18,22 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
 
         public override void Set(ConfigurationContext context)
         {
-            if (!Test(context))
+            var path = Environment.ExpandEnvironmentVariables(Path);
+            if (context.Uninstall)
             {
-                var path = Environment.ExpandEnvironmentVariables(Path);
-                if(!context.FileSystem.Directory.Exists(path))
+                if (_wslService.IsInstalled(Name))
+                {
+                    _wslService.Unregister(Name);
+                }
+                if (context.FileSystem.Directory.Exists(path))
+                {
+                    context.FileSystem.Directory.Delete(path, true);
+                }
+            }
+            else
+            {
+                    
+                if (!context.FileSystem.Directory.Exists(path))
                 {
                     context.FileSystem.Directory.CreateDirectory(path);
                 }
@@ -35,7 +47,15 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
 
         public override bool Test(ConfigurationContext context)
         {
-            return _wslService.IsInstalled(Name);
+            var path = Environment.ExpandEnvironmentVariables(Path);
+            var isInstalled = _wslService.IsInstalled(Name);
+            var pathExists = context.FileSystem.Directory.Exists(path);
+
+            if(context.Uninstall)
+            {
+                return !isInstalled && !pathExists;
+            }
+            return isInstalled && pathExists;
         }
     }
 }

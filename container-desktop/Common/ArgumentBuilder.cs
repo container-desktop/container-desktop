@@ -13,15 +13,6 @@ namespace ContainerDesktop.Common
             _builder = new StringBuilder(value);
         }
 
-        public ArgumentBuilder Add(string value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                _builder.Append($" {value}");
-            }
-            return this;
-        }
-
         public ArgumentBuilder Add(string value, bool quoted = false)
         {
             if (!string.IsNullOrWhiteSpace(value))

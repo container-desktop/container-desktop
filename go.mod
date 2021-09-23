@@ -1,4 +1,4 @@
-module github.com/markrexwinkel/container-desktop
+module github.com/container-desktop/container-desktop
 
 go 1.17
 

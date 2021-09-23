@@ -1,0 +1,67 @@
+﻿{
+  "resources": [
+    {
+      "type": "Unpack",
+      "id": "UnpackFiles",
+      "description": "Unpacking files",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop.zip",
+      "targetDirectory": "%INSTALLDIR%"
+    },
+    {
+      "type": "CopyFile",
+      "id": "CopyInstaller",
+      "description": "Copy installer",
+      "source": "%INSTALLER_SOURCE_PATH%",
+      "target": "%INSTALLER_TARGET_PATH%"
+    },
+    {
+      "type": "CreateDirectory",
+      "id": "CreateAppDataDirectory",
+      "description": "Creating Application data directory",
+      "directory": "%LOCALAPPDATA%\\%PRODUCT_NAME%"
+    },
+    {
+      "type": "Wsl",
+      "id": "EnableWsl",
+      "description": "Enable WSL",
+      "noUninstall": true,
+      "requiresReboot":  true
+    },
+    {
+      "type": "WslDistro",
+      "id": "InstallWslDistro",
+      "description": "Install Container Desktop WSL distribution",
+      "name": "container-desktop",
+      "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\distro",
+      "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-distro.tar.gz",
+      "dependsOn": [ "EnableWsl" ]
+    },
+    {
+      "type": "AddToPath",
+      "id": "AddCliToPath",
+      "description": "Add Docker CLI tools to the Path",
+      "path": "%INSTALLDIR%\\cli"
+    },
+    {
+      "type": "AddShortcut",
+      "id": "AddShortcutToStartMenu",
+      "description": "Create Start Menu shortcut",
+      "location": "StartMenu",
+      "targetPath": "%APP_PATH%",
+      "linkDescription": "%PRODUCT_DISPLAYNAME%",
+      "name": "%PRODUCT_DISPLAYNAME%"
+    },
+    {
+      "type": "RegisterProduct",
+      "id": "RegisterProduct",
+      "description": "Registering Container Desktop",
+      "productName": "ContainerDesktop",
+      "displayIcon": "%INSTALLER_TARGET_PATH%",
+      "displayName": "Container Desktop",
+      "displayVersion": "%PRODUCT_VERSION%",
+      "version": "%PRODUCT_VERSION%",
+      "installLocation": "%INSTALLDIR%",
+      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall"
+    }
+  ]
+}

@@ -13,10 +13,17 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
         {
             var expandedPath = Environment.ExpandEnvironmentVariables(Path);
             var path = GetPath();
-            var parts = path.Split(';');
-            if (!parts.Contains(expandedPath, StringComparer.OrdinalIgnoreCase))
+            var parts = path.Split(';').ToList();
+            var index = parts.FindIndex(s => s.Equals(expandedPath, StringComparison.OrdinalIgnoreCase));
+            if (!context.Uninstall && index < 0)
             {
                 path = $"{path};{expandedPath}";
+                SetPath(path);
+            }
+            else if(context.Uninstall && index >= 0)
+            {
+                parts.RemoveAt(index);
+                path = string.Join(';', parts);
                 SetPath(path);
             }
         }
@@ -26,7 +33,12 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
             var expandedPath = Environment.ExpandEnvironmentVariables(Path);
             var path = GetPath();
             var parts = path.Split(';');
-            return parts.Contains(expandedPath, StringComparer.OrdinalIgnoreCase);
+            var ret = parts.Contains(expandedPath, StringComparer.OrdinalIgnoreCase);
+            if(context.Uninstall)
+            {
+                ret = !ret;
+            }
+            return ret;
         }
 
         private string GetPath()

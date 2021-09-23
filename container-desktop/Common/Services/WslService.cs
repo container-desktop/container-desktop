@@ -29,7 +29,7 @@ namespace ContainerDesktop.Common.Services
         {
             try
             {
-                var ret = _processExecutor.Execute("wsl", "--status");
+                var ret = _processExecutor.Execute("wsl.exe", "--status");
                 return ret == 0;
             }
             catch
@@ -73,8 +73,13 @@ namespace ContainerDesktop.Common.Services
 
         public bool Unregister()
         {
+            return Unregister(ContainerDesktopDistroName);
+        }
+
+        public bool Unregister(string distroName)
+        {
             var args = new ArgumentBuilder("--unregister")
-                .Add(ContainerDesktopDistroName)
+                .Add(distroName)
                 .Build();
             var ret = _processExecutor.Execute("wsl.exe", args, stdOut: LogStdOut, stdErr: LogStdError);
             return ret == 0;
