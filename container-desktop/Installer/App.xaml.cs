@@ -86,7 +86,7 @@ namespace ContainerDesktop.Installer
             var path = Environment.GetCommandLineArgs()[0];
             if (Path.GetExtension(path) == ".dll")
             {
-                Path.ChangeExtension(path, ".exe");
+                path = Path.ChangeExtension(path, ".exe");
             }
             return path;
         }
