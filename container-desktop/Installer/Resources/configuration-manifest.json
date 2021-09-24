@@ -54,13 +54,22 @@
       "noUninstall": true
     },
     {
+      "type": "InstallMsi",
+      "id": "InstallLatestWslKernel",
+      "description": "Install latest WSL kernel",
+      "uri": "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi",
+      "uninstallDisplayName": "Windows Subsystem for Linux Update",
+      "noUninstall": true,
+      "dependsOn": ["EnableWsl"]
+    },
+    {
       "type": "WslDistro",
       "id": "InstallWslDistro",
       "description": "Install Container Desktop WSL distribution",
       "name": "container-desktop",
       "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\distro",
       "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-distro.tar.gz",
-      "dependsOn": [ "EnableWsl" ]
+      "dependsOn": [ "InstallLatestWslKernel" ]
     },
     {
       "type": "AddToPath",
