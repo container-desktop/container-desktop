@@ -1,5 +1,6 @@
 ﻿namespace ContainerDesktop.Installer;
 
+using ContainerDesktop.Common;
 using ContainerDesktop.Common.Cli;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using System.IO.Abstractions;

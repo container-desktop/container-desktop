@@ -4,56 +4,39 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Common.Services;
 using ContainerDesktop.Common.UI;
 using ContainerDesktop.Services;
+using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO.Abstractions;
 using System.Windows;
 
 
-public partial class App : Application
+public partial class App : Application, IApplicationContext
 {
-    private readonly SystemTrayIcon _systemTrayIcon;
-    private readonly IServiceScope _rootScope;
-    private readonly IServiceProvider _rootServiceProvider;
-
     public App()
     {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", true)
-            .AddUserSecrets<App>()
-            .AddEnvironmentVariables("CONTAINERDESKTOP_")
-            .Build();
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        ConfigureServices(services);
-        _rootServiceProvider = services.BuildServiceProvider();
-        _rootScope = _rootServiceProvider.CreateScope();
-        ServiceProvider = _rootScope.ServiceProvider;
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); 
+        ServiceProvider = SetupServiceProvider();
         Logger = ServiceProvider.GetRequiredService<ILogger<App>>();
-        Environment.SetEnvironmentVariable("INSTALLDIR", AppContext.BaseDirectory.TrimEnd('\\'), EnvironmentVariableTarget.Process);
-        var contextMenuBuilder = new ContextMenuBuilder()
-            .AddMenuItem("Quit Container Desktop", () =>
-            {
-                QuitApplication();
-            });
-        _systemTrayIcon = new SystemTrayIcon("app.ico", contextMenuBuilder);
-        _systemTrayIcon.Activate += (s, e) => MainWindow.Show();
     }
 
     public IServiceProvider ServiceProvider { get; private set; }
 
     public ILogger<App> Logger { get; }
 
+    public int ExitCode { get; set; }
+
+    public MainViewModel MainViewModel { get; set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
-        MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-
         try
         {
-            var bootstrapService = ServiceProvider.GetRequiredService<IContainerEngine>();
-            bootstrapService.Start();
-            _systemTrayIcon.Show();
+            MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            MainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
+            var engine = ServiceProvider.GetRequiredService<IContainerEngine>();
+            engine.Start();
+            MainViewModel.ShowTrayIcon = true;
         }
         catch (Exception ex)
         {
@@ -63,19 +46,36 @@ public partial class App : Application
         }
     }
 
-
-
-    private void QuitApplication()
+    public void QuitApplication()
     {
-        _rootScope.Dispose();
-        (_rootServiceProvider as IDisposable)?.Dispose();
-        _systemTrayIcon.Dispose();
-        (MainWindow as MainWindow)?.QuitApplication();
+        (ServiceProvider as IDisposable)?.Dispose();
+        Shutdown(ExitCode);
+        //(MainWindow as MainWindow)?.QuitApplication();
+    }
+
+    public void ShowMainWindow()
+    {
+        MainWindow.Show();
+    }
+
+    private IServiceProvider SetupServiceProvider()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", true)
+            .AddUserSecrets<App>()
+            .AddEnvironmentVariables("CONTAINERDESKTOP_")
+            .Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        ConfigureServices(services);
+        return services.BuildServiceProvider();
     }
 
     private void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<IApplicationContext>(this);
         services.AddSingleton<MainWindow>();
+        services.AddSingleton<MainViewModel>();
         services.AddSingleton<IWslService, WslService>();
         services.AddSingleton<IProcessExecutor, ProcessExecutor>();
         services.AddLogging(builder =>

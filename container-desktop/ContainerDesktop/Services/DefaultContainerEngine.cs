@@ -51,7 +51,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             .Add("--target-address", "http://localhost:2375")
             .Build();
         _proxyProcess = _processExecutor.Start(proxyPath, args);
-        if (_proxyProcess.HasExited)
+        // Give it some time to startup
+        if (_proxyProcess.WaitForExit(1000))
         {
             throw new ContainerEngineException("Failed to start the proxy.");
         }

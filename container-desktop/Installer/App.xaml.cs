@@ -33,6 +33,11 @@ public partial class App : Application, IApplicationContext
         MainWindow.Close();
     }
 
+    public void ShowMainWindow()
+    {
+        MainWindow.Show();
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         Setup(e.Args);

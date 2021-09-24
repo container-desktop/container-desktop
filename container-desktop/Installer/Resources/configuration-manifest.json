@@ -28,6 +28,13 @@
       "targetDirectory": "%INSTALLDIR%"
     },
     {
+      "type": "CopyPackedFile",
+      "id": "CopyDistro",
+      "description": "Copy WSL distribution",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-distro.tar.gz",
+      "targetDirectory": "%INSTALLDIR%\\Resources"
+    },
+    {
       "type": "CopyFile",
       "id": "CopyInstaller",
       "description": "Copy installer",

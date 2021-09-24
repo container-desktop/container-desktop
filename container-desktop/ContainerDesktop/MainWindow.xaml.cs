@@ -1,5 +1,6 @@
 ﻿namespace ContainerDesktop;
 
+using ContainerDesktop.ViewModels;
 using System.ComponentModel;
 using System.Windows;
 
@@ -11,12 +12,11 @@ public partial class MainWindow : Window
 {
     private bool _applicationQuit;
 
-    public MainWindow()
+    public MainWindow(MainViewModel mainViewModel)
     {
         InitializeComponent();
-        Title = "Container Desktop";
+        DataContext = mainViewModel;
     }
-
 
     public void QuitApplication()
     {
@@ -28,7 +28,7 @@ public partial class MainWindow : Window
     {
         if (!_applicationQuit)
         {
-            this.Hide();
+            Hide();
             e.Cancel = true;
         }
         else
