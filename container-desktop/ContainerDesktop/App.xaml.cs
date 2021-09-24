@@ -59,6 +59,7 @@ namespace ContainerDesktop
             catch(Exception ex)
             {
                 Logger.LogError(ex, ex.Message);
+                MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.", "Failed to start", MessageBoxButton.OK);
                 QuitApplication();
             }
         }
