@@ -1,6 +1,12 @@
 ﻿{
   "resources": [
     {
+      "type": "VersionCheck",
+      "id": "CheckWindowsVersion",
+      "description": "Check Windows version",
+      "runAllwaysFirst": true
+    },
+    {
       "type": "ShutdownProcess",
       "id": "ShutdownContainerDesktop",
       "description": "Shutting down Container Desktop",
@@ -38,8 +44,7 @@
       "type": "Wsl",
       "id": "EnableWsl",
       "description": "Enable WSL",
-      "noUninstall": true,
-      "requiresReboot": true
+      "noUninstall": true
     },
     {
       "type": "WslDistro",

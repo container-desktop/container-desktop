@@ -48,7 +48,7 @@ public class ConfigurationManifest : IConfigurationManifest
                         processedResources.Push(resource);
                         //TODO: on uninstall to a pending restart if needed
                         if (!context.Uninstall && resource.RequiresReboot &&
-                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?") && RebootHelper.RequestReboot()))
+                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot()))
                         {
                             context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
                             return;

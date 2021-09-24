@@ -20,14 +20,21 @@ public sealed class Wsl : ResourceBase, IDisposable
     public override void Set(ConfigurationContext context)
     {
         using var session = DismApi.OpenOnlineSession();
-        
-        if (context.Uninstall)
+
+        try
         {
-            DismApi.DisableFeature(session, string.Join(';', new[] { WslFeatureName, VirtualMachinePlatformFeatureName }));
+            if (context.Uninstall)
+            {
+                DismApi.DisableFeature(session, string.Join(';', new[] { WslFeatureName, VirtualMachinePlatformFeatureName }));
+            }
+            else
+            {
+                DismApi.EnableFeature(session, string.Join(';', new[] { VirtualMachinePlatformFeatureName, WslFeatureName }));
+            }
         }
-        else
+        catch(DismRebootRequiredException)
         {
-            DismApi.EnableFeature(session, string.Join(';', new[] { VirtualMachinePlatformFeatureName, WslFeatureName }));
+            RequiresReboot = true;
         }
     }
 
