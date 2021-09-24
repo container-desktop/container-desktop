@@ -27,6 +27,6 @@ docker run --rm -v "$($PWD):/src" --privileged -v //var/run/docker.sock:/var/run
 docker rm cdbuild
 # Publish and zip App to /dist
 dotnet publish -c Release .\container-desktop\ContainerDesktop\ContainerDesktop.csproj
-docker run --rm -v "$($PWD):/src" -w /src/container-desktop/ContainerDesktop/bin/Release/net5.0-windows/win-x64/publish container-desktop-tools:build zip -r9 /src/dist/container-desktop.zip .
+docker run --rm -v "$($PWD):/src" -w /src/container-desktop/ContainerDesktop/bin/Release/net6.0-windows/win-x64/publish container-desktop-tools:build zip -r9 /src/dist/container-desktop.zip .
 # Publish installer
 dotnet publish -c Release .\container-desktop\Installer\Installer.csproj -o dist

@@ -1,8 +1,7 @@
-﻿namespace ContainerDesktop.Common.DesiredStateConfiguration
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
+
+public interface IApplicationContext
 {
-    public interface IApplicationContext
-    {
-        int ExitCode { get; set; }
-        void QuitApplication();
-    }
+    int ExitCode { get; set; }
+    void QuitApplication();
 }

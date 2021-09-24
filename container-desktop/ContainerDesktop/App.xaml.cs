@@ -14,7 +14,6 @@ namespace ContainerDesktop
     public partial class App : Application
     {
         private readonly SystemTrayIcon _systemTrayIcon;
-        private MainWindow _window;
         private readonly IServiceScope _rootScope;
         private readonly IServiceProvider _rootServiceProvider;
         
@@ -32,6 +31,7 @@ namespace ContainerDesktop
             _rootServiceProvider = services.BuildServiceProvider();
             _rootScope = _rootServiceProvider.CreateScope();
             ServiceProvider = _rootScope.ServiceProvider;
+            Logger = ServiceProvider.GetRequiredService<ILogger<App>>();
             Environment.SetEnvironmentVariable("INSTALLDIR", AppContext.BaseDirectory.TrimEnd('\\'), EnvironmentVariableTarget.Process);
             var contextMenuBuilder = new ContextMenuBuilder()
                 .AddMenuItem("Quit Container Desktop", () =>
@@ -39,14 +39,16 @@ namespace ContainerDesktop
                     QuitApplication();
                 });
             _systemTrayIcon = new SystemTrayIcon("app.ico", contextMenuBuilder);
-            _systemTrayIcon.Activate += (s, e) => _window.Show();
+            _systemTrayIcon.Activate += (s, e) => MainWindow.Show();
         }
 
         public IServiceProvider ServiceProvider { get; private set; }
 
+        public ILogger<App> Logger { get; }
+
         protected override void OnStartup(StartupEventArgs e)
         {
-            _window = ServiceProvider.GetRequiredService<MainWindow>();
+            MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             
             try
             {
@@ -54,8 +56,9 @@ namespace ContainerDesktop
                 bootstrapService.Bootstrap();
                 _systemTrayIcon.Show();
             }
-            catch
+            catch(Exception ex)
             {
+                Logger.LogError(ex, ex.Message);
                 QuitApplication();
             }
         }
@@ -67,19 +70,24 @@ namespace ContainerDesktop
             _rootScope.Dispose();
             (_rootServiceProvider as IDisposable)?.Dispose();
             _systemTrayIcon.Dispose();
-            _window.QuitApplication();
+            (MainWindow as MainWindow)?.QuitApplication();
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<MainWindow>();
-            //services.AddTransient<MainViewModel>();
             services.AddSingleton<IWslService, WslService>();
             services.AddSingleton<IProcessExecutor, ProcessExecutor>();
-            services.AddLogging(builder => builder.AddDebug());
+            services.AddLogging(builder => 
+                builder
+                    .AddDebug()
+                    .AddEventLog(settings =>
+                    {
+                        settings.SourceName = Product.DisplayName;
+                    })
+                );
             services.AddSingleton<IBootstrapService, BootstrapService>();
             services.AddTransient<IFileSystem, FileSystem>();
-            //services.AddSingleton<InstallerManifest>();
         }
     }
 }

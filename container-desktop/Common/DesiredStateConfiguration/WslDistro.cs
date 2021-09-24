@@ -1,61 +1,59 @@
-﻿using ContainerDesktop.Common.Services;
-using System;
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
-namespace ContainerDesktop.Common.DesiredStateConfiguration
+using ContainerDesktop.Common.Services;
+
+public class WslDistro : ResourceBase
 {
-    public class WslDistro : ResourceBase
+    private readonly IWslService _wslService;
+
+    public string Name { get; set; }
+    public string Path { get; set; }
+    public string RootfsFileName { get; set; }
+
+    public WslDistro(IWslService wslService)
     {
-        private readonly IWslService _wslService;
+        _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
+    }
 
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public string RootfsFileName { get; set; }
-
-        public WslDistro(IWslService wslService)
+    public override void Set(ConfigurationContext context)
+    {
+        var path = Environment.ExpandEnvironmentVariables(Path);
+        if (context.Uninstall)
         {
-            _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
-        }
-
-        public override void Set(ConfigurationContext context)
-        {
-            var path = Environment.ExpandEnvironmentVariables(Path);
-            if (context.Uninstall)
+            if (_wslService.IsInstalled(Name))
             {
-                if (_wslService.IsInstalled(Name))
-                {
-                    _wslService.Unregister(Name);
-                }
-                if (context.FileSystem.Directory.Exists(path))
-                {
-                    context.FileSystem.Directory.Delete(path, true);
-                }
+                _wslService.Unregister(Name);
             }
-            else
+            if (context.FileSystem.Directory.Exists(path))
             {
-                    
-                if (!context.FileSystem.Directory.Exists(path))
-                {
-                    context.FileSystem.Directory.CreateDirectory(path);
-                }
-                var rootfsFileName = Environment.ExpandEnvironmentVariables(RootfsFileName);
-                if (!_wslService.Import(Name, path, rootfsFileName))
-                {
-                    throw new ResourceException($"Could not import distribution '{Name}' from '{rootfsFileName}' to '{path}'.");
-                }
+                context.FileSystem.Directory.Delete(path, true);
             }
         }
-
-        public override bool Test(ConfigurationContext context)
+        else
         {
-            var path = Environment.ExpandEnvironmentVariables(Path);
-            var isInstalled = _wslService.IsInstalled(Name);
-            var pathExists = context.FileSystem.Directory.Exists(path);
 
-            if(context.Uninstall)
+            if (!context.FileSystem.Directory.Exists(path))
             {
-                return !isInstalled && !pathExists;
+                context.FileSystem.Directory.CreateDirectory(path);
             }
-            return isInstalled && pathExists;
+            var rootfsFileName = Environment.ExpandEnvironmentVariables(RootfsFileName);
+            if (!_wslService.Import(Name, path, rootfsFileName))
+            {
+                throw new ResourceException($"Could not import distribution '{Name}' from '{rootfsFileName}' to '{path}'.");
+            }
         }
+    }
+
+    public override bool Test(ConfigurationContext context)
+    {
+        var path = Environment.ExpandEnvironmentVariables(Path);
+        var isInstalled = _wslService.IsInstalled(Name);
+        var pathExists = context.FileSystem.Directory.Exists(path);
+
+        if (context.Uninstall)
+        {
+            return !isInstalled && !pathExists;
+        }
+        return isInstalled && pathExists;
     }
 }

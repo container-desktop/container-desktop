@@ -1,59 +1,56 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
+
 using System.IO.Abstractions;
 
-namespace ContainerDesktop.Common.DesiredStateConfiguration
+public class ConfigurationContext
 {
-    public class ConfigurationContext
+    private readonly IUserInteraction _userInteraction;
+    private readonly IApplicationContext _applicationContext;
+    private readonly bool _uninstall;
+
+    public ConfigurationContext(ILogger logger, IFileSystem fileSystem, IApplicationContext applicationContext, IUserInteraction userInteraction = null)
     {
-        private readonly IUserInteraction _userInteraction;
-        private readonly IApplicationContext _applicationContext;
-        private readonly bool _uninstall;
+        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _applicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
+        _userInteraction = userInteraction;
+    }
 
-        public ConfigurationContext(ILogger logger, IFileSystem fileSystem, IApplicationContext applicationContext, IUserInteraction userInteraction = null)
+    public bool Uninstall
+    {
+        get => _uninstall;
+        init
         {
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-            _applicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
-            _userInteraction = userInteraction;
-        }
-
-        public bool Uninstall
-        {
-            get => _uninstall;
-            init
+            _uninstall = value;
+            if (_userInteraction != null)
             {
-                _uninstall = value;
-                if(_userInteraction != null)
-                {
-                    _userInteraction.Uninstalling = value;
-                }
+                _userInteraction.Uninstalling = value;
             }
         }
+    }
 
-        public ILogger Logger { get; }
+    public ILogger Logger { get; }
 
-        public IFileSystem FileSystem { get; }
+    public IFileSystem FileSystem { get; }
 
-        public bool AskUserConsent(string message, string caption = null)
-        {
-            return _userInteraction?.UserConsent(message, caption) ?? true;
-        }
+    public bool AskUserConsent(string message, string caption = null)
+    {
+        return _userInteraction?.UserConsent(message, caption) ?? true;
+    }
 
-        public void ReportProgress(int value, int max, string message)
-        {
-            _userInteraction?.ReportProgress(value, max, message);
-            Logger.LogInformation(message);
-        }
+    public void ReportProgress(int value, int max, string message)
+    {
+        _userInteraction?.ReportProgress(value, max, message);
+        Logger.LogInformation(message);
+    }
 
-        public void QuitApplication()
-        {
-            _applicationContext.QuitApplication();
-        }
+    public void QuitApplication()
+    {
+        _applicationContext.QuitApplication();
+    }
 
-        public ConfigurationContext WithUninstall(bool uninstall)
-        {
-            return new ConfigurationContext(Logger, FileSystem, _applicationContext, _userInteraction) { Uninstall = uninstall };
-        }
+    public ConfigurationContext WithUninstall(bool uninstall)
+    {
+        return new ConfigurationContext(Logger, FileSystem, _applicationContext, _userInteraction) { Uninstall = uninstall };
     }
 }

@@ -1,37 +1,53 @@
-﻿using ContainerDesktop.Common.Services;
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
-namespace ContainerDesktop.Common.DesiredStateConfiguration
+using Microsoft.Dism;
+
+public sealed class Wsl : ResourceBase, IDisposable
 {
-    public class Wsl : ResourceBase
+    private const string WslFeatureName = "Microsoft-Windows-Subsystem-Linux";
+    private const string VirtualMachinePlatformFeatureName = "VirtualMachinePlatform";
+    
+    public Wsl()
     {
-        private readonly IWslService _wslService;
+        DismApi.Initialize(DismLogLevel.LogErrors);
+    }
 
-        public Wsl(IWslService wslService)
-        {
-            _wslService = wslService;
-        }
+    public void Dispose()
+    {
+        DismApi.Shutdown();
+    }
 
-        public override void Set(ConfigurationContext context)
+    public override void Set(ConfigurationContext context)
+    {
+        using var session = DismApi.OpenOnlineSession();
+        
+        if (context.Uninstall)
         {
-            if (context.Uninstall)
-            {
-                //TODO:
-                //_wslService.Disable();
-            }
-            else
-            {
-                _wslService.InstallWsl();
-            }
+            DismApi.DisableFeature(session, string.Join(';', new[] { WslFeatureName, VirtualMachinePlatformFeatureName }));
         }
+        else
+        {
+            DismApi.EnableFeature(session, string.Join(';', new[] { VirtualMachinePlatformFeatureName, WslFeatureName }));
+        }
+    }
 
-        public override bool Test(ConfigurationContext context)
+    public override bool Test(ConfigurationContext context)
+    {
+        bool enabled = false;
+        try
         {
-            var enabled = _wslService.IsWslInstalled();
-            if(context.Uninstall)
-            {
-                enabled = !enabled;
-            }
-            return enabled;
+            using var session = DismApi.OpenOnlineSession();
+            var info = DismApi.GetFeatureInfo(session, WslFeatureName);
+            enabled = info.FeatureState == DismPackageFeatureState.Installed;
         }
+        catch
+        {
+            enabled = false;
+        }
+        if (context.Uninstall)
+        {
+            enabled = !enabled;
+        }
+        return enabled;
     }
 }

@@ -1,6 +1,20 @@
 ﻿{
   "resources": [
     {
+      "type": "ShutdownProcess",
+      "id": "ShutdownContainerDesktop",
+      "description": "Shutting down Container Desktop",
+      "fileName": "%APP_PATH%",
+      "runAllwaysFirst": true
+    },
+    {
+      "type": "ShutdownProcess",
+      "id": "ShutdownProxy",
+      "description": "Shutting down Container Desktop proxy",
+      "fileName": "%PROXY_PATH%",
+      "runAllwaysFirst": true
+    },
+    {
       "type": "Unpack",
       "id": "UnpackFiles",
       "description": "Unpacking files",
@@ -25,7 +39,7 @@
       "id": "EnableWsl",
       "description": "Enable WSL",
       "noUninstall": true,
-      "requiresReboot":  true
+      "requiresReboot": true
     },
     {
       "type": "WslDistro",

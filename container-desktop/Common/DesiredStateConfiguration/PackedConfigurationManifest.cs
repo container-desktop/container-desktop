@@ -1,12 +1,9 @@
-﻿using System;
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
-namespace ContainerDesktop.Common.DesiredStateConfiguration
+public class PackedConfigurationManifest : ConfigurationManifest
 {
-    public class PackedConfigurationManifest : ConfigurationManifest
+    public PackedConfigurationManifest(Uri packUri, IServiceProvider serviceProvider)
+        : base(serviceProvider, ResourceUtilities.GetPackContent(packUri), packUri)
     {
-        public PackedConfigurationManifest(Uri packUri, IServiceProvider serviceProvider)
-            : base(serviceProvider, ResourceUtilities.GetPackContent(packUri), packUri)
-        {
-        }
     }
 }

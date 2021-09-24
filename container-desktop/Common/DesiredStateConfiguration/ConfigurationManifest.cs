@@ -1,128 +1,129 @@
-﻿using Newtonsoft.Json;
+﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace ContainerDesktop.Common.DesiredStateConfiguration
+public class ConfigurationManifest : IConfigurationManifest
 {
-    public class ConfigurationManifest : IConfigurationManifest
+    public ConfigurationManifest(IServiceProvider serviceProvider, Stream content, Uri location)
     {
-        public ConfigurationManifest(IServiceProvider serviceProvider, Stream content, Uri location)
+        using var reader = new StreamReader(content, leaveOpen: true);
+        var json = reader.ReadToEnd();
+        var settings = CreateSerializerSettings(serviceProvider);
+        JsonConvert.PopulateObject(json, this, settings);
+        Location = location;
+    }
+
+    public List<IResource> Resources { get; } = new List<IResource>();
+
+    public Uri Location { get; }
+
+    public void Apply(ConfigurationContext context)
+    {
+        var graph = BuildDependencyGraph(context.Uninstall);
+        var changes = graph.Count(x => !x.Test(context));
+        if (changes > 0)
         {
-            using var reader = new StreamReader(content, leaveOpen: true);
-            var json = reader.ReadToEnd();
-            var settings = CreateSerializerSettings(serviceProvider);
-            JsonConvert.PopulateObject(json, this, settings);
-            Location = location;
+            context.ReportProgress(0, changes, "Start applying resources");
+            Apply(graph, context);
+        }
+        else
+        {
+            context.ReportProgress(changes, changes, "No changes detected.");
         }
 
-        public List<IResource> Resources { get; } = new List<IResource>();
-
-        public Uri Location { get; }
-
-        public void Apply(ConfigurationContext context)
+        void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
         {
-            var graph = BuildDependencyGraph(context.Uninstall);
-            var changes = graph.Count(x => !x.Test(context));
-            if (changes > 0)
+            var prefix = ctx.Uninstall ? "Undoing" : "Applying";
+            var count = initialCount;
+            var processedResources = new Stack<IResource>();
+            try
             {
-                context.ReportProgress(0, changes, "Start applying resources");
-                Apply(graph, context);
-            }
-            else
-            {
-                context.ReportProgress(changes, changes, "No changes detected.");
-            }
-
-            void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
-            {
-                var prefix = ctx.Uninstall ? "Undoing" : "Applying";
-                var count = initialCount;
-                var processedResources = new Stack<IResource>();
-                try
+                foreach (var resource in resources)
                 {
-                    foreach (var resource in resources)
+                    if (!resource.Test(context))
                     {
-                        if (!resource.Test(context))
+                        context.ReportProgress(count, changes, $"{prefix}: {resource.Description}");
+                        resource.Set(context);
+                        processedResources.Push(resource);
+                        //TODO: on uninstall to a pending restart if needed
+                        if (!context.Uninstall && resource.RequiresReboot &&
+                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?") && RebootHelper.RequestReboot()))
                         {
-                            context.ReportProgress(count, changes, $"{prefix}: {resource.Description}");
-                            resource.Set(context);
-                            processedResources.Push(resource);
-                            //TODO: on uninstall to a pending restart if needed
-                            if (!context.Uninstall && resource.RequiresReboot &&
-                                !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?") && RebootHelper.RequestReboot()))
-                            {
-                                context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
-                                return;
-                            }
-                            count += countModifier;
+                            context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
+                            return;
                         }
-                    }
-                }
-                catch
-                {
-                    if(!ctx.Uninstall)
-                    {
-                        Apply(processedResources, ctx.WithUninstall(true), count, -1);
-                    }
-                    throw;
-                }
-                context.ReportProgress(changes, changes, $"Finished {prefix.ToLowerInvariant()} resources");
-            }
-        }
-
-        private List<IResource> BuildDependencyGraph(bool uninstall)
-        {
-            var resources = Resources.ToList();
-            var resolvedGraph = new List<IResource>();
-            var count = -1;
-            while (resources.Count > 0 && resolvedGraph.Count != count)
-            {
-                count = resolvedGraph.Count;
-                for (var i = 0; i < resources.Count; i++)
-                {
-                    if (resources[i].Enabled)
-                    {
-                        for (var j = 0; j < resources[i].DependsOn.Count; j++)
-                        {
-                            if (resolvedGraph.Any(x => x.Id.Equals(resources[i].DependsOn[j], StringComparison.OrdinalIgnoreCase)))
-                            {
-                                resources[i].DependsOn.RemoveAt(j);
-                            }
-                        }
-                        if (resources[i].DependsOn.Count == 0)
-                        {
-                            resolvedGraph.Add(resources[i]);
-                            resources.RemoveAt(i);
-                            i--;
-                        }
+                        count += countModifier;
                     }
                 }
             }
-            if (resources.Count > 0)
+            catch
             {
-                throw new ResourceException("Could not resolve dependencies.");
-            }
-            if(uninstall)
-            {
-                resolvedGraph.Reverse();
-                resolvedGraph.RemoveAll(x => x.NoUninstall);
-            }
-            return resolvedGraph;
-        }
-
-        private static JsonSerializerSettings CreateSerializerSettings(IServiceProvider serviceProvider)
-        {
-            return new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
+                if (!ctx.Uninstall)
                 {
-                    NamingStrategy = new CamelCaseNamingStrategy()
-                },
-                Converters = { new SubTypeJsonConverter<IResource>(a => a.Type, t => IResource.GetTypeName(t), serviceProvider) }
-            };
+                    Apply(processedResources, ctx.WithUninstall(true), count, -1);
+                }
+                throw;
+            }
+            context.ReportProgress(changes, changes, $"Finished {prefix.ToLowerInvariant()} resources");
         }
+    }
+
+    private List<IResource> BuildDependencyGraph(bool uninstall)
+    {
+        var allwaysFirst = Resources.Where(x => x.RunAllwaysFirst);
+        var rest = Resources.Except(allwaysFirst).ToList();
+
+        var resolvedGraph = new List<IResource>();
+        var count = -1;
+        while (rest.Count > 0 && resolvedGraph.Count != count)
+        {
+            count = resolvedGraph.Count;
+            for (var i = 0; i < rest.Count; i++)
+            {
+                if (rest[i].Enabled)
+                {
+                    for (var j = 0; j < rest[i].DependsOn.Count; j++)
+                    {
+                        if (resolvedGraph.Any(x => x.Id.Equals(rest[i].DependsOn[j], StringComparison.OrdinalIgnoreCase)))
+                        {
+                            rest[i].DependsOn.RemoveAt(j);
+                        }
+                    }
+                    if (rest[i].DependsOn.Count == 0)
+                    {
+                        resolvedGraph.Add(rest[i]);
+                        rest.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+        }
+        if (rest.Count > 0)
+        {
+            throw new ResourceException("Could not resolve dependencies.");
+        }
+        if (uninstall)
+        {
+            resolvedGraph.Reverse();
+        }
+        resolvedGraph.InsertRange(0, allwaysFirst);
+        if(uninstall)
+        {
+            resolvedGraph.RemoveAll(x => x.NoUninstall);
+        }
+        return resolvedGraph;
+    }
+
+    private static JsonSerializerSettings CreateSerializerSettings(IServiceProvider serviceProvider)
+    {
+        return new JsonSerializerSettings
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            },
+            Converters = { new SubTypeJsonConverter<IResource>(a => a.Type, t => IResource.GetTypeName(t), serviceProvider) }
+        };
     }
 }

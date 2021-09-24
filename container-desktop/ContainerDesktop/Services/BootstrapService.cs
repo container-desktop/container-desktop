@@ -34,7 +34,7 @@ namespace ContainerDesktop.Services
 
         private void InitializeAndStartDaemon()
         {
-            if(!_wslService.ExecuteCommand("/usr/local/bin/wsl-init.sh"))
+            if(!_wslService.ExecuteCommand("/usr/local/bin/wsl-init.sh", Product.ContainerDesktopDistroName))
             {
                 throw new BootstrapException("Could not initialize and start the daemon.");
             }

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace ContainerDesktop.Common.Cli;
 
-namespace ContainerDesktop.Common.Cli
+public interface IRunner : IDisposable
 {
-    public interface IRunner : IDisposable
-    {
-        IServiceProvider ServiceProvider { get; }
-        Task<int> RunAsync(string[] args, params Type[] optionTypes);
-    }
+    IServiceProvider ServiceProvider { get; }
+    Task<int> RunAsync(string[] args, params Type[] optionTypes);
 }

@@ -104,6 +104,7 @@ namespace ContainerDesktop.Installer
             Environment.SetEnvironmentVariable("APP_PATH", Product.AppPath, EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PRODUCT_DISPLAYNAME", Product.DisplayName, EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PRODUCT_NAME", Product.Name, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("PROXY_PATH", Product.ProxyPath, EnvironmentVariableTarget.Process);
         }
 
         private string GetInstallerExePath()

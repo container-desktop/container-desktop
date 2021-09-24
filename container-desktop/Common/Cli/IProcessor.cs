@@ -1,14 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿namespace ContainerDesktop.Common.Cli;
 
-namespace ContainerDesktop.Common.Cli
+public interface IProcessor
 {
-    public interface IProcessor
-    {
-        Task<int> ProcessAsync();
-    }
+    Task<int> ProcessAsync();
+}
 
-    public interface IProcessor<out TOptions> : IProcessor
-    {
-        TOptions Options { get; }
-    }
+public interface IProcessor<out TOptions> : IProcessor
+{
+    TOptions Options { get; }
 }
