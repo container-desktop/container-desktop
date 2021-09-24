@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Dism;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Management.Automation;
 
 namespace ContainerDesktop.Common.Services
 {
-    public sealed class WslService : IWslService
+    public sealed class WslService : IWslService, IDisposable
     {
         private const string WslFeatureName = "Microsoft-Windows-Subsystem-Linux";
         private const string VMPFeatureName = "VirtualMachinePlatform";
@@ -16,21 +15,23 @@ namespace ContainerDesktop.Common.Services
 
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger<WslService> _logger;
-
+        
         public WslService(IProcessExecutor processExecutor, ILogger<WslService> logger)
         {
             _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
             _logger = logger ?? throw new ArgumentNullException(nameof(processExecutor));
+            DismApi.Initialize(DismLogLevel.LogErrors);
         }
 
         public string ContainerDesktopDistroName { get; } = "container-desktop";
 
-        public bool IsEnabled()
+        public bool IsWslInstalled()
         {
             try
             {
-                var ret = _processExecutor.Execute("wsl.exe", "--status");
-                return ret == 0;
+                using var session = DismApi.OpenOnlineSession();
+                var info = DismApi.GetFeatureInfo(session, WslFeatureName);
+                return info.FeatureState == DismPackageFeatureState.Installed;
             }
             catch
             {
@@ -38,10 +39,9 @@ namespace ContainerDesktop.Common.Services
             }
         }
 
-        public bool Enable()
+        public bool InstallWsl()
         {
-            return EnableFeature(VMPFeatureName) &&
-                   EnableFeature(WslFeatureName);
+            return EnableFeatures(VMPFeatureName, WslFeatureName);
         }
 
         public bool Import(string installLocation, string rootfsFileName)
@@ -141,20 +141,24 @@ namespace ContainerDesktop.Common.Services
             _logger.LogError(s);
         }
 
-        private bool EnableFeature(string featureName)
+        private bool EnableFeatures(params string[] featureNames)
         {
-            var script = $"Get-WindowsOptionalFeature -Online -FeatureName '{featureName}' | Where-Object State -ne Enabled |  Foreach-Object {{ Enable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -All -NoRestart }};";
-            (_, var ret) = InvokeScript(script);
-            return ret;
+            try
+            {
+                using var session = DismApi.OpenOnlineSession();
+                DismApi.EnableFeature(session, string.Join(';', featureNames));
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return false;
+            }
         }
 
-        private (Collection<PSObject>, bool) InvokeScript(string script)
+        public void Dispose()
         {
-            using var ps = PowerShell.Create();
-            using var _ = ps.Streams.WriteToLog(_logger);
-            script = $"Set-ExecutionPolicy -ExecutionPolicy Bypass; Import-Module Dism; {script}";
-            ps.AddScript(script);
-            return (ps.Invoke(), ps.HadErrors);
-        }
+            DismApi.Shutdown();
+        }            
     }
 }

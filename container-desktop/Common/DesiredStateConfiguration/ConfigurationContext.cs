@@ -50,5 +50,10 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
         {
             _applicationContext.QuitApplication();
         }
+
+        public ConfigurationContext WithUninstall(bool uninstall)
+        {
+            return new ConfigurationContext(Logger, FileSystem, _applicationContext, _userInteraction) { Uninstall = uninstall };
+        }
     }
 }

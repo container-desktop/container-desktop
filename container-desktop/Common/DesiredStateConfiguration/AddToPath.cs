@@ -49,16 +49,16 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
         private void SetPath(string path)
         {
             Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.User);
-            var lParam = Marshal.StringToHGlobalUni("Environment");
-            SendMessageTimeout(
-                HWND_BROADCAST,
-                WindowMessage.WM_SETTINGCHANGE,
-                IntPtr.Zero,
-                lParam,
-                SendMessageTimeoutFlags.SMTO_ABORTIFHUNG,
-                5000,
-                out var _);
-            Marshal.FreeHGlobal(lParam);
+            //var lParam = Marshal.StringToHGlobalUni("Environment");
+            //SendMessageTimeout(
+            //    HWND_BROADCAST,
+            //    WindowMessage.WM_SETTINGCHANGE,
+            //    IntPtr.Zero,
+            //    lParam,
+            //    SendMessageTimeoutFlags.SMTO_ABORTIFHUNG,
+            //    5000,
+            //    out var _);
+            //Marshal.FreeHGlobal(lParam);
         }
     }
 }

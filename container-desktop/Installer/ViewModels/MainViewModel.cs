@@ -2,6 +2,7 @@
 using ContainerDesktop.Common.Cli;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using ContainerDesktop.Common.Input;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace ContainerDesktop.Installer.ViewModels
         private readonly IInstallationRunner _runner;
         private readonly IApplicationContext _applicationContext;
 
-        public MainViewModel(IInstallationRunner runner, IApplicationContext applicationContext)
+        public MainViewModel(IInstallationRunner runner, IApplicationContext applicationContext, ILogger<MainViewModel> logger)
         {
             Title = $"{Product.DisplayName} Installer ({Product.Version})";
             ShowApplyButton = true;
@@ -34,6 +35,7 @@ namespace ContainerDesktop.Installer.ViewModels
             _runner = runner;
             _applicationContext = applicationContext;
             Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
+            Logger = logger;
         }
 
         public string Title
@@ -100,6 +102,8 @@ namespace ContainerDesktop.Installer.ViewModels
 
         public ICommand ApplyCommand { get; }
 
+        public ILogger<MainViewModel> Logger { get; }
+
         private void Apply(object parameter)
         {
             ShowApplyButton = false;
@@ -108,7 +112,15 @@ namespace ContainerDesktop.Installer.ViewModels
             runnerTask.ToObservable().Subscribe(exitCode =>
             {
                 _applicationContext.ExitCode = exitCode;
+                if(exitCode != 0)
+                {
+                    MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
+                }
                 CloseButtonVisibility = Visibility.Visible;
+            }, ex =>
+            {
+                Logger.LogError(ex, ex.Message);
+                MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
             });
         }
 

@@ -26,33 +26,50 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
         {
             var graph = BuildDependencyGraph(context.Uninstall);
             var changes = graph.Count(x => !x.Test(context));
-            var prefix = context.Uninstall ? "Undoing" : "Applying";
             if (changes > 0)
             {
                 context.ReportProgress(0, changes, "Start applying resources");
-                var count = 0;
-                foreach (var resource in graph)
-                {
-                    if (!resource.Test(context))
-                    {
-                         
-                        context.ReportProgress(count, changes, $"{prefix}: {resource.Description}");
-                        resource.Set(context);
-                        //TODO: on uninstall to a pending restart if needed
-                        if(!context.Uninstall && resource.RequiresReboot && 
-                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?") && RebootHelper.RequestReboot()))
-                        {
-                            context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
-                            return;
-                        }
-                        count++;
-                    }
-                }
-                context.ReportProgress(changes, changes, $"Finished {prefix.ToLowerInvariant()} resources");
+                Apply(graph, context);
             }
             else
             {
                 context.ReportProgress(changes, changes, "No changes detected.");
+            }
+
+            void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
+            {
+                var prefix = ctx.Uninstall ? "Undoing" : "Applying";
+                var count = initialCount;
+                var processedResources = new Stack<IResource>();
+                try
+                {
+                    foreach (var resource in resources)
+                    {
+                        if (!resource.Test(context))
+                        {
+                            context.ReportProgress(count, changes, $"{prefix}: {resource.Description}");
+                            resource.Set(context);
+                            processedResources.Push(resource);
+                            //TODO: on uninstall to a pending restart if needed
+                            if (!context.Uninstall && resource.RequiresReboot &&
+                                !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?") && RebootHelper.RequestReboot()))
+                            {
+                                context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
+                                return;
+                            }
+                            count += countModifier;
+                        }
+                    }
+                }
+                catch
+                {
+                    if(!ctx.Uninstall)
+                    {
+                        Apply(processedResources, ctx.WithUninstall(true), count, -1);
+                    }
+                    throw;
+                }
+                context.ReportProgress(changes, changes, $"Finished {prefix.ToLowerInvariant()} resources");
             }
         }
 

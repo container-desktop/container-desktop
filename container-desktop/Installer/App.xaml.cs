@@ -6,6 +6,7 @@ using ContainerDesktop.Installer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Windows;
@@ -37,8 +38,27 @@ namespace ContainerDesktop.Installer
         protected override void OnStartup(StartupEventArgs e)
         {
             Setup(e.Args);
-            MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            MainWindow.Show();
+            if (_runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(Product.InstallDir, StringComparison.OrdinalIgnoreCase))
+            {
+                RestartInTempLocation();
+                Shutdown();
+            }
+            else
+            {
+                MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                MainWindow.Show();
+            }
+        }
+
+        private void RestartInTempLocation()
+        {
+            var fileSystem = ServiceProvider.GetRequiredService<IFileSystem>();
+            var tmpFileDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            fileSystem.Directory.CreateDirectory(tmpFileDir);
+            var source = GetInstallerExePath();
+            var target = Path.Combine(tmpFileDir, Path.GetFileName(source));
+            fileSystem.File.Copy(source, target);
+            Process.Start(target, Environment.GetCommandLineArgs()[1..]);
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -63,7 +83,12 @@ namespace ContainerDesktop.Installer
             services.AddSingleton<IUserInteraction>(sp => sp.GetService<MainViewModel>());
             services.AddSingleton<IWslService, WslService>();
             services.AddSingleton<IProcessExecutor, ProcessExecutor>();
-            services.AddLogging(builder => builder.AddDebug());
+            services.AddLogging(builder =>
+                builder.AddDebug()
+                    .AddEventLog(settings =>
+                    {
+                        settings.SourceName = Product.InstallerDisplayName;
+                    }));
             services.AddSingleton<IConfigurationManifest>(sp => new PackedConfigurationManifest(ConfigurationManifestUri, sp));
             services.AddTransient<IProcessor<InstallOptions>, InstallProcessor>();
             services.AddTransient<IProcessor<UninstallOptions>, UninstallProcessor>();

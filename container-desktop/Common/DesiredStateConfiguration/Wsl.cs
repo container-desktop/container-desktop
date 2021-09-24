@@ -20,13 +20,13 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
             }
             else
             {
-                _wslService.Enable();
+                _wslService.InstallWsl();
             }
         }
 
         public override bool Test(ConfigurationContext context)
         {
-            var enabled = _wslService.IsEnabled();
+            var enabled = _wslService.IsWslInstalled();
             if(context.Uninstall)
             {
                 enabled = !enabled;

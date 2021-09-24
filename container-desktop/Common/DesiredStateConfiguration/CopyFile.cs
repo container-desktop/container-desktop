@@ -30,7 +30,7 @@ namespace ContainerDesktop.Common.DesiredStateConfiguration
             var expandedSource = Environment.ExpandEnvironmentVariables(Source);
             if (context.Uninstall)
             {
-                return context.FileSystem.File.Exists(expandedTarget);
+                return !context.FileSystem.File.Exists(expandedTarget);
             }
             else if(context.FileSystem.File.Exists(expandedTarget))
             {
