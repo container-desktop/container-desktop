@@ -1,10 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿namespace ContainerDesktop.Installer;
 
-namespace ContainerDesktop.Installer
+public interface IInstallationRunner
 {
-    public interface IInstallationRunner
-    {
-        InstallationMode InstallationMode { get; }
-        Task<int> RunAsync();
-    }
+    InstallationMode InstallationMode { get; }
+    Task<int> RunAsync();
 }

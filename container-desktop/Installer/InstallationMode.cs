@@ -1,8 +1,7 @@
-﻿namespace ContainerDesktop.Installer
+﻿namespace ContainerDesktop.Installer;
+
+public enum InstallationMode
 {
-    public enum InstallationMode
-    {
-        Install,
-        Uninstall
-    }
+    Install,
+    Uninstall
 }

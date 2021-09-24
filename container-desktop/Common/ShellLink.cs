@@ -1,202 +1,199 @@
-﻿using System;
-using System.IO;
+﻿namespace ContainerDesktop.Common;
+
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using static ContainerDesktop.Common.ComInterop;
 
-namespace ContainerDesktop.Common
+
+public class ShellLink : IDisposable
 {
-    public class ShellLink : IDisposable
+    private IShellLink _shellLinkW;
+
+    private readonly PropertyKey _appUserModelIDKey = new PropertyKey("{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}", 5);
+
+    public ShellLink() : this(null)
     {
-        private IShellLink _shellLinkW;
+    }
 
-        private readonly PropertyKey _appUserModelIDKey = new PropertyKey("{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}", 5);
-
-        public ShellLink() : this(null)
+    public ShellLink(string fileName)
+    {
+        try
         {
+            _shellLinkW = (IShellLink)new CShellLink();
         }
-
-        public ShellLink(string fileName)
+        catch
         {
-            try
-            {
-                _shellLinkW = (IShellLink)new CShellLink();
-            }
-            catch
-            {
-                throw new COMException("Failed to create ShellLink object.");
-            }
-            if (fileName != null)
-            {
-                Load(fileName);
-            }
+            throw new COMException("Failed to create ShellLink object.");
         }
-
-        ~ShellLink()
+        if (fileName != null)
         {
-            Dispose(disposing: false);
+            Load(fileName);
         }
+    }
 
-        public string ShortcutFile
-        {
-            get
-            {
-                GetPersistFile().GetCurFile(out var shortcutFile);
-                return shortcutFile;
-            }
-        }
+    ~ShellLink()
+    {
+        Dispose(disposing: false);
+    }
 
-        public string TargetPath
+    public string ShortcutFile
+    {
+        get
         {
-            get
-            {
-                StringBuilder targetPath = new StringBuilder(260);
-                WIN32_FIND_DATAW data = default(WIN32_FIND_DATAW);
-                VerifySucceeded(_shellLinkW.GetPath(targetPath, targetPath.Capacity, ref data, 2u));
-                return targetPath.ToString();
-            }
-            set
-            {
-                VerifySucceeded(_shellLinkW.SetPath(value));
-            }
+            GetPersistFile().GetCurFile(out var shortcutFile);
+            return shortcutFile;
         }
+    }
 
-        public string Description
+    public string TargetPath
+    {
+        get
         {
-            get
-            {
-                StringBuilder desc = new StringBuilder(1024);
-                VerifySucceeded(_shellLinkW.GetDescription(desc, desc.Capacity));
-                return desc.ToString();
-            }
-            set
-            {
-                VerifySucceeded(_shellLinkW.SetDescription(value));
-            }
+            StringBuilder targetPath = new StringBuilder(260);
+            WIN32_FIND_DATAW data = default(WIN32_FIND_DATAW);
+            VerifySucceeded(_shellLinkW.GetPath(targetPath, targetPath.Capacity, ref data, 2u));
+            return targetPath.ToString();
         }
+        set
+        {
+            VerifySucceeded(_shellLinkW.SetPath(value));
+        }
+    }
 
-        public string IconPath
+    public string Description
+    {
+        get
         {
-            get
-            {
-                StringBuilder iconPath = new StringBuilder(260);
-                VerifySucceeded(_shellLinkW.GetIconLocation(iconPath, iconPath.Capacity, out var _));
-                return iconPath.ToString();
-            }
-            set
-            {
-                VerifySucceeded(_shellLinkW.SetIconLocation(value, 0));
-            }
+            StringBuilder desc = new StringBuilder(1024);
+            VerifySucceeded(_shellLinkW.GetDescription(desc, desc.Capacity));
+            return desc.ToString();
         }
+        set
+        {
+            VerifySucceeded(_shellLinkW.SetDescription(value));
+        }
+    }
 
-        public string Arguments
+    public string IconPath
+    {
+        get
         {
-            get
-            {
-                StringBuilder arguments = new StringBuilder(1024);
-                VerifySucceeded(_shellLinkW.GetArguments(arguments, arguments.Capacity));
-                return arguments.ToString();
-            }
-            set
-            {
-                VerifySucceeded(_shellLinkW.SetArguments(value));
-            }
+            StringBuilder iconPath = new StringBuilder(260);
+            VerifySucceeded(_shellLinkW.GetIconLocation(iconPath, iconPath.Capacity, out var _));
+            return iconPath.ToString();
         }
+        set
+        {
+            VerifySucceeded(_shellLinkW.SetIconLocation(value, 0));
+        }
+    }
 
-        public string AppUserModelID
+    public string Arguments
+    {
+        get
         {
-            get
-            {
-                using PropVariant pv = new PropVariant();
-                IPropertyStore propertyStore = GetPropertyStore();
-                PropertyKey key = _appUserModelIDKey;
-                VerifySucceeded(propertyStore.GetValue(ref key, pv));
-                if (pv.Value == null)
-                {
-                    return "Null";
-                }
-                return pv.Value;
-            }
-            set
-            {
-                using PropVariant pv = new PropVariant(value);
-                IPropertyStore propertyStore = GetPropertyStore();
-                PropertyKey key = _appUserModelIDKey;
-                VerifySucceeded(propertyStore.SetValue(ref key, pv));
-                VerifySucceeded(propertyStore.Commit());
-            }
+            StringBuilder arguments = new StringBuilder(1024);
+            VerifySucceeded(_shellLinkW.GetArguments(arguments, arguments.Capacity));
+            return arguments.ToString();
         }
+        set
+        {
+            VerifySucceeded(_shellLinkW.SetArguments(value));
+        }
+    }
 
-        public void Dispose()
+    public string AppUserModelID
+    {
+        get
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_shellLinkW != null)
+            using PropVariant pv = new PropVariant();
+            IPropertyStore propertyStore = GetPropertyStore();
+            PropertyKey key = _appUserModelIDKey;
+            VerifySucceeded(propertyStore.GetValue(ref key, pv));
+            if (pv.Value == null)
             {
-                Marshal.FinalReleaseComObject(_shellLinkW);
-                _shellLinkW = null;
+                return "Null";
             }
+            return pv.Value;
         }
-
-        public void Save()
+        set
         {
-            string file = ShortcutFile;
-            if (file == null)
-            {
-                throw new InvalidOperationException("File name is not given.");
-            }
-            Save(file);
+            using PropVariant pv = new PropVariant(value);
+            IPropertyStore propertyStore = GetPropertyStore();
+            PropertyKey key = _appUserModelIDKey;
+            VerifySucceeded(propertyStore.SetValue(ref key, pv));
+            VerifySucceeded(propertyStore.Commit());
         }
+    }
 
-        public void Save(string fileName)
-        {
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-            GetPersistFile().Save(fileName, fRemember: true);
-        }
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 
-        public void Load(string fileName)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_shellLinkW != null)
         {
-            if (!File.Exists(fileName))
-            {
-                throw new FileNotFoundException("File is not found.", fileName);
-            }
-            GetPersistFile().Load(fileName, 0);
+            Marshal.FinalReleaseComObject(_shellLinkW);
+            _shellLinkW = null;
         }
+    }
 
-        public static void VerifySucceeded(uint hresult)
+    public void Save()
+    {
+        string file = ShortcutFile;
+        if (file == null)
         {
-            if (hresult > 1)
-            {
-                throw new InvalidOperationException("Failed with HRESULT: " + hresult.ToString("X"));
-            }
+            throw new InvalidOperationException("File name is not given.");
         }
+        Save(file);
+    }
 
-        private IPersistFile GetPersistFile()
+    public void Save(string fileName)
+    {
+        if (fileName == null)
         {
-            IPersistFile persistFile;
-            if ((persistFile = _shellLinkW as IPersistFile) == null)
-            {
-                throw new InvalidCastException("Failed to create IPersistFile.");
-            }
-            return persistFile;
+            throw new ArgumentNullException(nameof(fileName));
         }
+        GetPersistFile().Save(fileName, fRemember: true);
+    }
 
-        private IPropertyStore GetPropertyStore()
+    public void Load(string fileName)
+    {
+        if (!File.Exists(fileName))
         {
-            IPropertyStore propertyStore;
-            if ((propertyStore = _shellLinkW as IPropertyStore) == null)
-            {
-                throw new InvalidCastException("Failed to create IPropertyStore.");
-            }
-            return propertyStore;
+            throw new FileNotFoundException("File is not found.", fileName);
         }
+        GetPersistFile().Load(fileName, 0);
+    }
+
+    public static void VerifySucceeded(uint hresult)
+    {
+        if (hresult > 1)
+        {
+            throw new InvalidOperationException("Failed with HRESULT: " + hresult.ToString("X"));
+        }
+    }
+
+    private IPersistFile GetPersistFile()
+    {
+        IPersistFile persistFile;
+        if ((persistFile = _shellLinkW as IPersistFile) == null)
+        {
+            throw new InvalidCastException("Failed to create IPersistFile.");
+        }
+        return persistFile;
+    }
+
+    private IPropertyStore GetPropertyStore()
+    {
+        IPropertyStore propertyStore;
+        if ((propertyStore = _shellLinkW as IPropertyStore) == null)
+        {
+            throw new InvalidCastException("Failed to create IPropertyStore.");
+        }
+        return propertyStore;
     }
 }

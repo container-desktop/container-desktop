@@ -1,43 +1,40 @@
-﻿using ContainerDesktop.Common.Cli;
+﻿namespace ContainerDesktop.Installer;
+
+using ContainerDesktop.Common.Cli;
 using ContainerDesktop.Common.DesiredStateConfiguration;
-using Microsoft.Extensions.Logging;
-using System;
 using System.IO.Abstractions;
-using System.Threading.Tasks;
 
-namespace ContainerDesktop.Installer
+
+public abstract class ConfigurationManifestProcessor<TOptions> : ProcessorBase<TOptions>
 {
-    public abstract class ConfigurationManifestProcessor<TOptions> : ProcessorBase<TOptions>
+    protected ConfigurationManifestProcessor(
+        TOptions options,
+        IConfigurationManifest configurationManifest,
+        IFileSystem fileSystem,
+        IUserInteraction userInteraction,
+        IApplicationContext applicationContext,
+        ILogger logger) : base(options, logger)
     {
-        protected ConfigurationManifestProcessor(
-            TOptions options,
-            IConfigurationManifest configurationManifest,
-            IFileSystem fileSystem,
-            IUserInteraction userInteraction,
-            IApplicationContext applicationContext,
-            ILogger logger) : base(options, logger)
-        {
-            ConfigurationManifest = configurationManifest ?? throw new ArgumentNullException(nameof(configurationManifest));
-            FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-            ApplicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
-            UserInteraction = userInteraction ?? throw new ArgumentNullException(nameof(userInteraction));
-        }
-                
-        public IConfigurationManifest ConfigurationManifest { get; }
+        ConfigurationManifest = configurationManifest ?? throw new ArgumentNullException(nameof(configurationManifest));
+        FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        ApplicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
+        UserInteraction = userInteraction ?? throw new ArgumentNullException(nameof(userInteraction));
+    }
 
-        public IFileSystem FileSystem { get; }
+    public IConfigurationManifest ConfigurationManifest { get; }
 
-        public IUserInteraction UserInteraction { get; }
+    public IFileSystem FileSystem { get; }
 
-        public IApplicationContext ApplicationContext { get; }
+    public IUserInteraction UserInteraction { get; }
 
-        protected abstract ConfigurationContext CreateContext();
+    public IApplicationContext ApplicationContext { get; }
 
-        protected override Task ProcessCoreAsync()
-        {
-            var context = CreateContext();
-            ConfigurationManifest.Apply(context);
-            return Task.CompletedTask;
-        }
+    protected abstract ConfigurationContext CreateContext();
+
+    protected override Task ProcessCoreAsync()
+    {
+        var context = CreateContext();
+        ConfigurationManifest.Apply(context);
+        return Task.CompletedTask;
     }
 }

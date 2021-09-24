@@ -1,52 +1,48 @@
-﻿using System;
+﻿namespace ContainerDesktop.Common.UI;
+
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace ContainerDesktop.Common.UI
+public sealed class SystemTrayIcon : IDisposable
 {
-    public sealed class SystemTrayIcon : IDisposable
+    private readonly NotifyIcon _notifyIcon;
+    private readonly IntPtr _icon;
+
+    public SystemTrayIcon(string iconPath, ContextMenuBuilder contextMenuBuilder)
     {
-        private readonly NotifyIcon _notifyIcon;
-        private readonly IntPtr _icon;
+        _notifyIcon = new NotifyIcon();
+        _icon = PInvoke.User32.LoadImage(IntPtr.Zero, iconPath, PInvoke.User32.ImageType.IMAGE_ICON, 16, 16, PInvoke.User32.LoadImageFlags.LR_LOADFROMFILE);
+        _notifyIcon.Icon = Icon.FromHandle(_icon);
+        _notifyIcon.Visible = false;
+        _notifyIcon.MouseClick += NotifyIconMouseClick;
+        _notifyIcon.ContextMenuStrip = contextMenuBuilder?.Build();
+    }
 
-        public SystemTrayIcon(string iconPath, ContextMenuBuilder contextMenuBuilder)
+    public EventHandler Activate;
+
+    public IntPtr IconHandle => _icon;
+
+    public void Show()
+    {
+        _notifyIcon.Visible = true;
+    }
+
+    public void Hide()
+    {
+        _notifyIcon.Visible = false;
+    }
+
+    private void NotifyIconMouseClick(object sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left && Activate != null)
         {
-            _notifyIcon = new NotifyIcon();
-            _icon = PInvoke.User32.LoadImage(IntPtr.Zero, iconPath, PInvoke.User32.ImageType.IMAGE_ICON, 16, 16, PInvoke.User32.LoadImageFlags.LR_LOADFROMFILE);
-            _notifyIcon.Icon = Icon.FromHandle(_icon);
-            _notifyIcon.Visible = false;
-            _notifyIcon.MouseClick += NotifyIconMouseClick;
-            _notifyIcon.ContextMenuStrip = contextMenuBuilder?.Build();
+            Activate(this, EventArgs.Empty);
         }
+    }
 
-        public EventHandler Activate;
-
-        public IntPtr IconHandle => _icon;
-
-        public void Show()
-        {
-            _notifyIcon.Visible = true;
-        }
-
-        public void Hide()
-        {
-            _notifyIcon.Visible = false;
-        }
-
-
-
-        private void NotifyIconMouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left && Activate != null)
-            {
-                Activate(this, EventArgs.Empty);
-            }
-        }
-
-        public void Dispose()
-        {
-            _notifyIcon.Visible = false;
-            _notifyIcon.Dispose();
-        }
+    public void Dispose()
+    {
+        _notifyIcon.Visible = false;
+        _notifyIcon.Dispose();
     }
 }

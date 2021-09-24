@@ -1,44 +1,41 @@
-﻿using System;
+﻿namespace ContainerDesktop.Common;
+
 using System.Diagnostics;
-using System.Threading.Tasks;
 
-namespace ContainerDesktop.Common
+public class ProcessExecutor : IProcessExecutor
 {
-    public class ProcessExecutor : IProcessExecutor
+    public Task<int> ExecuteAsync(
+        string command,
+        string args,
+        string workingDir = null,
+        Action<string> stdOut = null,
+        Action<string> stdErr = null,
+        params (string key, string value)[] environmentVariables)
     {
-        public Task<int> ExecuteAsync(
-            string command,
-            string args,
-            string workingDir = null,
-            Action<string> stdOut = null,
-            Action<string> stdErr = null,
-            params (string key, string value)[] environmentVariables)
-        {
-            return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
-                .CompleteAsync();
-        }
+        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
+            .CompleteAsync();
+    }
 
-        public int Execute(
-            string command,
-            string args,
-            string workingDir = null,
-            Action<string> stdOut = null,
-            Action<string> stdErr = null,
-            params (string key, string value)[] environmentVariables)
-        {
-            return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
-                .Complete();
-        }
+    public int Execute(
+        string command,
+        string args,
+        string workingDir = null,
+        Action<string> stdOut = null,
+        Action<string> stdErr = null,
+        params (string key, string value)[] environmentVariables)
+    {
+        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
+            .Complete();
+    }
 
-        public Process Start(
-            string command,
-            string args,
-            string workingDir = null,
-            Action<string> stdOut = null,
-            Action<string> stdErr = null,
-            params (string key, string value)[] environmentVariables)
-        {
-            return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables);
-        }
+    public Process Start(
+        string command,
+        string args,
+        string workingDir = null,
+        Action<string> stdOut = null,
+        Action<string> stdErr = null,
+        params (string key, string value)[] environmentVariables)
+    {
+        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables);
     }
 }
