@@ -47,7 +47,8 @@ public static class ProcessExtensions
                     RedirectStandardInput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    StandardErrorEncoding = Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage)
+                    StandardErrorEncoding = GetEncoding(),
+                    StandardOutputEncoding = GetEncoding()
                 }
         };
 
@@ -95,5 +96,11 @@ public static class ProcessExtensions
         process.BeginErrorReadLine();
 
         return process;
+    }
+
+    private static Encoding GetEncoding()
+    {
+        var info = Encoding.GetEncodings().FirstOrDefault(x => x.CodePage == CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+        return info?.GetEncoding();
     }
 }

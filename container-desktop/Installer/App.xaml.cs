@@ -21,7 +21,7 @@ public partial class App : Application, IApplicationContext
 
     public App()
     {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
     public IServiceProvider ServiceProvider => _runner.ServiceProvider;

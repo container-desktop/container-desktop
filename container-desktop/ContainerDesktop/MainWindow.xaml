@@ -20,6 +20,10 @@
                         LeftClickCommand="{Binding OpenCommand}">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Start" Command="{Binding StartCommand}" Visibility="{Binding IsStopped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <MenuItem Header="Restart" Command="{Binding RestartCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>

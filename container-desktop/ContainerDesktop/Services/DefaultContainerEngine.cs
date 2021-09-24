@@ -10,20 +10,55 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly IWslService _wslService;
     private readonly IProcessExecutor _processExecutor;
     private Process _proxyProcess;
+    private RunningState _runningState;
 
     public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        // TODO: query the state
+        _runningState = RunningState.Stopped;
+    }
+
+    public event EventHandler RunningStateChanged;
+
+    public RunningState RunningState 
+    { 
+        get => _runningState;
+        private set 
+        {
+            if (_runningState != value)
+            {
+                _runningState = value;
+                if (RunningStateChanged != null)
+                {
+                    RunningStateChanged(this, EventArgs.Empty);
+                }
+            }
+        } 
     }
 
     public void Start()
     {
+        RunningState = RunningState.Started;
         InitializeAndStartDaemon();
         StartProxy();
-
+        RunningState = RunningState.Started;
         //TODO: configure other distros
+    }
 
+    public void Stop()
+    {
+        RunningState = RunningState.Stopping;
+        StopProxy();
+        _wslService.Terminate(Product.ContainerDesktopDistroName);
+        RunningState = RunningState.Stopped;
+    }
+
+    public void Restart()
+    {
+        Stop();
+        Start();
     }
 
     public void Dispose()
