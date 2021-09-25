@@ -9,7 +9,7 @@
         Icon="/ContainerDesktopInstaller;component/Resources/app.ico"
         Height="450" Width="800">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
     </Window.Resources>
     <Grid>
         <Button VerticalAlignment="Center" 
@@ -22,6 +22,7 @@
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="80" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
             <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
+            <TextBlock Margin="0 4 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
             <Button VerticalAlignment="Center" 
                 HorizontalAlignment="Center" 
                 Content="Close" 

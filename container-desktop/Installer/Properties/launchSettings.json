@@ -3,6 +3,10 @@
     "Installer (install)": {
       "commandName": "Project"
     },
+    "Installer (install autostart)": {
+      "commandName": "Project",
+      "commandLineArgs": "install --auto-start"
+    },
     "Installer (uninstall)": {
       "commandName": "Project",
       "commandLineArgs": "uninstall"

@@ -16,22 +16,17 @@ public class ConfigurationManifest : IConfigurationManifest
 
     public List<IResource> Resources { get; } = new List<IResource>();
 
+    public List<string> InstallerRestartArguments { get; } = new List<string>();
+
     public Uri Location { get; }
 
     public void Apply(ConfigurationContext context)
     {
         var graph = BuildDependencyGraph(context.Uninstall);
-        var changes = graph.Count(x => !x.Test(context));
-        if (changes > 0)
-        {
-            context.ReportProgress(0, changes, "Start applying resources");
-            Apply(graph, context);
-        }
-        else
-        {
-            context.ReportProgress(changes, changes, "No changes detected.");
-        }
-
+        var changes = graph.Count;
+        context.ReportProgress(0, changes, "Start applying resources");
+        Apply(graph, context);
+        
         void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
         {
             var prefix = ctx.Uninstall ? "Undoing" : "Applying";
@@ -43,18 +38,18 @@ public class ConfigurationManifest : IConfigurationManifest
                 {
                     if (!resource.Test(context))
                     {
-                        context.ReportProgress(count, changes, $"{prefix}: {resource.Description}");
+                        context.ReportProgress(count, changes, $"{prefix}: {resource.Description}", resource.ExtraInformation);
                         resource.Set(context);
                         processedResources.Push(resource);
                         //TODO: on uninstall to a pending restart if needed
                         if (!context.Uninstall && resource.RequiresReboot &&
-                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot()))
+                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
                         {
                             context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
                             return;
                         }
-                        count += countModifier;
                     }
+                    count += countModifier;
                 }
             }
             catch
@@ -65,7 +60,7 @@ public class ConfigurationManifest : IConfigurationManifest
                 }
                 throw;
             }
-            context.ReportProgress(changes, changes, $"Finished {prefix.ToLowerInvariant()} resources");
+            context.ReportProgress(Math.Max(0, countModifier * changes), changes, $"Finished {prefix.ToLowerInvariant()} resources");
         }
     }
 

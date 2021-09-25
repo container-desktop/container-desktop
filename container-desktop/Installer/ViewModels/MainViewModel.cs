@@ -16,6 +16,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
     private int _maxValue = int.MaxValue;
     private int _value;
     private string _message;
+    private string _extraInformation;
     private bool _uninstalling;
     private Visibility _closeButtonVisibility;
     private string _applyButtonText = "Install";
@@ -33,6 +34,10 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         _applicationContext = applicationContext;
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
+        if(runner.Options.AutoStart)
+        {
+            Apply(null);
+        }
     }
 
     public string Title
@@ -71,6 +76,12 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         set => SetValueAndNotify(ref _message, value);
     }
 
+    public string ExtraInformation
+    {
+        get => _extraInformation;
+        set => SetValueAndNotify(ref _extraInformation, value);
+    }
+
     public bool Uninstalling
     {
         get => _uninstalling;
@@ -105,19 +116,20 @@ public class MainViewModel : ViewModelBase, IUserInteraction
     {
         ShowApplyButton = false;
         ShowProgress = true;
+        Message = $"Preparing {_runner.InstallationMode}";
         var runnerTask = Task.Run(() => _runner.RunAsync());
         runnerTask.ToObservable().Subscribe(exitCode =>
         {
             _applicationContext.ExitCode = exitCode;
             if (exitCode != 0)
             {
-                MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
+                MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.\r\n\r\nError message: {_applicationContext.LastErrorMessage}", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
             }
             CloseButtonVisibility = Visibility.Visible;
         }, ex =>
         {
             Logger.LogError(ex, ex.Message);
-            MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
+            MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.\r\n\r\nError message: {ex.Message}", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
         });
     }
 
@@ -132,10 +144,11 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         return result == MessageBoxResult.Yes;
     }
 
-    public void ReportProgress(int value, int max, string message)
+    public void ReportProgress(int value, int max, string message, string extraInformation = null)
     {
         MaxValue = max;
         Value = value;
         Message = message;
+        ExtraInformation = extraInformation ?? string.Empty;
     }
 }

@@ -34,8 +34,16 @@ public abstract class ConfigurationManifestProcessor<TOptions> : ProcessorBase<T
 
     protected override Task ProcessCoreAsync()
     {
-        var context = CreateContext();
-        ConfigurationManifest.Apply(context);
-        return Task.CompletedTask;
+        try
+        {
+            var context = CreateContext();
+            ConfigurationManifest.Apply(context);
+            return Task.CompletedTask;
+        }
+        catch(Exception ex)
+        {
+            ApplicationContext.LastErrorMessage = ex.Message;
+            throw;
+        }
     }
 }

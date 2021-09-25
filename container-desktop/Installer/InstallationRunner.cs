@@ -15,6 +15,7 @@ public class InstallationRunner : Runner, IInstallationRunner
         _commandLineArgs = args;
         var parseResult = Parser.Default.ParseArguments(args, _verbOptions);
         InstallationMode = parseResult.TypeInfo.Current == typeof(UninstallOptions) ? InstallationMode.Uninstall : InstallationMode.Install;
+        parseResult.WithParsed<InstallerOptions>(options => Options = options);
     }
 
     protected override void ConfigureServices(IServiceCollection services)
@@ -23,6 +24,8 @@ public class InstallationRunner : Runner, IInstallationRunner
     }
 
     public InstallationMode InstallationMode { get; }
+
+    public InstallerOptions Options { get; private set; }
 
     public Task<int> RunAsync()
     {

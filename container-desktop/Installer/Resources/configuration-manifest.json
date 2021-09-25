@@ -1,9 +1,16 @@
 ﻿{
+  "installerRestartArguments": [ "--auto-start" ],
   "resources": [
     {
       "type": "VersionCheck",
       "id": "CheckWindowsVersion",
       "description": "Check Windows version",
+      "runAllwaysFirst": true
+    },
+    {
+      "type": "GetInstalledVersion",
+      "id": "GetInstalledVersion",
+      "productName": "%PRODUCT_NAME%",
       "runAllwaysFirst": true
     },
     {
@@ -25,7 +32,9 @@
       "id": "UnpackFiles",
       "description": "Unpacking files",
       "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop.zip",
-      "targetDirectory": "%INSTALLDIR%"
+      "targetDirectory": "%INSTALLDIR%",
+      "versionAssembly": "%INSTALLDIR%\\%PRODUCT_NAME%.dll",
+      "version": "%PRODUCT_VERSION%"
     },
     {
       "type": "CopyPackedFile",
@@ -60,7 +69,7 @@
       "uri": "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi",
       "uninstallDisplayName": "Windows Subsystem for Linux Update",
       "noUninstall": true,
-      "dependsOn": ["EnableWsl"]
+      "dependsOn": [ "EnableWsl" ]
     },
     {
       "type": "WslDistro",
@@ -69,7 +78,8 @@
       "name": "container-desktop",
       "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\distro",
       "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-distro.tar.gz",
-      "dependsOn": [ "InstallLatestWslKernel" ]
+      "dependsOn": [ "InstallLatestWslKernel" ],
+      "extraInformation": "Installing the WSL distribution may take a while if the system was rebooted due to enabling the features required for WSL."
     },
     {
       "type": "AddToPath",
@@ -87,6 +97,12 @@
       "name": "%PRODUCT_DISPLAYNAME%"
     },
     {
+      "type": "AddToAutoStart",
+      "id": "AddToAutoStart",
+      "description": "Add auto start registration",
+      "exePath": "%APP_PATH%"
+    },
+    {
       "type": "RegisterProduct",
       "id": "RegisterProduct",
       "description": "Registering Container Desktop",
@@ -96,7 +112,7 @@
       "displayVersion": "%PRODUCT_VERSION%",
       "version": "%PRODUCT_VERSION%",
       "installLocation": "%INSTALLDIR%",
-      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall"
+      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall --auto-start"
     }
   ]
 }

@@ -16,6 +16,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Test", "Common.Test\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Installer", "Installer\Installer.csproj", "{00816323-9F10-4065-8913-C268028FEAD7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{8BF6A63A-4EBA-44AD-A61A-970BF208F13C}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Container.ico = Assets\Container.ico
+		Assets\Container.png = Assets\Container.png
+		Assets\Container_p1.ico = Assets\Container_p1.ico
+		Assets\Container_p1.png = Assets\Container_p1.png
+		Assets\Container_p2.ico = Assets\Container_p2.ico
+		Assets\Container_p2.png = Assets\Container_p2.png
+		Assets\Container_p3.ico = Assets\Container_p3.ico
+		Assets\Container_p3.png = Assets\Container_p3.png
+		Assets\Container_p4.ico = Assets\Container_p4.ico
+		Assets\Container_p4.png = Assets\Container_p4.png
+		Assets\Container_p5.ico = Assets\Container_p5.ico
+		Assets\Container_p5.png = Assets\Container_p5.png
+		Assets\Container_p6.ico = Assets\Container_p6.ico
+		Assets\Container_p6.png = Assets\Container_p6.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

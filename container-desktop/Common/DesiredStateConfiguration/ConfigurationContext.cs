@@ -29,6 +29,8 @@ public class ConfigurationContext
         }
     }
 
+    public string InstalledVersion { get; set; }
+
     public ILogger Logger { get; }
 
     public IFileSystem FileSystem { get; }
@@ -38,9 +40,9 @@ public class ConfigurationContext
         return _userInteraction?.UserConsent(message, caption) ?? true;
     }
 
-    public void ReportProgress(int value, int max, string message)
+    public void ReportProgress(int value, int max, string message, string extraInformation = null)
     {
-        _userInteraction?.ReportProgress(value, max, message);
+        _userInteraction?.ReportProgress(value, max, message, extraInformation);
         Logger.LogInformation(message);
     }
 

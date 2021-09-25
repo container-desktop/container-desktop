@@ -3,7 +3,7 @@
 # - docker
 # This script must run on Windows because the application is a Windows application.
 $DOCKER_VERSION="20.10.8"
-
+$DOCKER_COMPOSE_VERSION="1.29.2"
 # clean or create dist folder
 if ((Test-Path dist/)) {
     Remove-Item dist/* -Recurse
@@ -16,6 +16,8 @@ else {
 docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/
 # Download and extract docker cli to /dist/docker
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip && unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d /src/dist"
+# Download docker-compose to /dist/docker
+docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
 # Build proxy for Windows and Linux and copy to /dist
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64

@@ -2,6 +2,7 @@
 
 using ContainerDesktop.Common;
 using ContainerDesktop.Common.Services;
+using Docker.DotNet;
 using System.Diagnostics;
 
 
@@ -40,9 +41,11 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Start()
     {
-        RunningState = RunningState.Started;
+        RunningState = RunningState.Starting;
+        _wslService.Terminate(Product.ContainerDesktopDistroName);
         InitializeAndStartDaemon();
         StartProxy();
+        WarmupDaemon();
         RunningState = RunningState.Started;
         //TODO: configure other distros
     }
@@ -80,6 +83,13 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         //TODO: Monitor process and restart if killed.
 
         var proxyPath = Path.Combine(AppContext.BaseDirectory, "Resources", "container-desktop-proxy-windows-amd64.exe");
+        var processName = Path.GetFileNameWithoutExtension(proxyPath);
+        using var existingProcess = Process.GetProcessesByName(processName).FirstOrDefault();
+        if(existingProcess != null && !existingProcess.HasExited)
+        {
+            existingProcess.Kill();
+        }
+
         //TODO: make settings configurable
         var args = new ArgumentBuilder()
             .Add("--listen-address", "npipe:////./pipe/docker_engine")
@@ -99,5 +109,15 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         {
             _proxyProcess.Kill();
         }
+    }
+
+    private void WarmupDaemon()
+    {
+        //TODO: make client available in DI with all configuration set.
+        Task.Run(() =>
+        {
+            using var client = new DockerClientConfiguration().CreateClient();
+            client.Containers.ListContainersAsync(new Docker.DotNet.Models.ContainersListParameters());
+        });
     }
 }

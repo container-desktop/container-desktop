@@ -29,7 +29,7 @@ public class InstallMsi : ResourceBase
             using (var s = response.GetResponseStream())
             using (var fs = context.FileSystem.File.Create(tmpFileName))
             {
-                s.CopyTo(s);
+                s.CopyTo(fs);
             }
             var cmd = context.Uninstall ? "/u" : "/i";
             var exitCode = _processExecutor.Execute("msiexec.exe", $"{cmd} \"{tmpFileName}\" /quiet /norestart");

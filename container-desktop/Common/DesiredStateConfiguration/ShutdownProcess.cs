@@ -40,7 +40,7 @@ public class ShutdownProcess : ResourceBase
         return !GetProcesses().Any();
     }
 
-    public IEnumerable<Process> GetProcesses()
+    private IEnumerable<Process> GetProcesses()
     {
         var processName = Path.GetFileNameWithoutExtension(ExpandedPath);
         return Process.GetProcessesByName(processName).Where(x => x.MainModule.FileName.Equals(ExpandedPath, StringComparison.OrdinalIgnoreCase));

@@ -11,11 +11,10 @@ using System.IO.Abstractions;
 using System.Windows;
 
 
-public partial class App : Application, IApplicationContext
+public partial class App : ApplicationWithContext
 {
     public App()
     {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); 
         ServiceProvider = SetupServiceProvider();
         Logger = ServiceProvider.GetRequiredService<ILogger<App>>();
     }
@@ -23,8 +22,6 @@ public partial class App : Application, IApplicationContext
     public IServiceProvider ServiceProvider { get; private set; }
 
     public ILogger<App> Logger { get; }
-
-    public int ExitCode { get; set; }
 
     public MainViewModel MainViewModel { get; set; }
 
@@ -46,16 +43,10 @@ public partial class App : Application, IApplicationContext
         }
     }
 
-    public void QuitApplication()
+    public override void QuitApplication()
     {
         (ServiceProvider as IDisposable)?.Dispose();
         Shutdown(ExitCode);
-        //(MainWindow as MainWindow)?.QuitApplication();
-    }
-
-    public void ShowMainWindow()
-    {
-        MainWindow.Show();
     }
 
     private IServiceProvider SetupServiceProvider()

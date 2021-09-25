@@ -6,20 +6,26 @@ using System.Runtime.InteropServices;
 
 public static class RebootHelper
 {
-    public static bool RequestReboot(bool restartApplications = true)
+    public static bool RequestReboot(bool restartApplications = true, IEnumerable<string> installerRestartArguments = null)
     {
         if (Process.GetCurrentProcess().AddShutdownPrvileges())
         {
-            var cmd = Environment.CommandLine;
-            // Only occurs in the debugger.
-            if (Path.GetExtension(cmd) == ".dll")
-            {
-                Path.ChangeExtension(cmd, ".exe");
-            }
             var exitFlags = ExitWindows.Reboot;
             if (restartApplications)
             {
-                RegisterApplicationRestart(Environment.CommandLine, 0);
+                var args = Environment.GetCommandLineArgs().ToList();
+                // Only occurs in the debugger.
+                if (Path.GetExtension(args[0]) == ".dll")
+                {
+                    args[0] = Path.ChangeExtension(args[0], ".exe");
+                }
+                if (installerRestartArguments != null)
+                {
+                    var argsToAdd = installerRestartArguments.Except(args);
+                    args.AddRange(argsToAdd);
+                }
+                var cmdLine = string.Join(" ", args);
+                RegisterApplicationRestart(cmdLine, 0);
                 exitFlags |= ExitWindows.RestartApps;
             }
             var shutdownReason = ShutdownReason.FlagPlanned | ShutdownReason.MajorSoftware | ShutdownReason.MinorInstallation;

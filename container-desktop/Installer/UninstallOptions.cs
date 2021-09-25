@@ -3,6 +3,6 @@
 using CommandLine;
 
 [Verb("uninstall", HelpText = "Uninstalls Container Desktop.")]
-public class UninstallOptions
+public class UninstallOptions : InstallerOptions
 {
 }

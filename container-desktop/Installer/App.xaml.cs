@@ -5,6 +5,7 @@ using ContainerDesktop.Common.Cli;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using ContainerDesktop.Common.Services;
 using ContainerDesktop.Installer.ViewModels;
+using MetroRadiance.UI;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.IO.Abstractions;
@@ -14,31 +15,14 @@ using System.Windows;
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App : Application, IApplicationContext
+public partial class App : ApplicationWithContext
 {
     private static readonly Uri ConfigurationManifestUri = new Uri($"pack://application:,,,/{typeof(App).Assembly.GetName().Name};component/Resources/configuration-manifest.json");
     private InstallationRunner _runner;
 
-    public App()
-    {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-    }
-
     public IServiceProvider ServiceProvider => _runner.ServiceProvider;
 
-    public int ExitCode { get; set; }
-
-    public void QuitApplication()
-    {
-        MainWindow.Close();
-    }
-
-    public void ShowMainWindow()
-    {
-        MainWindow.Show();
-    }
-
-    protected override void OnStartup(StartupEventArgs e)
+    private void AppStartup(object sender, StartupEventArgs e)
     {
         Setup(e.Args);
         if (_runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(Product.InstallDir, StringComparison.OrdinalIgnoreCase))
@@ -48,6 +32,8 @@ public partial class App : Application, IApplicationContext
         }
         else
         {
+            ThemeService.Current.EnableUwpResoruces();
+            ThemeService.Current.Register(this, Theme.Windows, Accent.Windows);
             MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             MainWindow.Show();
         }

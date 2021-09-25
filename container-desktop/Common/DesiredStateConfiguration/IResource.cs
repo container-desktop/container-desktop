@@ -10,9 +10,9 @@ public interface IResource
     bool RequiresReboot { get; }
     bool NoUninstall { get; }
     bool RunAllwaysFirst { get; }
+    string ExtraInformation { get; }
     bool Test(ConfigurationContext context);
     void Set(ConfigurationContext context);
-
     static string GetTypeName(Type type) => type.Name.EndsWith("Resource") ? type.Name[0..^8] : type.Name;
 }
 

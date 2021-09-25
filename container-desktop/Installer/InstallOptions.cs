@@ -3,6 +3,6 @@
 using CommandLine;
 
 [Verb("install", isDefault: true, HelpText = "Installs Container Desktop")]
-public class InstallOptions
+public class InstallOptions : InstallerOptions
 {
 }
