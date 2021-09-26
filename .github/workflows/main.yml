@@ -60,7 +60,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: resources
+          name: dist
           path: dist
   
   build-windows:
@@ -78,7 +78,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          name: resources
+          name: dist
+          path: dist
       
       - name: Setup dotnet SDK
         uses: actions/setup-dotnet@v1.8.2
@@ -99,7 +100,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: resources
+          name: dist
           path: dist
         
           
