@@ -54,7 +54,7 @@ jobs:
       - name: Create WSL distro from the distro image
         run: |
           sha=$(docker create container-desktop:build)
-          docker run --rm -v $PWD:/src --privileged -v //var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export cdbuild | gzip > /src/dist/container-desktop-distro.tar.gz"
+          docker run --rm -v $PWD:/src --privileged -v //var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export $sha | gzip > /src/dist/container-desktop-distro.tar.gz"
           docker rm $sha
       
       - name: Upload artifacts
@@ -69,12 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      - name: Create WSL distro from the distro image
-        run: |
-          sha=$(docker create container-desktop:build)
-          docker run --rm -v $PWD:/src --privileged -v /var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export cdbuild | gzip > /src/dist/container-desktop-distro.tar.gz"
-          docker rm $sha
-     
       - name: Clear dist
         shell: bash
         run: |
