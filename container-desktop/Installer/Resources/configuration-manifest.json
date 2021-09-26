@@ -112,8 +112,17 @@
     {
       "type": "AddToAutoStart",
       "id": "AddToAutoStart",
-      "description": "Add auto start registration",
+      "description": "Start application when Windows starts.",
       "exePath": "%APP_PATH%",
+      "optional": true
+    },
+    {
+      "type": "RunExecutable",
+      "id": "RunContainerDesktopAfterInstall",
+      "description": "Run application after installation finishes.",
+      "exePath": "%APP_PATH%",
+      "wait": false,
+      "onUninstall": false,
       "optional": true
     }
   ]

@@ -1,11 +1,9 @@
 ﻿namespace ContainerDesktop.Installer;
 
 using ContainerDesktop.Common;
-using ContainerDesktop.Common.Cli;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using ContainerDesktop.Common.Services;
 using ContainerDesktop.Installer.ViewModels;
-using MetroRadiance.UI;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.IO.Abstractions;
@@ -18,22 +16,20 @@ using System.Windows;
 public partial class App : ApplicationWithContext
 {
     private static readonly Uri ConfigurationManifestUri = new Uri($"pack://application:,,,/{typeof(App).Assembly.GetName().Name};component/Resources/configuration-manifest.json");
-    private InstallationRunner _runner;
-
-    public IServiceProvider ServiceProvider => _runner.ServiceProvider;
+    
+    public IServiceProvider ServiceProvider { get; private set; }
 
     private void AppStartup(object sender, StartupEventArgs e)
     {
-        Setup(e.Args);
-        if (_runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(Product.InstallDir, StringComparison.OrdinalIgnoreCase))
+        ServiceProvider = Setup(e.Args);
+        var runner = ServiceProvider.GetRequiredService<IInstallationRunner>();
+        if (runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(Product.InstallDir, StringComparison.OrdinalIgnoreCase))
         {
             RestartInTempLocation();
             Shutdown();
         }
         else
         {
-            ThemeService.Current.EnableUwpResoruces();
-            ThemeService.Current.Register(this, Theme.Windows, Accent.Windows);
             MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             MainWindow.Show();
         }
@@ -53,15 +49,15 @@ public partial class App : ApplicationWithContext
     protected override void OnExit(ExitEventArgs e)
     {
         e.ApplicationExitCode = ExitCode;
-        _runner.Dispose();
+        //_runner.Dispose();
     }
 
-    private void Setup(string[] args)
+    private IServiceProvider Setup(string[] args)
     {
         var services = new ServiceCollection();
         ConfigureServices(services);
         SetEnvironmentVariables();
-        _runner = new InstallationRunner(services, args);
+        return services.BuildServiceProvider();
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -79,9 +75,8 @@ public partial class App : ApplicationWithContext
                     settings.SourceName = Product.InstallerDisplayName;
                 }));
         services.AddSingleton<IConfigurationManifest>(sp => new PackedConfigurationManifest(ConfigurationManifestUri, sp));
-        services.AddTransient<IProcessor<InstallOptions>, InstallProcessor>();
-        services.AddTransient<IProcessor<UninstallOptions>, UninstallProcessor>();
         services.AddTransient<IFileSystem, FileSystem>();
+        services.AddSingleton<IInstallationRunner, InstallationRunner>();
     }
 
     private void SetEnvironmentVariables()

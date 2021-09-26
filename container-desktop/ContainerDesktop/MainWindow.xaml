@@ -6,9 +6,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tb="http://www.hardcodet.net/taskbar"
     xmlns:cmn="http://container-desktop.io/common"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d"
     Title="{x:Static cmn:Product.DisplayName}"
-    Icon="/ContainerDesktop;component/app.ico">
+    Icon="/ContainerDesktop;component/app.ico"
+    ui:WindowHelper.UseModernWindowStyle="True">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>

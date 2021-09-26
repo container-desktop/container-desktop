@@ -4,14 +4,22 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ContainerDesktop.Installer"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Icon="/ContainerDesktopInstaller;component/Resources/app.ico"
-        Height="450" Width="800">
+        Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        ui:WindowHelper.UseModernWindowStyle="True">
     <Window.Resources>
         
     </Window.Resources>
-    <Grid>
+    <Grid Margin="80">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <Button VerticalAlignment="Center" 
                 HorizontalAlignment="Center" 
                 Content="{Binding ApplyButtonText}" 
@@ -19,7 +27,7 @@
                 Padding="8"
                 Command="{Binding ApplyCommand}"
                 Visibility="{Binding ShowApplyButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="80" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
             <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
             <TextBlock Margin="0 4 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
@@ -31,6 +39,15 @@
                 Margin="0 40 0 0"
                 Command="{Binding CloseCommand}"
                 Visibility="{Binding CloseButtonVisibility}"/>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Row="1" Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ItemsControl ItemsSource="{Binding OptionalResources}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Description}" IsChecked="{Binding Enabled, Mode=TwoWay}"></CheckBox>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </Grid>
 </Window>

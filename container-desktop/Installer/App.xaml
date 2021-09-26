@@ -3,65 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ContainerDesktop.Installer"
              xmlns:cmn="http://container-desktop.io/common"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              Startup="AppStartup">
     <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <Style TargetType="{x:Type Button}">
-            <Setter Property="Background"
-				Value="{DynamicResource BackgroundBrushKey}" />
-            <Setter Property="BorderBrush"
-				Value="{DynamicResource BorderBrushKey}" />
-            <Setter Property="Foreground"
-				Value="{DynamicResource ActiveForegroundBrushKey}" />
-            <Setter Property="BorderThickness"
-				Value=".99" />
-            <Setter Property="Padding"
-				Value="8,2" />
-            <Setter Property="FocusVisualStyle"
-				Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border BorderBrush="{TemplateBinding BorderBrush}"
-							BorderThickness="{TemplateBinding BorderThickness}"
-							SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-							Background="{TemplateBinding Background}"
-                            CornerRadius="4">
-                            <ContentPresenter x:Name="contentPresenter"
-										  Margin="{TemplateBinding Padding}"
-										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver"
-					 Value="True">
-                    <Setter Property="Background"
-						Value="{DynamicResource ActiveBackgroundBrushKey}" />
-                    <Setter Property="BorderBrush"
-						Value="{DynamicResource ActiveBorderBrushKey}" />
-                </Trigger>
-                <Trigger Property="IsPressed"
-					 Value="True">
-                    <Setter Property="Background"
-						Value="{DynamicResource AccentBrushKey}" />
-                    <Setter Property="BorderBrush"
-						Value="{DynamicResource ActiveBorderBrushKey}" />
-                    <Setter Property="Foreground"
-						Value="{DynamicResource AccentForegroundBrushKey}" />
-                </Trigger>
-                <Trigger Property="IsEnabled"
-					 Value="False">
-                    <Setter Property="Background"
-						Value="{DynamicResource InactiveBackgroundBrushKey}" />
-                    <Setter Property="BorderBrush"
-						Value="{DynamicResource InactiveBorderBrushKey}" />
-                    <Setter Property="Foreground"
-						Value="{DynamicResource InactiveForegroundBrushKey}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemeResources />
+                <ui:XamlControlsResources />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </cmn:ApplicationWithContext>

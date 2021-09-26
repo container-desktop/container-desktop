@@ -8,12 +8,13 @@ public class ConfigurationContext
     private readonly IApplicationContext _applicationContext;
     private readonly bool _uninstall;
 
-    public ConfigurationContext(ILogger logger, IFileSystem fileSystem, IApplicationContext applicationContext, IUserInteraction userInteraction = null)
+    public ConfigurationContext(bool uninstall, ILogger logger, IFileSystem fileSystem, IApplicationContext applicationContext, IUserInteraction userInteraction = null)
     {
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _applicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
         _userInteraction = userInteraction;
+        Uninstall = uninstall;
     }
 
     public bool Uninstall
@@ -53,6 +54,6 @@ public class ConfigurationContext
 
     public ConfigurationContext WithUninstall(bool uninstall)
     {
-        return new ConfigurationContext(Logger, FileSystem, _applicationContext, _userInteraction) { Uninstall = uninstall };
+        return new ConfigurationContext(uninstall, Logger, FileSystem, _applicationContext, _userInteraction);
     }
 }

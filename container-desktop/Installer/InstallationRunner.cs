@@ -1,34 +1,42 @@
 ﻿namespace ContainerDesktop.Installer;
 
 using CommandLine;
-using ContainerDesktop.Common.Cli;
+using ContainerDesktop.Common.DesiredStateConfiguration;
 using Microsoft.Extensions.DependencyInjection;
 
-
-public class InstallationRunner : Runner, IInstallationRunner
+public class InstallationRunner : IInstallationRunner
 {
-    private readonly string[] _commandLineArgs;
     private static readonly Type[] _verbOptions = new[] { typeof(InstallOptions), typeof(UninstallOptions) };
+    private readonly ParserResult<object> _parserResult;
+    private readonly IServiceProvider _serviceProvider;
 
-    public InstallationRunner(IServiceCollection services, string[] args) : base(services)
+    public InstallationRunner(IServiceProvider serviceProvider,
+        IConfigurationManifest configurationManifest)
     {
-        _commandLineArgs = args;
-        var parseResult = Parser.Default.ParseArguments(args, _verbOptions);
-        InstallationMode = parseResult.TypeInfo.Current == typeof(UninstallOptions) ? InstallationMode.Uninstall : InstallationMode.Install;
-        parseResult.WithParsed<InstallerOptions>(options => Options = options);
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)); 
+        ConfigurationManifest = configurationManifest ?? throw new ArgumentNullException(nameof(configurationManifest));
+        var args = GetCommandLineArgs();
+        _parserResult = Parser.Default.ParseArguments(args, _verbOptions);
+        InstallationMode = _parserResult.TypeInfo.Current == typeof(UninstallOptions) ? InstallationMode.Uninstall : InstallationMode.Install;
+        _parserResult.WithParsed<InstallerOptions>(options => Options = options);
     }
 
-    protected override void ConfigureServices(IServiceCollection services)
-    {
-        services.AddSingleton<IInstallationRunner>(this);
-    }
-
+    public IConfigurationManifest ConfigurationManifest { get; }
+    
     public InstallationMode InstallationMode { get; }
 
     public InstallerOptions Options { get; private set; }
 
-    public Task<int> RunAsync()
+    public void Run()
     {
-        return RunAsync(_commandLineArgs, _verbOptions);
+        var logger = (ILogger)_serviceProvider.GetRequiredService<ILogger<InstallationRunner>>();
+        var context = ActivatorUtilities.CreateInstance<ConfigurationContext>(_serviceProvider, logger, InstallationMode == InstallationMode.Uninstall);
+        ConfigurationManifest.Apply(context);
+    }
+
+    private string[] GetCommandLineArgs()
+    {
+        var args = Environment.GetCommandLineArgs();
+        return args.Length > 1 ? args[1..] : new string[0];
     }
 }

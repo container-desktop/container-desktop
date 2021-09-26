@@ -1,8 +1,11 @@
-﻿namespace ContainerDesktop.Installer;
+﻿using ContainerDesktop.Common.DesiredStateConfiguration;
+
+namespace ContainerDesktop.Installer;
 
 public interface IInstallationRunner
 {
+    IConfigurationManifest ConfigurationManifest { get; }
     InstallationMode InstallationMode { get; }
     InstallerOptions Options { get; }
-    Task<int> RunAsync();
+    void Run();
 }
