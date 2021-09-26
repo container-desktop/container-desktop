@@ -9,19 +9,12 @@
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\app.ico</ApplicationIcon>
     <SupportedOSPlatformVersion>10.0.18362.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="app.ico" />
-  </ItemGroup>
-  <ItemGroup>
+    <Resource Include="..\Assets\app.ico" Link="app.ico" />
     <Content Include="Container.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="app.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
 
   <ItemGroup>

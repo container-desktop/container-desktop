@@ -13,12 +13,16 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType Condition="'$(Configuration)'=='Release'">embedded</DebugType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="app.ico" />
     <None Remove="configuration-manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\Assets\app.ico" Link="Resources\app.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\app.ico" />
     <Resource Include="Resources\configuration-manifest.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
