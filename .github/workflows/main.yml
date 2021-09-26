@@ -94,7 +94,7 @@ jobs:
       - name: Package ContainerDesktop
         shell: bash
         working-directory: ./container-desktop/ContainerDesktop/bin/Release/net6.0-windows10.0.19041.0/win-x64/publish
-        run: 7z a -r -bd -mx9 -tzip dist/container-desktop.zip .
+        run: 7z a -r -bd -mx9 -tzip $GITHUB_WORKSPACE/dist/container-desktop.zip .
       
       - name: Publish ContainerDesktop
         shell: bash
