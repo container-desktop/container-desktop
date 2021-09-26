@@ -66,8 +66,9 @@ public class ConfigurationManifest : IConfigurationManifest
 
     private List<IResource> BuildDependencyGraph(bool uninstall)
     {
-        var allwaysFirst = Resources.Where(x => x.RunAllwaysFirst);
-        var rest = Resources.Except(allwaysFirst).ToList();
+        var resources = Resources.Where(x => x.Enabled);
+        var allwaysFirst = resources.Where(x => x.RunAllwaysFirst);
+        var rest = resources.Except(allwaysFirst).ToList();
 
         var resolvedGraph = new List<IResource>();
         var count = -1;

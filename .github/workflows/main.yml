@@ -96,15 +96,15 @@ jobs:
         working-directory: ./container-desktop/ContainerDesktop/bin/Release/net6.0-windows10.0.19041.0/win-x64/publish
         run: 7z a -r -bd -mx9 -tzip $GITHUB_WORKSPACE/dist/container-desktop.zip .
       
-      - name: Publish ContainerDesktop
+      - name: Publish ContainerDesktop Installer
         shell: bash
-        run: dotnet publish -c Release container-desktop/Installer/Installer.csproj -o dist
+        run: dotnet publish -c Release container-desktop/Installer/Installer.csproj -o dist-installer
         
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: dist
-          path: dist
+          path: dist-installer
         
           
       

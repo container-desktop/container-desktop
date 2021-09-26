@@ -11,6 +11,7 @@ public interface IResource
     bool NoUninstall { get; }
     bool RunAllwaysFirst { get; }
     string ExtraInformation { get; }
+    bool Optional { get; }
     bool Test(ConfigurationContext context);
     void Set(ConfigurationContext context);
     static string GetTypeName(Type type) => type.Name.EndsWith("Resource") ? type.Name[0..^8] : type.Name;

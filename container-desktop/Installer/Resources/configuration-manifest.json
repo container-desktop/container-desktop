@@ -94,13 +94,8 @@
       "location": "StartMenu",
       "targetPath": "%APP_PATH%",
       "linkDescription": "%PRODUCT_DISPLAYNAME%",
-      "name": "%PRODUCT_DISPLAYNAME%"
-    },
-    {
-      "type": "AddToAutoStart",
-      "id": "AddToAutoStart",
-      "description": "Add auto start registration",
-      "exePath": "%APP_PATH%"
+      "name": "%PRODUCT_DISPLAYNAME%",
+      "optional": true
     },
     {
       "type": "RegisterProduct",
@@ -113,6 +108,13 @@
       "version": "%PRODUCT_VERSION%",
       "installLocation": "%INSTALLDIR%",
       "uninstallString": "%INSTALLER_TARGET_PATH% uninstall --auto-start"
+    },
+    {
+      "type": "AddToAutoStart",
+      "id": "AddToAutoStart",
+      "description": "Add auto start registration",
+      "exePath": "%APP_PATH%",
+      "optional": true
     }
   ]
 }

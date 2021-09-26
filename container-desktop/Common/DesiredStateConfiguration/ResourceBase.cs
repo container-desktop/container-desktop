@@ -18,6 +18,8 @@ public abstract class ResourceBase : IResource
 
     public string ExtraInformation { get; set; }
 
+    public bool Optional { get; set; }
+
     public abstract void Set(ConfigurationContext context);
 
     public abstract bool Test(ConfigurationContext context);
