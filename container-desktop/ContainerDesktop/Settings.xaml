@@ -15,6 +15,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Settings"/>
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            
+        </StackPanel>
     </Grid>
 </ui:Page>

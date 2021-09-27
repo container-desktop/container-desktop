@@ -57,9 +57,18 @@
       "directory": "%LOCALAPPDATA%\\%PRODUCT_NAME%"
     },
     {
-      "type": "Wsl",
+      "type": "EnableWindowsFeatures",
       "id": "EnableWsl",
-      "description": "Enable WSL",
+      "description": "Enable Windows feature Windows Subsystem for Linux",
+      "features": [ "Microsoft-Windows-Subsystem-Linux" ],
+      "noUninstall": true,
+      "ignoreRebootRequired": true
+    },
+    {
+      "type": "EnableWindowsFeatures",
+      "id": "EnableVirtualMachinePlatform",
+      "description": "Enable Windows feature Virtual Machine Platform",
+      "features": [ "VirtualMachinePlatform" ],
       "noUninstall": true
     },
     {
@@ -123,7 +132,9 @@
       "exePath": "%APP_PATH%",
       "wait": false,
       "onUninstall": false,
-      "optional": true
+      "runAsDesktopUser": true,
+      "optional": true,
+      "continueOnFail":  true
     }
   ]
 }

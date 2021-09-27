@@ -30,7 +30,7 @@
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
             <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
-            <TextBlock Margin="0 4 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
+            <TextBlock Margin="0 12 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
             <Button VerticalAlignment="Center" 
                 HorizontalAlignment="Center" 
                 Content="Close" 

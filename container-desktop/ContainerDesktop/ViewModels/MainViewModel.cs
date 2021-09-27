@@ -58,7 +58,7 @@ public class MainViewModel : ViewModelBase
     private void Open(object parameter)
     {
         // TODO: uncomment when window has actually something to show.
-        _applicationContext.ShowMainWindow();
+        //_applicationContext.ShowMainWindow();
     }
 
     private void Quit(object parameter)

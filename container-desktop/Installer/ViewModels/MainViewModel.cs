@@ -127,6 +127,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         ShowApplyButton = false;
         ShowProgress = true;
         ShowOptions = false;
+
         Message = $"Preparing {_runner.InstallationMode}";
         var runnerTask = Task.Run(() => _runner.Run());
         runnerTask.ToObservable().Subscribe(exitCode =>

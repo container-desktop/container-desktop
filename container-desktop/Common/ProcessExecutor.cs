@@ -12,7 +12,7 @@ public class ProcessExecutor : IProcessExecutor
         Action<string> stdErr = null,
         params (string key, string value)[] environmentVariables)
     {
-        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
+        return ProcessExtensions.StartProcess(command, args, workingDir, false, stdOut, stdErr, environmentVariables)
             .CompleteAsync();
     }
 
@@ -24,7 +24,7 @@ public class ProcessExecutor : IProcessExecutor
         Action<string> stdErr = null,
         params (string key, string value)[] environmentVariables)
     {
-        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables)
+        return ProcessExtensions.StartProcess(command, args, workingDir, false, stdOut, stdErr, environmentVariables)
             .Complete();
     }
 
@@ -36,6 +36,21 @@ public class ProcessExecutor : IProcessExecutor
         Action<string> stdErr = null,
         params (string key, string value)[] environmentVariables)
     {
-        return ProcessExtensions.StartProcess(command, args, workingDir, stdOut, stdErr, environmentVariables);
+        return ProcessExtensions.StartProcess(command, args, workingDir, false, stdOut, stdErr, environmentVariables);
+    }
+
+    public Process Start(
+        string command,
+        string args,
+        bool useShellExecute = false,
+        string workingDir = null,
+        params (string key, string value)[] environmentVariables)
+    {
+        return ProcessExtensions.StartProcess(command, args, workingDir, useShellExecute, null, null, environmentVariables);
+    }
+
+    public Process Start(string command, string args)
+    {
+        return ProcessExtensions.StartProcess(command, args, null, false, null, null);
     }
 }

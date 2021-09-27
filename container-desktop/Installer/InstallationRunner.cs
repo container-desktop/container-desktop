@@ -27,10 +27,11 @@ public class InstallationRunner : IInstallationRunner
 
     public InstallerOptions Options { get; private set; }
 
-    public void Run()
+    public void Run(Action<ConfigurationContext> configure = null)
     {
         var logger = (ILogger)_serviceProvider.GetRequiredService<ILogger<InstallationRunner>>();
         var context = ActivatorUtilities.CreateInstance<ConfigurationContext>(_serviceProvider, logger, InstallationMode == InstallationMode.Uninstall);
+        configure?.Invoke(context);
         ConfigurationManifest.Apply(context);
     }
 

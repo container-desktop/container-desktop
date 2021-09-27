@@ -30,7 +30,10 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <ui:NavigationView IsSettingsVisible="True" Loaded="NavigationViewLoaded" SelectionChanged="NavigationViewSelectionChanged">
+        <ui:NavigationView IsSettingsVisible="True" 
+                           AlwaysShowHeader="True"
+                           Loaded="NavigationViewLoaded" 
+                           SelectionChanged="NavigationViewSelectionChanged">
             <ScrollViewer>
                 <ui:Frame x:Name="contentFrame" Padding="12,0,12,24" IsTabStop="True"></ui:Frame>
             </ScrollViewer>

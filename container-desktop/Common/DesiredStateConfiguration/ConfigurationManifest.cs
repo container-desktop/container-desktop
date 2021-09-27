@@ -1,6 +1,7 @@
 ﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 public class ConfigurationManifest : IConfigurationManifest
@@ -22,11 +23,15 @@ public class ConfigurationManifest : IConfigurationManifest
 
     public void Apply(ConfigurationContext context)
     {
-        var graph = BuildDependencyGraph(context.Uninstall);
+        var graph = BuildDependencyGraph(context);
         var changes = graph.Count;
         context.ReportProgress(0, changes, "Start applying resources");
         Apply(graph, context);
-        
+        if (!context.RestartPending)
+        {
+            context.ClearState();
+        }
+
         void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
         {
             var prefix = ctx.Uninstall ? "Undoing" : "Applying";
@@ -42,10 +47,13 @@ public class ConfigurationManifest : IConfigurationManifest
                         resource.Set(context);
                         processedResources.Push(resource);
                         //TODO: on uninstall to a pending restart if needed
-                        if (!context.Uninstall && resource.RequiresReboot &&
-                            !(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
+                        if (!context.Uninstall && resource.RequiresReboot)
                         {
-                            context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
+                            if (!(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
+                            {
+                                context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
+                            }
+                            context.RestartPending = true;
                             return;
                         }
                     }
@@ -64,9 +72,11 @@ public class ConfigurationManifest : IConfigurationManifest
         }
     }
 
-    private List<IResource> BuildDependencyGraph(bool uninstall)
+    private List<IResource> BuildDependencyGraph(ConfigurationContext context)
     {
-        var resources = Resources.Where(x => x.Enabled);
+        var disabledResourceIdsFromState = GetDisabledResourceIdsFromState(context);
+        var resources = Resources.Where(x => x.Enabled).Where(x => !disabledResourceIdsFromState.Any(y => y == x.Id));
+        var disabledResources = Resources.Except(resources);
         var allwaysFirst = resources.Where(x => x.RunAllwaysFirst);
         var rest = resources.Except(allwaysFirst).ToList();
 
@@ -99,16 +109,34 @@ public class ConfigurationManifest : IConfigurationManifest
         {
             throw new ResourceException("Could not resolve dependencies.");
         }
-        if (uninstall)
+        if (context.Uninstall)
         {
             resolvedGraph.Reverse();
         }
         resolvedGraph.InsertRange(0, allwaysFirst);
-        if(uninstall)
+        if(context.Uninstall)
         {
             resolvedGraph.RemoveAll(x => x.NoUninstall);
         }
+        SaveDisabledResourceIdsToState(disabledResources, context);
         return resolvedGraph;
+    }
+
+    private IEnumerable<string> GetDisabledResourceIdsFromState(ConfigurationContext context)
+    {
+        string[] ret = null;
+        if(context.State.TryGetValue("DisabledResources", out var value) && value is JArray a)
+        {
+            ret = a.Values<string>().ToArray();
+        }
+        return ret ?? new string[0];
+    }
+
+    private void SaveDisabledResourceIdsToState(IEnumerable<IResource> resources, ConfigurationContext context)
+    {
+        var ids = resources.Where(x => !x.Enabled).Select(x => x.Id).ToArray();
+        context.State["DisabledResources"] = ids;
+        context.SaveState();
     }
 
     private static JsonSerializerSettings CreateSerializerSettings(IServiceProvider serviceProvider)

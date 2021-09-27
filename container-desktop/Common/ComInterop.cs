@@ -208,5 +208,7 @@ static class ComInterop
 
     [DllImport("Ole32.dll", PreserveSig = false)]
     private static extern void PropVariantClear([In][Out] PropVariant pvar);
+
+
 }
 #pragma warning restore S101

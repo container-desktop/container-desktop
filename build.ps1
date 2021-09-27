@@ -12,6 +12,8 @@ else {
     New-Item dist -ItemType Directory
 }
 
+dotnet clean .\container-desktop\container-desktop.sln
+
 # Build tools image
 docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/
 # Download and extract docker cli to /dist/docker

@@ -1,5 +1,6 @@
 ﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
+using Newtonsoft.Json;
 using System.IO.Abstractions;
 
 public class ConfigurationContext
@@ -15,6 +16,7 @@ public class ConfigurationContext
         _applicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
         _userInteraction = userInteraction;
         Uninstall = uninstall;
+        LoadState();
     }
 
     public bool Uninstall
@@ -36,6 +38,10 @@ public class ConfigurationContext
 
     public IFileSystem FileSystem { get; }
 
+    public Dictionary<string, object> State { get; } = new Dictionary<string, object>();
+
+    public bool RestartPending { get; set; }
+
     public bool AskUserConsent(string message, string caption = null)
     {
         return _userInteraction?.UserConsent(message, caption) ?? true;
@@ -55,5 +61,37 @@ public class ConfigurationContext
     public ConfigurationContext WithUninstall(bool uninstall)
     {
         return new ConfigurationContext(uninstall, Logger, FileSystem, _applicationContext, _userInteraction);
+    }
+
+    public void LoadState()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "installer-state.json");
+        if(FileSystem.File.Exists(path))
+        {
+            var json = FileSystem.File.ReadAllText(path);
+            JsonConvert.PopulateObject(json, State);
+        }
+    }
+
+    public void SaveState()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "installer-state.json");
+        var directory = Path.GetDirectoryName(path);
+        if(!Directory.Exists(directory))
+        {
+            FileSystem.Directory.CreateDirectory(directory);
+        }
+        var json = JsonConvert.SerializeObject(State, Formatting.Indented);
+        FileSystem.File.WriteAllText(path, json);
+    }
+
+    public void ClearState()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "installer-state.json");
+        if (FileSystem.File.Exists(path))
+        {
+            FileSystem.File.Delete(path);
+        }
+        State.Clear();
     }
 }
