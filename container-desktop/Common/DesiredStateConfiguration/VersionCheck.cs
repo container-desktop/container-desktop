@@ -27,7 +27,7 @@ public class VersionCheck : ResourceBase
                     return;
                 }
             }
-            throw new ResourceException($"{Product.Name} is not supported on your version of Windows ({majorVersionNumber}.{minorVersionNumber}.{buildNumber}.{minorBuildNumber}).");
+            throw new ResourceException($"{Product.Name} is not supported on your version of Windows ({majorVersionNumber}.{minorVersionNumber}.{buildNumber}.{minorBuildNumber}). \r\n \r\n {Product.Name} uses WSL 2 and requires minimal Windows 10: \r\n - Version 1903 with Build 18362.1049 or higher \r\n - Version 1909 with Build 18363.1049 or higher \r\n - Version 2004 (20H1) or higher");
         }
     }
 
