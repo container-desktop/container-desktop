@@ -1,0 +1,89 @@
+# Project information
+site_name: container-desktop
+site_description: Provides an alternative for Docker for Desktop on Windows using WSL2.
+site_url: https://container-desktop.io/
+
+copyright: "Copyright &copy; 2021 container-desktop authors"
+
+# Extra Files
+extra_javascript:
+  - static/js/asciinema-player.js
+
+extra_css:
+  - static/css/asciinema-player.css
+  - static/css/extra.css
+
+# Repo Information
+repo_name: container-desktop/container-desktop
+repo_url: https://github.com/container-desktop/container-desktop
+
+# Edit Link on Site
+edit_uri: edit/main/docs/
+
+# Theme
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.top # show back to top button
+    - search.suggest # search suggestions: https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-search/#search-suggestions
+    - search.highlight # highlight search term on target page: https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-search/#search-suggestions
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: "black"
+      accent: "grey"
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: light blue
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  logo: static/img/container_desktop_logo.png
+  favicon: static/img/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+
+# Navigation
+# nav: omitted, because we're using the awesome-pages plugin (https://squidfunk.github.io/mkdocs-material/plugins/awesome-pages/)
+
+# Extensions
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition # https://squidfunk.github.io/mkdocs-material/extensions/admonition/
+  - codehilite # https://squidfunk.github.io/mkdocs-material/extensions/codehilite/
+  - pymdownx.inlinehilite # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#inlinehilite
+  - pymdownx.superfences # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#superfences
+  - pymdownx.tabbed # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#tabbed
+  - pymdownx.details # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#details
+  - pymdownx.emoji: # https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#configuration
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - smarty # https://python-markdown.github.io/extensions/smarty/
+  - mdx_truly_sane_lists # https://github.com/radude/mdx_truly_sane_lists -> proper indentation of md list items
+
+# Plugins
+plugins:
+  - search
+  - git-revision-date-localized: # https://squidfunk.github.io/mkdocs-material/plugins/revision-date/
+      type: date
+  - awesome-pages # https://squidfunk.github.io/mkdocs-material/plugins/awesome-pages/
+  - include-markdown # https://github.com/mondeja/mkdocs-include-markdown-plugin
+  - mike: # Versioned Docs: https://github.com/jimporter/mike
+      version_selector: true   # set to false to leave out the version selector
+      css_dir: static/css             # the directory to put the version selector's CSS
+      javascript_dir: static/js       # the directory to put the version selector's JS
+      canonical_version: null  # the version for <link rel="canonical">; `null` uses the version specified via `mike deploy`
+
+# Extra mkdocs-material settings
+extra:
+  version:
+    provider: mike
+
+# Other Settings
+strict: true # halt processing when a warning is raised
