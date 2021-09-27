@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     Title="{x:Static cmn:Product.DisplayName}"
     Icon="/ContainerDesktop;component/app.ico"
-    ui:WindowHelper.UseModernWindowStyle="True">
+    ui:WindowHelper.UseModernWindowStyle="True" d:Width="1024" d:Height="600">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
@@ -30,7 +30,11 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-
+        <ui:NavigationView IsSettingsVisible="True" Loaded="NavigationViewLoaded" SelectionChanged="NavigationViewSelectionChanged">
+            <ScrollViewer>
+                <ui:Frame x:Name="contentFrame" Padding="12,0,12,24" IsTabStop="True"></ui:Frame>
+            </ScrollViewer>
+        </ui:NavigationView>
 
     </Grid>
 </Window>

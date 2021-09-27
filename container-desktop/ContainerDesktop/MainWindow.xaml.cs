@@ -36,4 +36,17 @@ public partial class MainWindow : Window
             base.OnClosing(e);
         }
     }
+
+    private void NavigationViewLoaded(object sender, RoutedEventArgs e)
+    {
+        
+    }
+
+    private void NavigationViewSelectionChanged(ModernWpf.Controls.NavigationView sender, ModernWpf.Controls.NavigationViewSelectionChangedEventArgs args)
+    {
+        if(args.IsSettingsSelected)
+        {
+            contentFrame.Navigate(typeof(Settings), null, args.RecommendedNavigationTransitionInfo);
+        }
+    }
 }
