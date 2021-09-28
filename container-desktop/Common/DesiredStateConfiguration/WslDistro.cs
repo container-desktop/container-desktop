@@ -39,7 +39,7 @@ public class WslDistro : ResourceBase
             var rootfsFileName = Environment.ExpandEnvironmentVariables(RootfsFileName);
             if (!_wslService.Import(Name, path, rootfsFileName))
             {
-                throw new ResourceException($"Could not import distribution '{Name}' from '{rootfsFileName}' to '{path}'.");
+                throw new ResourceException($"Could not import distribution '{Name}' from '{rootfsFileName}' to '{path}'. \r\n Please ensure virtualization is enabled in the BIOS or that NestedVirtualization is enabled when installing on a Virtual Machine.");
             }
         }
     }
