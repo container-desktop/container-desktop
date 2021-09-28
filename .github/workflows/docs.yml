@@ -1,9 +1,9 @@
-name: container-desktop.io
+name: docs
 
 on:
   push:
     branches:
-      - main
+      - docs-initial # temp switch to main 
     tags:
       # only run on tags for real releases and special docs releases
       - 'v[0-9]+.[0-9]+.[0-9]+'
