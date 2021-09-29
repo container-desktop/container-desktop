@@ -26,12 +26,12 @@
             </TextBlock>
         </StackPanel>
         <Grid Grid.Row="1" Margin="0 40 0 0">
-            <Grid Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/> 
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding OptionalResources}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
