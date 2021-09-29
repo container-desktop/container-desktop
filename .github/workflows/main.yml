@@ -6,9 +6,14 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: 
+      - main
+    tags:
+      - v*
   pull_request:
-    branches: [ main ]
+    branches: 
+      - main
+  
     # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -30,8 +35,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - uses: dotnet/nbgv@v0.4.0
-      #  id: nbgv
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
 
       - name: Clear dist
         run: |
@@ -73,7 +78,12 @@ jobs:
     needs: build-linux
     steps:
       - uses: actions/checkout@v2
-      
+        with:
+          fetch-depth: 0
+
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+
       - name: Clear dist
         shell: bash
         run: |
@@ -104,13 +114,65 @@ jobs:
       - name: Publish ContainerDesktop Installer
         shell: bash
         run: dotnet publish -c Release container-desktop/Installer/Installer.csproj -o dist-installer
-        
+      
+      - name: Zip ContainerDesktop Installer
+        shell: bash
+        working-directory: dist-installer
+        run: 7z a -bd -mx9 -tzip ContainerDesktopInstaller.zip ContainerDesktopInstaller.exe 
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: dist
           path: dist-installer
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+
+      - name: Clear dist
+        shell: bash
+        run: |
+         rm -rf dist/*
+         mkdir -p dist
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Create hashes
+        shell: bash
+        working-directory: dist
+        run: |
+          sha256sum ContainerDesktopInstaller.exe > sha256sum.txt
+          sha256sum ContainerDesktopInstaller.zip >> sha256sum.txt
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          prerelease: ${{ steps.nbgv.outputs.PrereleaseVersion }}
+          files: |
+            dist/ContainerDesktopInstaller.exe
+            dist/ContainerDesktopInstaller.xip
+            dist/sha256sum.txt
+      
+
         
+
+      
+
+
           
       
       
