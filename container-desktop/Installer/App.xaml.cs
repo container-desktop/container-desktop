@@ -72,7 +72,7 @@ public partial class App : ApplicationWithContext
             builder.AddDebug()
                 .AddEventLog(settings =>
                 {
-                    settings.SourceName = Product.InstallerDisplayName;
+                    settings.SourceName = Product.DisplayName;
                 }));
         services.AddSingleton<IConfigurationManifest>(sp => new PackedConfigurationManifest(ConfigurationManifestUri, sp));
         services.AddTransient<IFileSystem, FileSystem>();

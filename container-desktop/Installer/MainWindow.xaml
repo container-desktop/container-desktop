@@ -13,24 +13,20 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         ui:WindowHelper.UseModernWindowStyle="True">
-    <Grid Margin="20">
+    <Grid Margin="40 20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Style="{DynamicResource SubheaderTextBlockStyle}">
-            <Run Text="{x:Static cmn:Product.DisplayName}"/>
-            <Run Text="Installer"/>
-        </TextBlock>
-        <Grid Grid.Row="1" Margin="0 20">
-            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="4" Opacity="0.3"/>
-                </Border.Effect>
-                <Rectangle Fill="{DynamicResource SystemControlPageBackgroundAltHighBrush}"/>
-            </Border>
-            <Grid Margin="20" Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <TextBlock Style="{DynamicResource SubheaderTextBlockStyle}">
+                <Run Text="{x:Static cmn:Product.DisplayName}"/>
+                <Run Text="Installer"/>
+            </TextBlock>
+        </StackPanel>
+        <Grid Grid.Row="1" Margin="0 40 0 0">
+            <Grid Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/> 
@@ -51,13 +47,13 @@
                     <Button Content="Cancel" Margin="8 0 0 0" Width="80" Command="{Binding CloseCommand}"/>
                 </StackPanel>
             </Grid>
-            <Grid Margin="20" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
+                <StackPanel Orientation="Vertical" Margin="0 20">
+                    <TextBlock Margin="0 0 0 8" Text="{Binding Message}"/>
                     <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
                     <TextBlock Margin="0 12 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
                 </StackPanel>
@@ -67,7 +63,7 @@
                             Content="Close" 
                             Width="80"
                             Command="{Binding CloseCommand}" 
-                            Visibility="{Binding CloseButtonVisibility}"/>
+                            Visibility="{Binding ShowCloseButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </StackPanel>
             </Grid>
         </Grid>

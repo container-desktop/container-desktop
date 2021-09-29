@@ -96,6 +96,6 @@ public sealed class WslService : IWslService
 
     private void LogStdError(string s)
     {
-        _logger.LogError(s);
+        _logger.LogInformation(s);
     }
 }

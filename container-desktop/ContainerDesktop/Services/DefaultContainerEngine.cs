@@ -106,7 +106,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
         //TODO: make settings configurable
         var args = new ArgumentBuilder()
-            .Add("--listen-address", "npipe:////./pipe/my_docker_engine")
+            .Add("--listen-address", "npipe:////./pipe/docker_engine")
             .Add("--target-address", "https://localhost:2376")
             .Add("--tls-key", Path.Combine(LocalCertsPath, "key.pem"))
             .Add("--tls-cert", Path.Combine(LocalCertsPath, "cert.pem"))

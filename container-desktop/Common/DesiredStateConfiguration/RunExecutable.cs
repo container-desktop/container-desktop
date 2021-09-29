@@ -55,7 +55,7 @@ public class RunExecutable : ResourceBase
         }
         if(Wait)
         {
-            process.Complete();
+            process?.Complete();
         }
     }
 
