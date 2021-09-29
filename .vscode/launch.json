@@ -14,7 +14,13 @@
                 "--listen-address",
                 "npipe:////./pipe/mytest",
                 "--target-address",
-                "http://localhost:2375"
+                "https://localhost:2376",
+                "--tls-key",
+                "C:\\Users\\markr\\AppData\\Local\\ContainerDesktop\\certs\\key.pem",
+                "--tls-cert",
+                "C:\\Users\\markr\\AppData\\Local\\ContainerDesktop\\certs\\cert.pem",
+                "--tls-ca",
+                "C:\\Users\\markr\\AppData\\Local\\ContainerDesktop\\certs\\ca.pem",
             ]
         }
     ]

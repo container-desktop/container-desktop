@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -27,6 +30,9 @@ type RootFlags struct {
 	listenAddress string
 	targetAddress string
 	wslDistroName string
+	tlsKey        string
+	tlsCert       string
+	tlsCa         string
 }
 
 var flags = RootFlags{}
@@ -39,11 +45,31 @@ var rootCmd = &cobra.Command{
 		targetUri := parseUri(flags.targetAddress)
 		fmt.Printf("listen uri: %s, target uri: %s\n", listenUri, targetUri)
 
+		cert, err := tls.LoadX509KeyPair(flags.tlsCert, flags.tlsKey)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		caCert, err := ioutil.ReadFile(flags.tlsCa)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		transport := &http.Transport{TLSClientConfig: tlsConfig}
+
 		listener, err := util.CreateListener(listenUri)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		proxy := httputil.NewSingleHostReverseProxy(targetUri)
+		proxy.Transport = transport
 		orgDirector := proxy.Director
 		proxy.Director = func(r *http.Request) {
 			orgDirector(r)
@@ -237,6 +263,10 @@ func init() {
 	rootCmd.MarkPersistentFlagRequired("target-address")
 
 	rootCmd.Flags().StringVarP(&flags.wslDistroName, "wsl-distro-name", "d", "", "The WSL distro name.")
+
+	rootCmd.Flags().StringVarP(&flags.tlsKey, "tls-key", "", "", "The TLS client private key")
+	rootCmd.Flags().StringVarP(&flags.tlsCert, "tls-cert", "", "", "The TLS client certificate")
+	rootCmd.Flags().StringVarP(&flags.tlsCa, "tls-ca", "", "", "The TLS CA certificate")
 }
 
 func initConfig() {

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ContainerDesktop.Installer"
         xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:cmn="http://container-desktop.io/common"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Icon="/ContainerDesktopInstaller;component/Resources/app.ico"
@@ -12,42 +13,63 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         ui:WindowHelper.UseModernWindowStyle="True">
-    <Window.Resources>
-        
-    </Window.Resources>
-    <Grid Margin="80">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Button VerticalAlignment="Center" 
-                HorizontalAlignment="Center" 
-                Content="{Binding ApplyButtonText}" 
-                FontSize="24"
-                Padding="8"
-                Command="{Binding ApplyCommand}"
-                Visibility="{Binding ShowApplyButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
-            <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
-            <TextBlock Margin="0 12 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
-            <Button VerticalAlignment="Center" 
-                HorizontalAlignment="Center" 
-                Content="Close" 
-                FontSize="24"
-                Padding="8"
-                Margin="0 40 0 0"
-                Command="{Binding CloseCommand}"
-                Visibility="{Binding CloseButtonVisibility}"/>
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Grid.Row="1" Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ItemsControl ItemsSource="{Binding OptionalResources}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <CheckBox Content="{Binding Description}" IsChecked="{Binding Enabled, Mode=TwoWay}"></CheckBox>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+        <TextBlock Style="{DynamicResource SubheaderTextBlockStyle}">
+            <Run Text="{x:Static cmn:Product.DisplayName}"/>
+            <Run Text="Installer"/>
+        </TextBlock>
+        <Grid Grid.Row="1" Margin="0 20">
+            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="4" Opacity="0.3"/>
+                </Border.Effect>
+                <Rectangle Fill="{DynamicResource SystemControlPageBackgroundAltHighBrush}"/>
+            </Border>
+            <Grid Margin="20" Visibility="{Binding ShowOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/> 
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Vertical">
+                    <ItemsControl ItemsSource="{Binding OptionalResources}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Description}" IsChecked="{Binding Enabled, Mode=TwoWay}"></CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding ShowApplyButton, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button Width="80"
+                            Content="{Binding ApplyButtonText}" 
+                            Command="{Binding ApplyCommand}" />
+                    <Button Content="Cancel" Margin="8 0 0 0" Width="80" Command="{Binding CloseCommand}"/>
+                </StackPanel>
+            </Grid>
+            <Grid Margin="20" Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <TextBlock Margin="0 0 0 4" Text="{Binding Message}"/>
+                    <ProgressBar Height="4" Panel.ZIndex="4" Value="{Binding Value}" Maximum="{Binding MaxValue}" />
+                    <TextBlock Margin="0 12 0 4" Text="{Binding ExtraInformation}" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button VerticalAlignment="Center" 
+                            HorizontalAlignment="Center" 
+                            Content="Close" 
+                            Width="80"
+                            Command="{Binding CloseCommand}" 
+                            Visibility="{Binding CloseButtonVisibility}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>

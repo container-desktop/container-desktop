@@ -19,7 +19,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
     private string _extraInformation;
     private bool _uninstalling;
     private bool _showOptions;
-    private Visibility _closeButtonVisibility;
+    private bool _showCloseButton;
     private string _applyButtonText = "Install";
     private readonly IInstallationRunner _runner;
     private readonly IApplicationContext _applicationContext;
@@ -28,7 +28,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
     {
         Title = $"{Product.DisplayName} Installer ({Product.Version})";
         ShowApplyButton = true;
-        CloseButtonVisibility = Visibility.Hidden;
+        ShowCloseButton = false;
         ApplyCommand = new DelegateCommand(Apply);
         CloseCommand = new DelegateCommand(Close);
         _runner = runner;
@@ -104,10 +104,10 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         }
     }
 
-    public Visibility CloseButtonVisibility
+    public bool ShowCloseButton
     {
-        get => _closeButtonVisibility;
-        set => SetValueAndNotify(ref _closeButtonVisibility, value);
+        get => _showCloseButton;
+        set => SetValueAndNotify(ref _showCloseButton, value);
     }
 
     public string ApplyButtonText
@@ -132,12 +132,12 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         var runnerTask = Task.Run(() => _runner.Run());
         runnerTask.ToObservable().Subscribe(exitCode =>
         {
-            CloseButtonVisibility = Visibility.Visible;
+            ShowCloseButton = true;
         }, ex =>
         {
             Logger.LogError(ex, ex.Message);
             MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.\r\n\r\nError message: {ex.Message}", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
-            CloseButtonVisibility = Visibility.Visible;
+            ShowCloseButton = true;
         });
     }
 
