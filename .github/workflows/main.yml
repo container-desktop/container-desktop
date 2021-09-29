@@ -164,7 +164,7 @@ jobs:
           prerelease: ${{ steps.nbgv.outputs.PrereleaseVersion }}
           files: |
             dist/ContainerDesktopInstaller.exe
-            dist/ContainerDesktopInstaller.xip
+            dist/ContainerDesktopInstaller.zip
             dist/sha256sum.txt
       
 
