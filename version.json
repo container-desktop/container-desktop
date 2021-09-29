@@ -1,13 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/AArnott/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
   "version": "1.0.0-alpha.{height}",
-  "versionHeightOffset": -1,
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
     "^refs/tags/v\\d+.\\d+.\\d+"
   ],
   "cloudBuild": {
-    "setAllVariables": true,
     "buildNumber": {
       "enabled": true,
       "includeCommitId": {
