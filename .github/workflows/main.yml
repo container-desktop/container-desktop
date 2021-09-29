@@ -6,11 +6,13 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: 
-      - main
+    paths-ignore:
+      - "/docs/**"
     tags:
       - v*
   pull_request:
+    paths-ignore:
+      - "/docs/**"
     branches: 
       - main
 
