@@ -1,0 +1,12 @@
+#!/bin/sh
+distro="${1:-$WSL_DISTRO_NAME}"
+mkdir -p /mnt/wsl/$distro
+mount --bind / /mnt/wsl/$distro
+mount --bind /mnt/wsl/container-desktop/cli-tools/docker /usr/local/bin/docker
+/mnt/wsl/container-desktop/proxy/container-desktop-proxy \
+  --listen-address unix:///var/run/docker.sock \
+  --target-address https://localhost:2376 \
+  --wsl-distro-name "$distro" \
+  --tls-key /mnt/wsl/container-desktop/certs/key.pem \
+  --tls-cert /mnt/wsl/container-desktop/certs/cert.pem \
+  --tls-ca /mnt/wsl/container-desktop/certs/ca.pem

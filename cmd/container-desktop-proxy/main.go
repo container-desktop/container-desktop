@@ -172,7 +172,7 @@ func rewriteBinds(jsonMap map[string]interface{}, path string) {
 						parts := strings.Split(s, ":")
 						if rt.GOOS == "windows" {
 							if parts[0] != "/" && len(parts[0]) == 1 {
-								s = path + "/" + parts[0]
+								s = path + "/" + strings.ToLower(parts[0])
 								s += strings.Join(parts[1:], ":")
 							}
 						} else if strings.HasPrefix(s, "/") {
