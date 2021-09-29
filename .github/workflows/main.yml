@@ -13,8 +13,8 @@ on:
   pull_request:
     branches: 
       - main
-  
-    # Allows you to run this workflow manually from the Actions tab
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 env:
@@ -95,7 +95,7 @@ jobs:
         with:
           name: dist
           path: dist
-      
+
       - name: Setup dotnet SDK
         uses: actions/setup-dotnet@v1.8.2
         with:
