@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="..\..\dist\container-desktop-data-distro.tar.gz" Link="Resources\container-desktop-data-distro.tar.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="..\Assets\app.ico" Link="Resources\app.ico" />
   </ItemGroup>
 
