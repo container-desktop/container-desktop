@@ -29,6 +29,12 @@ docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSI
 docker create --name cdbuild container-desktop:build
 docker run --rm -v "$($PWD):/src" --privileged -v //var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export cdbuild | gzip > /src/dist/container-desktop-distro.tar.gz"
 docker rm cdbuild
+# Build data distro image
+docker build -t container-desktop-data:build .\deployment\container-desktop-data
+# Create WSL distro from the data distro image and copy to /dist
+docker create --name cddatabuild container-desktop-data:build
+docker run --rm -v "$($PWD):/src" --privileged -v //var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export cddatabuild | gzip > /src/dist/container-desktop-data-distro.tar.gz"
+docker rm cddatabuild
 # Publish and zip App to /dist
 dotnet publish -c Release .\container-desktop\ContainerDesktop\ContainerDesktop.csproj
 docker run --rm -v "$($PWD):/src" -w /src/container-desktop/ContainerDesktop/bin/Release/net6.0-windows10.0.18362.0/win-x64/publish container-desktop-tools:build zip -r9 /src/dist/container-desktop.zip .

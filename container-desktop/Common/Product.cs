@@ -12,6 +12,7 @@ public static class Product
     public static string AppPath { get; } = Path.Combine(InstallDir, $"{Name}.exe");
     public static string ProxyPath { get; } = Path.Combine(InstallDir, "Resources", $"container-desktop-proxy-windows-amd64.exe");
     public static string ContainerDesktopDistroName { get; } = "container-desktop";
+    public static string ContainerDesktopDataDistroName { get; } = "container-desktop-data";
 
     private static string GetVersion()
     {

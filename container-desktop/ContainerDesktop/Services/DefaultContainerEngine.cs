@@ -43,11 +43,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         RunningState = RunningState.Starting;
         _wslService.Terminate(Product.ContainerDesktopDistroName);
+        InitializeDataDistro();
         InitializeAndStartDaemon();
         StartProxy();
         WarmupDaemon();
         RunningState = RunningState.Started;
         //TODO: configure other distros
+    }
+
+    private void InitializeDataDistro()
+    {
+        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", Product.ContainerDesktopDataDistroName))
+        {
+            throw new ContainerEngineException("Could not initialize the data distribution.");
+        }
     }
 
     public void Stop()
