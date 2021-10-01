@@ -22,6 +22,14 @@
                         LeftClickCommand="{Binding OpenCommand}">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="WSL2 Integration" ItemsSource="{Binding WslDistributions}">
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <MenuItem Header="{Binding Name}" IsCheckable="True" IsChecked="{Binding Enabled, Mode=TwoWay}" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=DataContext.CheckWslDistroCommand}" CommandParameter="{Binding .}"/>
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
+                    </MenuItem>
+                    <Separator/>
                     <MenuItem Header="Start" Command="{Binding StartCommand}" Visibility="{Binding IsStopped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Restart" Command="{Binding RestartCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>

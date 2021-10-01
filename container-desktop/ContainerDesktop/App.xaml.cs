@@ -79,5 +79,6 @@ public partial class App : ApplicationWithContext
             );
         services.AddSingleton<IContainerEngine, DefaultContainerEngine>();
         services.AddTransient<IFileSystem, FileSystem>();
+        services.AddSingleton<IConfigurationService, ConfigurationService>();
     }
 }

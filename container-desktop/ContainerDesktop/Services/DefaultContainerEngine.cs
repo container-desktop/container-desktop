@@ -4,19 +4,22 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Common.Services;
 using Docker.DotNet;
 using System.Diagnostics;
-
+using System.Threading;
 
 public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 {
     private readonly IWslService _wslService;
     private readonly IProcessExecutor _processExecutor;
+    private readonly IConfigurationService _configurationService;
     private Process _proxyProcess;
     private RunningState _runningState;
+    private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
 
-    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor)
+    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         // TODO: query the state
         _runningState = RunningState.Stopped;
     }
@@ -47,8 +50,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         InitializeAndStartDaemon();
         StartProxy();
         WarmupDaemon();
+        InitializeDistros();
         RunningState = RunningState.Started;
-        //TODO: configure other distros
     }
 
     private void InitializeDataDistro()
@@ -62,6 +65,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     public void Stop()
     {
         RunningState = RunningState.Stopping;
+        StopDistros();
         StopProxy();
         _wslService.Terminate(Product.ContainerDesktopDistroName);
         RunningState = RunningState.Stopped;
@@ -73,10 +77,37 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         Start();
     }
 
+    public void EnableDistro(string name, bool enabled)
+    {
+        if (enabled)
+        {
+            var cts = new CancellationTokenSource();
+            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, "root", cts.Token));
+            
+            _enabledDistroProxies[name] = (task, cts);
+        }
+        else
+        {
+            if(_enabledDistroProxies.TryGetValue(name, out var proxy))
+            {
+                proxy.cts.Cancel();
+                _enabledDistroProxies.Remove(name);
+            }
+            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-rm.sh \"{name}\"", name, "root"))
+            {
+                throw new ContainerEngineException($"Could not disable the distribution {name}");
+            }
+        }
+    }
+
     public void Dispose()
     {
         StopProxy();
         _proxyProcess?.Dispose();
+        foreach(var proxy in _enabledDistroProxies)
+        {
+            proxy.Value.cts.Cancel();
+        }
     }
 
     private void InitializeAndStartDaemon()
@@ -87,6 +118,23 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             throw new ContainerEngineException("Could not initialize and start the daemon.");
         }
     }
+
+    private void InitializeDistros()
+    {
+        foreach (var distroName in _configurationService.Configuration.EnabledDistributions)
+        {
+            EnableDistro(distroName, true);
+        }
+    }
+
+    private void StopDistros()
+    {
+        foreach (var distroName in _configurationService.Configuration.EnabledDistributions)
+        {
+            EnableDistro(distroName, false);
+        }
+    }
+
 
     private string LocalCertsPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "certs\\");
     

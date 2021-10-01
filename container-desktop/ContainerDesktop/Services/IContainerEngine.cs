@@ -7,4 +7,5 @@ public interface IContainerEngine
     void Start();
     void Stop();
     void Restart();
+    void EnableDistro(string name, bool enabled);
 }
