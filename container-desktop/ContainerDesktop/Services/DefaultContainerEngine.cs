@@ -82,7 +82,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         if (enabled)
         {
             var cts = new CancellationTokenSource();
-            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, cts.Token));
+            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, "root", cts.Token));
+            
             _enabledDistroProxies[name] = (task, cts);
         }
         else
@@ -92,7 +93,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                 proxy.cts.Cancel();
                 _enabledDistroProxies.Remove(name);
             }
-            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-rm.sh \"{name}\"", name))
+            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-rm.sh \"{name}\"", name, "root"))
             {
                 throw new ContainerEngineException($"Could not disable the distribution {name}");
             }

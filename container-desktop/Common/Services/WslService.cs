@@ -79,20 +79,22 @@ public sealed class WslService : IWslService
         return distros.Any(x => x.Equals(distroName, StringComparison.OrdinalIgnoreCase));
     }
 
-    public bool ExecuteCommand(string command, string distroName)
+    public bool ExecuteCommand(string command, string distroName, string user = null)
     {
         var args = new ArgumentBuilder()
             .Add("-d", distroName)
+            .AddIf("--user", user, !string.IsNullOrWhiteSpace(user))
             .Add(command)
             .Build();
         var ret = _processExecutor.Execute("wsl.exe", args, stdOut: LogStdOut, stdErr: LogStdError);
         return ret == 0;
     }
 
-    public async Task<bool> ExecuteCommandAsync(string command, string distroName, CancellationToken cancellationToken = default)
+    public async Task<bool> ExecuteCommandAsync(string command, string distroName, string user = null, CancellationToken cancellationToken = default)
     {
         var args = new ArgumentBuilder()
             .Add("-d", distroName)
+            .AddIf("--user", user, !string.IsNullOrWhiteSpace(user))
             .Add(command)
             .Build();
         var ret = await _processExecutor.ExecuteAsync("wsl.exe", args, stdOut: LogStdOut, stdErr: LogStdError, cancellationToken: cancellationToken);
