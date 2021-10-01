@@ -69,6 +69,15 @@ jobs:
           docker run --rm -v $PWD:/src --privileged -v /var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export $sha | gzip > /src/dist/container-desktop-distro.tar.gz"
           docker rm $sha
       
+      - name: Build Data distro image
+        run: docker build -t container-desktop-data:build --build-arg DOCKER_VERSION=$DOCKER_VERSION deployment/container-desktop-data
+      
+      - name: Create WSL Data distro from the data distro image
+        run: |
+          sha=$(docker create container-desktop-data:build)
+          docker run --rm -v $PWD:/src --privileged -v /var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export $sha | gzip > /src/dist/container-desktop-data-distro.tar.gz"
+          docker rm $sha
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -161,7 +170,6 @@ jobs:
 
       - name: release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
         with:
           prerelease: ${{ steps.nbgv.outputs.PrereleaseVersion }}
           files: |

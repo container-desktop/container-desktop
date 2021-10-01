@@ -44,6 +44,13 @@
       "targetDirectory": "%INSTALLDIR%\\Resources"
     },
     {
+      "type": "CopyPackedFile",
+      "id": "CopyDataDistro",
+      "description": "Copy WSL Data distribution",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-data-distro.tar.gz",
+      "targetDirectory": "%INSTALLDIR%\\Resources"
+    },
+    {
       "type": "CopyFile",
       "id": "CopyInstaller",
       "description": "Copy installer",
@@ -91,6 +98,15 @@
       "extraInformation": "Installing the WSL distribution may take a while if the system was rebooted due to enabling the features required for WSL."
     },
     {
+      "type": "WslDistro",
+      "id": "InstallWslDataDistro",
+      "description": "Install Container Desktop Data WSL distribution",
+      "name": "container-desktop-data",
+      "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\data-distro",
+      "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-data-distro.tar.gz",
+      "dependsOn": [ "InstallLatestWslKernel" ]
+    },
+    {
       "type": "AddToPath",
       "id": "AddCliToPath",
       "description": "Add Docker CLI tools to the Path",
@@ -134,7 +150,7 @@
       "onUninstall": false,
       "runAsDesktopUser": true,
       "optional": true,
-      "continueOnFail":  true
+      "continueOnFail": true
     }
   ]
 }
