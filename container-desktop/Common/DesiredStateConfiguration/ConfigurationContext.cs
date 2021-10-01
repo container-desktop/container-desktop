@@ -42,6 +42,8 @@ public class ConfigurationContext
 
     public bool RestartPending { get; set; }
 
+    public bool DelayReboot { get; set; }
+
     public bool AskUserConsent(string message, string caption = null)
     {
         return _userInteraction?.UserConsent(message, caption) ?? true;

@@ -31,7 +31,10 @@ public partial class App : ApplicationWithContext
         else
         {
             MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            MainWindow.Show();
+            if (!runner.Options.Unattended)
+            {
+                MainWindow.Show();
+            }
         }
     }
 
@@ -65,7 +68,7 @@ public partial class App : ApplicationWithContext
         services.AddSingleton<IApplicationContext>(this);
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
-        services.AddSingleton<IUserInteraction>(sp => sp.GetService<MainViewModel>());
+        services.AddSingleton<IUserInteraction, InstallerUserInteraction>();
         services.AddSingleton<IWslService, WslService>();
         services.AddSingleton<IProcessExecutor, ProcessExecutor>();
         services.AddLogging(builder =>

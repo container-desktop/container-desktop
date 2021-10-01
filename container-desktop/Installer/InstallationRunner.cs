@@ -18,7 +18,7 @@ public class InstallationRunner : IInstallationRunner
         var args = GetCommandLineArgs();
         _parserResult = Parser.Default.ParseArguments(args, _verbOptions);
         InstallationMode = _parserResult.TypeInfo.Current == typeof(UninstallOptions) ? InstallationMode.Uninstall : InstallationMode.Install;
-        _parserResult.WithParsed<InstallerOptions>(options => Options = options);
+        _parserResult.WithParsed<InstallerOptions>(options => Options = PostConfigureOptions(options));
     }
 
     public IConfigurationManifest ConfigurationManifest { get; }
@@ -27,17 +27,31 @@ public class InstallationRunner : IInstallationRunner
 
     public InstallerOptions Options { get; private set; }
 
-    public void Run(Action<ConfigurationContext> configure = null)
+    public ConfigurationResult Run(Action<ConfigurationContext> configure = null)
     {
         var logger = (ILogger)_serviceProvider.GetRequiredService<ILogger<InstallationRunner>>();
         var context = ActivatorUtilities.CreateInstance<ConfigurationContext>(_serviceProvider, logger, InstallationMode == InstallationMode.Uninstall);
         configure?.Invoke(context);
-        ConfigurationManifest.Apply(context);
+        return ConfigurationManifest.Apply(context);
     }
 
     private string[] GetCommandLineArgs()
     {
         var args = Environment.GetCommandLineArgs();
         return args.Length > 1 ? args[1..] : new string[0];
+    }
+
+    private InstallerOptions PostConfigureOptions(InstallerOptions options)
+    {
+        if(options.Quiet)
+        {
+            options.AutoStart = true;
+        }
+        if(options.Unattended)
+        {
+            options.AutoStart = true;
+            options.Quiet = true;
+        }
+        return options;
     }
 }
