@@ -1,6 +1,7 @@
 ﻿namespace ContainerDesktop.Common;
 
 using System.Diagnostics;
+using System.Threading;
 
 /// <summary>
 /// Represents a process.
@@ -23,6 +24,7 @@ public interface IProcessExecutor
         string workingDir = null,
         Action<string> stdOut = null,
         Action<string> stdErr = null,
+        CancellationToken cancellationToken = default,
         params (string key, string value)[] environmentVariables);
 
     /// <summary>

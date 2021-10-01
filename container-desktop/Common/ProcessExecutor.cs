@@ -1,6 +1,7 @@
 ﻿namespace ContainerDesktop.Common;
 
 using System.Diagnostics;
+using System.Threading;
 
 public class ProcessExecutor : IProcessExecutor
 {
@@ -10,10 +11,11 @@ public class ProcessExecutor : IProcessExecutor
         string workingDir = null,
         Action<string> stdOut = null,
         Action<string> stdErr = null,
+        CancellationToken cancellationToken = default,
         params (string key, string value)[] environmentVariables)
     {
         return ProcessExtensions.StartProcess(command, args, workingDir, false, stdOut, stdErr, environmentVariables)
-            .CompleteAsync();
+            .CompleteAsync(cancellationToken);
     }
 
     public int Execute(

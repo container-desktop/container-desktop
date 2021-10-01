@@ -1,7 +1,7 @@
 ﻿namespace ContainerDesktop.Common.Services;
 
 using Microsoft.Win32;
-
+using System.Threading;
 
 public sealed class WslService : IWslService
 {
@@ -86,6 +86,16 @@ public sealed class WslService : IWslService
             .Add(command)
             .Build();
         var ret = _processExecutor.Execute("wsl.exe", args, stdOut: LogStdOut, stdErr: LogStdError);
+        return ret == 0;
+    }
+
+    public async Task<bool> ExecuteCommandAsync(string command, string distroName, CancellationToken cancellationToken = default)
+    {
+        var args = new ArgumentBuilder()
+            .Add("-d", distroName)
+            .Add(command)
+            .Build();
+        var ret = await _processExecutor.ExecuteAsync("wsl.exe", args, stdOut: LogStdOut, stdErr: LogStdError, cancellationToken: cancellationToken);
         return ret == 0;
     }
 

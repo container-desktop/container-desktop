@@ -3,7 +3,6 @@
 using PInvoke;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Threading;
 using static NativeMethods;
 using static PInvoke.Kernel32;
@@ -13,6 +12,10 @@ public static class ProcessExtensions
     public static async Task<int> CompleteAsync(this Process process, CancellationToken cancellationToken = default)
     {
         await process.WaitForExitAsync(cancellationToken);
+        if(cancellationToken.IsCancellationRequested)
+        {
+            process.Kill();
+        }
         return process.ExitCode;
     }
 
@@ -22,6 +25,10 @@ public static class ProcessExtensions
         Task.Run(async () =>
         {
             await process.WaitForExitAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                process.Kill();
+            }
             mre.Set();
         });
 

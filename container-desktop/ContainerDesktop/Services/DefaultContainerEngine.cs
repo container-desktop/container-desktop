@@ -4,7 +4,7 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Common.Services;
 using Docker.DotNet;
 using System.Diagnostics;
-
+using System.Threading;
 
 public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 {
@@ -13,6 +13,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly IConfigurationService _configurationService;
     private Process _proxyProcess;
     private RunningState _runningState;
+    private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
 
     public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService)
     {
@@ -45,11 +46,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         RunningState = RunningState.Starting;
         _wslService.Terminate(Product.ContainerDesktopDistroName);
+        InitializeDataDistro();
         InitializeAndStartDaemon();
         StartProxy();
         WarmupDaemon();
         InitializeDistros();
         RunningState = RunningState.Started;
+    }
+
+    private void InitializeDataDistro()
+    {
+        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", Product.ContainerDesktopDataDistroName))
+        {
+            throw new ContainerEngineException("Could not initialize the data distribution.");
+        }
     }
 
     public void Stop()
@@ -71,13 +81,17 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         if (enabled)
         {
-            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name))
-            {
-                throw new ContainerEngineException($"Could not enable the distribution {name}");
-            }
+            var cts = new CancellationTokenSource();
+            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, cts.Token));
+            _enabledDistroProxies[name] = (task, cts);
         }
         else
         {
+            if(_enabledDistroProxies.TryGetValue(name, out var proxy))
+            {
+                proxy.cts.Cancel();
+                _enabledDistroProxies.Remove(name);
+            }
             if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-rm.sh \"{name}\"", name))
             {
                 throw new ContainerEngineException($"Could not disable the distribution {name}");
@@ -89,6 +103,10 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         StopProxy();
         _proxyProcess?.Dispose();
+        foreach(var proxy in _enabledDistroProxies)
+        {
+            proxy.Value.cts.Cancel();
+        }
     }
 
     private void InitializeAndStartDaemon()
