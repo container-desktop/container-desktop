@@ -7,12 +7,12 @@ mkdir -p /mnt/wsl
 mkdir -p /var/lib/docker
 mount --bind /usr/local/bin/cli-tools /mnt/host/wsl/container-desktop/cli-tools
 mount --bind /certs /mnt/host/wsl/container-desktop/certs
-mount --bind /usr/local/bin/container-desktop-proxy-linux-amd64 /mnt/host/container-desktop/proxy/container-desktop-proxy
+mount --bind /proxy /mnt/host/wsl/container-desktop/proxy
 mount --bind /distro /mnt/host/wsl/container-desktop/distro
 mount --bind /mnt/host/wsl /mnt/wsl
 mount --bind /mnt/host/wsl/container-desktop-data/data /var/lib/docker
 export DOCKER_TLS_CERTDIR=/certs
-nohup /usr/local/bin/dockerd-entrypoint.sh &
+nohup /usr/local/bin/dockerd-entrypoint.sh >/dev/null 2>&1 &
 c=0
 while [ ! -S /var/run/docker.sock ]; do
     sleep 1

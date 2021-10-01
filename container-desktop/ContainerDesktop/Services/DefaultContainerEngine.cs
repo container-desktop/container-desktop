@@ -10,13 +10,15 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 {
     private readonly IWslService _wslService;
     private readonly IProcessExecutor _processExecutor;
+    private readonly IConfigurationService _configurationService;
     private Process _proxyProcess;
     private RunningState _runningState;
 
-    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor)
+    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         // TODO: query the state
         _runningState = RunningState.Stopped;
     }
@@ -43,25 +45,17 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         RunningState = RunningState.Starting;
         _wslService.Terminate(Product.ContainerDesktopDistroName);
-        InitializeDataDistro();
         InitializeAndStartDaemon();
         StartProxy();
         WarmupDaemon();
+        InitializeDistros();
         RunningState = RunningState.Started;
-        //TODO: configure other distros
-    }
-
-    private void InitializeDataDistro()
-    {
-        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", Product.ContainerDesktopDataDistroName))
-        {
-            throw new ContainerEngineException("Could not initialize the data distribution.");
-        }
     }
 
     public void Stop()
     {
         RunningState = RunningState.Stopping;
+        StopDistros();
         StopProxy();
         _wslService.Terminate(Product.ContainerDesktopDistroName);
         RunningState = RunningState.Stopped;
@@ -71,6 +65,24 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         Stop();
         Start();
+    }
+
+    public void EnableDistro(string name, bool enabled)
+    {
+        if (enabled)
+        {
+            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name))
+            {
+                throw new ContainerEngineException($"Could not enable the distribution {name}");
+            }
+        }
+        else
+        {
+            if (!_wslService.ExecuteCommand($"/mnt/wsl/container-desktop/distro/wsl-distro-rm.sh \"{name}\"", name))
+            {
+                throw new ContainerEngineException($"Could not disable the distribution {name}");
+            }
+        }
     }
 
     public void Dispose()
@@ -87,6 +99,23 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             throw new ContainerEngineException("Could not initialize and start the daemon.");
         }
     }
+
+    private void InitializeDistros()
+    {
+        foreach (var distroName in _configurationService.Configuration.EnabledDistributions)
+        {
+            EnableDistro(distroName, true);
+        }
+    }
+
+    private void StopDistros()
+    {
+        foreach (var distroName in _configurationService.Configuration.EnabledDistributions)
+        {
+            EnableDistro(distroName, false);
+        }
+    }
+
 
     private string LocalCertsPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "certs\\");
     
