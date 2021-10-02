@@ -32,6 +32,7 @@ public class InstallationRunner : IInstallationRunner
         var logger = (ILogger)_serviceProvider.GetRequiredService<ILogger<InstallationRunner>>();
         var context = ActivatorUtilities.CreateInstance<ConfigurationContext>(_serviceProvider, logger, InstallationMode == InstallationMode.Uninstall);
         configure?.Invoke(context);
+        context.DelayReboot = Options.Unattended;
         return ConfigurationManifest.Apply(context);
     }
 

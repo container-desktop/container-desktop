@@ -3,7 +3,7 @@
 # - docker
 # This script must run on Windows because the application is a Windows application.
 $DOCKER_VERSION="20.10.8"
-$DOCKER_COMPOSE_VERSION="1.29.2"
+$DOCKER_COMPOSE_VERSION="v2.0.1"
 # clean or create dist folder
 if ((Test-Path dist/)) {
     Remove-Item dist/* -Recurse
