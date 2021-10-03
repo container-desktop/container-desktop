@@ -1,9 +1,6 @@
 ﻿namespace ContainerDesktop.Installer;
 
 using ContainerDesktop.Common;
-using ContainerDesktop.Common.DesiredStateConfiguration;
-using ContainerDesktop.Common.Services;
-using ContainerDesktop.Installer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.IO.Abstractions;

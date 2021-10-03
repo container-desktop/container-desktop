@@ -4,12 +4,10 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using ContainerDesktop.Common.Input;
 using ContainerDesktop.Common.UI;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 public class MainViewModel : ViewModelBase, IUserInteraction
 {
