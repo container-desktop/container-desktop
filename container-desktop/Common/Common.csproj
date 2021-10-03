@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>ContainerDesktop.Common</RootNamespace>
     <AssemblyName>ContainerDesktop.Common</AssemblyName>
   </PropertyGroup>

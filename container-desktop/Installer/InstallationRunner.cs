@@ -3,27 +3,25 @@
 using CommandLine;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 public class InstallationRunner : IInstallationRunner
 {
-    private static readonly Type[] _verbOptions = new[] { typeof(InstallOptions), typeof(UninstallOptions) };
-    private readonly ParserResult<object> _parserResult;
     private readonly IServiceProvider _serviceProvider;
 
-    public InstallationRunner(IServiceProvider serviceProvider,
-        IConfigurationManifest configurationManifest)
+    public InstallationRunner(
+        IServiceProvider serviceProvider,
+        IConfigurationManifest configurationManifest,
+        IOptions<InstallerOptions> options)
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)); 
         ConfigurationManifest = configurationManifest ?? throw new ArgumentNullException(nameof(configurationManifest));
-        var args = GetCommandLineArgs();
-        _parserResult = Parser.Default.ParseArguments(args, _verbOptions);
-        InstallationMode = _parserResult.TypeInfo.Current == typeof(UninstallOptions) ? InstallationMode.Uninstall : InstallationMode.Install;
-        _parserResult.WithParsed<InstallerOptions>(options => Options = PostConfigureOptions(options));
+        Options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     public IConfigurationManifest ConfigurationManifest { get; }
     
-    public InstallationMode InstallationMode { get; }
+    public InstallationMode InstallationMode => Options is UninstallOptions ? InstallationMode.Uninstall : InstallationMode.Install;
 
     public InstallerOptions Options { get; private set; }
 
@@ -34,12 +32,6 @@ public class InstallationRunner : IInstallationRunner
         configure?.Invoke(context);
         context.DelayReboot = Options.Unattended;
         return ConfigurationManifest.Apply(context);
-    }
-
-    private string[] GetCommandLineArgs()
-    {
-        var args = Environment.GetCommandLineArgs();
-        return args.Length > 1 ? args[1..] : new string[0];
     }
 
     private InstallerOptions PostConfigureOptions(InstallerOptions options)

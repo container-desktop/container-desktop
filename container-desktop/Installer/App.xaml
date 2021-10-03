@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:ContainerDesktop.Installer"
              xmlns:cmn="http://container-desktop.io/common"
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             Startup="AppStartup">
+             Startup="AppStartup" Exit="AppExit">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
