@@ -39,7 +39,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
-        if (runner.Options.AutoStart)
+        if (runner.Options.AutoStart || runner.Options.Unattended)
         {
             Apply(null);
         }

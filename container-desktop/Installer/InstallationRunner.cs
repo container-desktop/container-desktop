@@ -33,4 +33,18 @@ public class InstallationRunner : IInstallationRunner
         context.DelayReboot = Options.Unattended;
         return ConfigurationManifest.Apply(context);
     }
+
+    private InstallerOptions PostConfigureOptions(InstallerOptions options)
+    {
+        if(options.Quiet)
+        {
+            options.AutoStart = true;
+        }
+        if(options.Unattended)
+        {
+            options.AutoStart = true;
+            options.Quiet = true;
+        }
+        return options;
+    }
 }
