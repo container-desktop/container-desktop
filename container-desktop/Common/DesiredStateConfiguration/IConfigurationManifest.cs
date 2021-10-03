@@ -6,5 +6,5 @@ public interface IConfigurationManifest
 
     Uri Location { get; }
 
-    void Apply(ConfigurationContext context);
+    ConfigurationResult Apply(ConfigurationContext context);
 }

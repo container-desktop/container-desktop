@@ -10,6 +10,14 @@
     "Installer (uninstall)": {
       "commandName": "Project",
       "commandLineArgs": "uninstall"
+    },
+    "Installer (install quiet)": {
+      "commandName": "Project",
+      "commandLineArgs": "install --quiet"
+    },
+    "Installer (install unattended)": {
+      "commandName": "Project",
+      "commandLineArgs": "install --unattended"
     }
   }
 }

@@ -7,5 +7,5 @@ public interface IInstallationRunner
     IConfigurationManifest ConfigurationManifest { get; }
     InstallationMode InstallationMode { get; }
     InstallerOptions Options { get; }
-    void Run(Action<ConfigurationContext> configure = null);
+    ConfigurationResult Run(Action<ConfigurationContext> configure = null);
 }

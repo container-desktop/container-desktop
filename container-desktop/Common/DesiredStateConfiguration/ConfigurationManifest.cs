@@ -21,18 +21,19 @@ public class ConfigurationManifest : IConfigurationManifest
 
     public Uri Location { get; }
 
-    public void Apply(ConfigurationContext context)
+    public ConfigurationResult Apply(ConfigurationContext context)
     {
         var graph = BuildDependencyGraph(context);
         var changes = graph.Count;
         context.ReportProgress(0, changes, "Start applying resources");
-        Apply(graph, context);
+        var ret = Apply(graph, context);
         if (!context.RestartPending)
         {
             context.ClearState();
         }
+        return ret;
 
-        void Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
+        ConfigurationResult Apply(IEnumerable<IResource> resources, ConfigurationContext ctx, int initialCount = 0, int countModifier = 1)
         {
             var prefix = ctx.Uninstall ? "Undoing" : "Applying";
             var count = initialCount;
@@ -49,12 +50,13 @@ public class ConfigurationManifest : IConfigurationManifest
                         //TODO: on uninstall to a pending restart if needed
                         if (!context.Uninstall && resource.RequiresReboot)
                         {
-                            if (!(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
+                            
+                            if (!(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && !context.DelayReboot && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
                             {
                                 context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");
                             }
                             context.RestartPending = true;
-                            return;
+                            return ConfigurationResult.PendingRestart;
                         }
                     }
                     count += countModifier;
@@ -65,10 +67,12 @@ public class ConfigurationManifest : IConfigurationManifest
                 if (!ctx.Uninstall)
                 {
                     Apply(processedResources, ctx.WithUninstall(true), count, -1);
+                    return ConfigurationResult.RolledBack;
                 }
-                throw;
+                return ConfigurationResult.Failed;
             }
             context.ReportProgress(Math.Max(0, countModifier * changes), changes, $"Finished {prefix.ToLowerInvariant()} resources");
+            return ConfigurationResult.Succeeded;
         }
     }
 

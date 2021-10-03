@@ -4,9 +4,12 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Common.DesiredStateConfiguration;
 using ContainerDesktop.Common.Input;
 using ContainerDesktop.Common.UI;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 public class MainViewModel : ViewModelBase, IUserInteraction
 {
@@ -36,7 +39,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
-        if (runner.Options.AutoStart)
+        if (runner.Options.AutoStart || runner.Options.Unattended)
         {
             Apply(null);
         }
@@ -130,14 +133,41 @@ public class MainViewModel : ViewModelBase, IUserInteraction
 
         Message = $"Preparing {_runner.InstallationMode}";
         var runnerTask = Task.Run(() => _runner.Run());
-        runnerTask.ToObservable().Subscribe(exitCode =>
+        runnerTask.ToObservable().Subscribe(result =>
         {
-            ShowCloseButton = true;
+            _applicationContext.Dispatcher.Invoke(() =>
+            {
+                _applicationContext.ExitCode = result switch
+                {
+                    ConfigurationResult.Succeeded => 0,
+                    ConfigurationResult.PendingRestart => 3010,
+                    _ => 1
+                };
+                if (_runner.Options.Quiet)
+                {
+                    _applicationContext.QuitApplication();
+                }
+                else
+                {
+                    ShowCloseButton = true;
+                }
+            });
         }, ex =>
         {
             Logger.LogError(ex, ex.Message);
-            MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.\r\n\r\nError message: {ex.Message}", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
-            ShowCloseButton = true;
+            _applicationContext.Dispatcher.Invoke(() =>
+            {
+                if (_runner.Options.Quiet)
+                {
+                    _applicationContext.ExitCode = 1;
+                    _applicationContext.QuitApplication();
+                }
+                else
+                {
+                    MessageBox.Show($"{_runner.InstallationMode}ing failed. Please view the event log for possible errors.\r\n\r\nError message: {ex.Message}", $"{_runner.InstallationMode} failed", MessageBoxButton.OK);
+                    ShowCloseButton = true;
+                }
+            });
         });
     }
 
