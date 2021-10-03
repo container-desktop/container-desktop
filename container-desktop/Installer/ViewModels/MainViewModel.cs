@@ -39,7 +39,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
-        if (runner.Options.AutoStart || runner.Options.Unattended)
+        if (runner.Options.AutoStart)
         {
             Apply(null);
         }
@@ -178,8 +178,17 @@ public class MainViewModel : ViewModelBase, IUserInteraction
 
     public bool UserConsent(string message, string caption = null)
     {
-        var result = MessageBox.Show(message, caption, MessageBoxButton.YesNo);
-        return result == MessageBoxResult.Yes;
+        if (_runner.Options.Quiet)
+        {
+            Logger.LogInformation("[Quiet] UserConsent {Caption}: {Message} answered with yes.", caption, message);
+            return true;
+        }
+        else
+        {
+            var result = MessageBox.Show(message, caption, MessageBoxButton.YesNo);
+            Logger.LogInformation("UserConsent {Caption}: {Message} answered with {Answer}.", caption, message, result);
+            return result == MessageBoxResult.Yes;
+        }
     }
 
     public void ReportProgress(int value, int max, string message, string extraInformation = null)
@@ -188,5 +197,6 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         Value = value;
         Message = message;
         ExtraInformation = extraInformation ?? string.Empty;
+        Logger.LogInformation("[{ProgressAt}/{ProgressMax}] {ProgressMessage}. {ProgressExtraInformation}", value, max, message, extraInformation);
     }
 }

@@ -123,6 +123,12 @@
       "optional": true
     },
     {
+      "type": "CreateEventLogSource",
+      "id": "CreateEventLogSource",
+      "description": "Create the event log source",
+      "source": "%PRODUCT_DISPLAYNAME%"
+    },
+    {
       "type": "RegisterProduct",
       "id": "RegisterProduct",
       "description": "Registering Container Desktop",
