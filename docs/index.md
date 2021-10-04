@@ -1,9 +1,40 @@
-# About
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Turpis massa sed elementum tempus egestas. Netus et malesuada fames ac turpis. Urna cursus eget nunc scelerisque viverra. Nunc non blandit massa enim nec. Faucibus interdum posuere lorem ipsum dolor sit amet. Non sodales neque sodales ut etiam sit amet. Viverra accumsan in nisl nisi scelerisque eu ultrices. Fames ac turpis egestas integer eget aliquet nibh praesent tristique. Eu lobortis elementum nibh tellus molestie. Ac tortor vitae purus faucibus ornare. Id diam maecenas ultricies mi eget mauris pharetra et. Felis donec et odio pellentesque.
+## What is Container Desktop? 
 
-Lectus proin nibh nisl condimentum id venenatis a. Diam sollicitudin tempor id eu nisl nunc mi ipsum faucibus. Donec ultrices tincidunt arcu non sodales. Sodales neque sodales ut etiam sit amet. Massa placerat duis ultricies lacus sed turpis. Quisque egestas diam in arcu cursus euismod quis. Fusce id velit ut tortor pretium viverra suspendisse potenti nullam. Turpis egestas pretium aenean pharetra magna ac placerat vestibulum. Tincidunt lobortis feugiat vivamus at augue eget arcu dictum. Sagittis nisl rhoncus mattis rhoncus urna neque. Nibh tellus molestie nunc non blandit massa enim. Aliquam ultrices sagittis orci a scelerisque purus. At risus viverra adipiscing at. In nibh mauris cursus mattis molestie. Etiam dignissim diam quis enim lobortis. Maecenas ultricies mi eget mauris pharetra et. Viverra aliquet eget sit amet. Risus nec feugiat in fermentum.
+Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running om Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.
 
-## Installation
+> Note: Container Desktop will not support Windows Containers.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+## Why Container Desktop?
+
+- Free and open-source;
+- Easy and hassle free installation experience;
+- Plain and simple, no unnecessary bells and whistles;
+
+## How it works?
+
+Container Desktop Proxy handles the communication with the Docker Engine running in container-desktop distribution running Windows System Linux v2 (WSL2). The proxy enables native docker experience on Microsoft Windows, where it translates Windows Paths to WSL2 paths local to the  container-desktop distribution.
+
+With the Container Desktop System Tray Application you can manage the behavior of container-desktop. You can start, stop and restart the Container Desktop Proxy on the Windows Host or Enable or Disable a Docker Engine proxy in any available WSL2 distribution.
+Container Desktop installs the docker and the docker-compose command line interface tools.
+
+![](static/img/container-desktop-overview.png)
+
+## How to install?
+
+1. Download the latest [ContainerDesktopInstaller](https://github.com/container-desktop/container-desktop/releases/latest) from GitHub releases.
+2. (optional) Validate the file checksum with the values in sha256sum.txt with the PowerShell command: 
+    ```
+    Get-FileHash .\ContainerDesktopInstaller.exe -Algorithm SHA256'
+    ```
+3. StartContainerDesktopInstaller.exe and click install to start the installation.
+
+>Note: Windows Defender SmartScreen may pop-up and prevent StartContainerDesktopInstaller.exe from starting. When this is the case do the following: please select "More Info" and Select "Run Anyway".
+
+**System requirements** 
+Container Desktop requires WLS2 which is supported on these Windows versions:
+
+- Microsoft Windows 10, Version 1903 with Build 18362.1049 or higher
+- Microsoft Windows 10, Version 1909 with Build 18363.1049 or higher
+- Microsoft Windows 10, Version 2004 or higher (20H2,21H1, 21H2, ..)
+- Microsoft Windows 11, any version or build

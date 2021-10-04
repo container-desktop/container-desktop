@@ -43,8 +43,8 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-  logo: static/img/container_desktop_logo.png
-  favicon: static/img/favicon.png
+  logo: static/img/container-desktop-logo.png
+  favicon: static/img/container-desktop-favicon.png
   icon:
     repo: fontawesome/brands/github
 
