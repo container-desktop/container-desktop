@@ -17,7 +17,7 @@
     <Grid>
         <tb:TaskbarIcon Visibility="{Binding ShowTrayIcon, Converter={StaticResource BooleanToVisibilityConverter}}"
                         ToolTipText="{x:Static cmn:Product.DisplayName}"
-                        IconSource="/ContainerDesktop;component/app.ico"
+                        IconSource="{Binding TrayIcon}"
                         MenuActivation="RightClick"
                         LeftClickCommand="{Binding OpenCommand}">
             <tb:TaskbarIcon.ContextMenu>

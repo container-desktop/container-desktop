@@ -36,7 +36,7 @@ static class Program
             .UseConsoleLifetime(x => x.SuppressStatusMessages = true)
             .UseSerilog((_, config) =>
             {
-                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(Product.InstallerDisplayName, manageEventSource: true));
+                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(Product.DisplayName));
             });
 
     static void ConfigureServices(IServiceCollection services)

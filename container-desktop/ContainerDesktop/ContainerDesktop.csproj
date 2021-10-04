@@ -15,6 +15,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="..\Assets\app.ico" Link="app.ico" />
+    <Resource Include="..\Assets\app_run.ico" Link="app_run.ico" />
+    <Resource Include="..\Assets\app_stop.ico" Link="app_stop.ico" />
     <Content Include="Container.ico" />
   </ItemGroup>
 
@@ -34,6 +36,7 @@
     <PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.2" />
     <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
     <Manifest Include="$(ApplicationManifest)" />
