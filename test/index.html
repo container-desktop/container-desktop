@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#what-is-container-desktop" class="md-skip">
+        <a href="#overview" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Overview
             
           </span>
         </div>
@@ -246,20 +246,24 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Home
+          Overview
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
-        Home
+        Overview
       </a>
       
         
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
@@ -276,15 +280,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-container-desktop" class="md-nav__link">
-    Why Container Desktop?
+  <a href="#how-it-works" class="md-nav__link">
+    How it works?
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    How it works?
+  <a href="#why-container-desktop" class="md-nav__link">
+    Why Container Desktop?
   </a>
   
 </li>
@@ -320,6 +324,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -335,15 +341,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-container-desktop" class="md-nav__link">
-    Why Container Desktop?
+  <a href="#how-it-works" class="md-nav__link">
+    How it works?
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    How it works?
+  <a href="#why-container-desktop" class="md-nav__link">
+    Why Container Desktop?
   </a>
   
 </li>
@@ -372,10 +378,14 @@
                   </a>
                 
                 
-                  <h1>Home</h1>
-                
-                <h2 id="what-is-container-desktop">What is Container Desktop?<a class="headerlink" href="#what-is-container-desktop" title="Permanent link">&para;</a></h2>
+                <h1 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h1>
+<h2 id="what-is-container-desktop">What is Container Desktop?<a class="headerlink" href="#what-is-container-desktop" title="Permanent link">&para;</a></h2>
 <p>Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running om Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.</p>
+<h2 id="how-it-works">How it works?<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p><img alt="" src="static/img/container-desktop-overview.png" /></p>
+<p>Container Desktop Proxy handles the communication with the Docker Engine running in container-desktop distribution within Windows System Linux v2 (WSL2). The proxy enables native docker experience on Microsoft Windows, where it translates Windows Paths to WSL2 paths local to the  container-desktop distribution.</p>
+<p>With the Container Desktop System Tray Application you can manage the behavior of container-desktop. You can start, stop and restart the Container Desktop Proxy on the Windows Host or Enable or Disable a Docker Engine proxy in any available WSL2 distribution.
+Container Desktop installs the docker and the docker-compose command line interface tools.</p>
 <blockquote>
 <p>Note: Container Desktop will not support Windows Containers.</p>
 </blockquote>
@@ -385,11 +395,6 @@
 <li>Easy and hassle free installation experience;</li>
 <li>Plain and simple, no unnecessary bells and whistles;</li>
 </ul>
-<h2 id="how-it-works">How it works?<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>Container Desktop Proxy handles the communication with the Docker Engine running in container-desktop distribution running Windows System Linux v2 (WSL2). The proxy enables native docker experience on Microsoft Windows, where it translates Windows Paths to WSL2 paths local to the  container-desktop distribution.</p>
-<p>With the Container Desktop System Tray Application you can manage the behavior of container-desktop. You can start, stop and restart the Container Desktop Proxy on the Windows Host or Enable or Disable a Docker Engine proxy in any available WSL2 distribution.
-Container Desktop installs the docker and the docker-compose command line interface tools.</p>
-<p><img alt="" src="static/img/container-desktop-overview.png" /></p>
 <h2 id="how-to-install">How to install?<a class="headerlink" href="#how-to-install" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Download the latest <a href="https://github.com/container-desktop/container-desktop/releases/latest">ContainerDesktopInstaller</a> from GitHub releases.</li>
@@ -401,7 +406,7 @@ Container Desktop installs the docker and the docker-compose command line interf
 <blockquote>
 <p>Note: Windows Defender SmartScreen may pop-up and prevent StartContainerDesktopInstaller.exe from starting. When this is the case do the following: please select &ldquo;More Info&rdquo; and Select &ldquo;Run Anyway&rdquo;.</p>
 </blockquote>
-<p><strong>System requirements</strong> 
+<p><strong>System requirements</strong>
 Container Desktop requires WLS2 which is supported on these Windows versions:</p>
 <ul>
 <li>Microsoft Windows 10, Version 1903 with Build 18362.1049 or higher</li>
