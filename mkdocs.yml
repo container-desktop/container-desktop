@@ -32,7 +32,7 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: "black"
+      primary: "indigo"
       accent: "grey"
       toggle:
         icon: material/toggle-switch-off-outline
