@@ -27,8 +27,29 @@ import (
 // POST /containers/create
 // GET /containers/{id}/json
 
+// GET /services
+// POST /services/create
+// GET /services/{id}
+// POST /services/{id}/update
+// GET /tasks
+// GET /tasks/{id}
+
+type RewriteMapItem struct {
+	method   string
+	pattern  string
+	rewriter func(map[string]interface{}, string)
+}
+
+var rewriteMappings = []RewriteMapItem{
+	{"GET", `(/.*?)?/containers(/.*?)?/json`, rewriteContainerSummary},
+	{"POST", `(/.*?)?/containers/create`, rewriteContainerConfig},
+	{"POST", `(/.*?)?/services/create`, rewriteServiceSpec},
+	{"POST", `(/.*?)?/services/(/.*?)/update`, rewriteServiceSpec},
+	{"GET", `(/.*?)?/services(/.*?)$`, rewriteService},
+	{"GET", `(/.*?)?/tasks(/.*?)?`, rewriteTask},
+}
+
 type RootFlags struct {
-	version       bool
 	listenAddress string
 	targetAddress string
 	wslDistroName string
@@ -83,7 +104,7 @@ var rootCmd = &cobra.Command{
 		proxy.Director = func(r *http.Request) {
 			orgDirector(r)
 			logger.Debugf("Requesting url: %s: %s", r.Method, r.URL)
-			body, err := rewriteBody(r.Body, r.URL.Path, `(/.*?)?/containers/create`, rewriteBinds)
+			body, err := rewriteBody(r.Body, r.URL.Path)
 			if len(body) > 0 && err == nil {
 				logger.Debug("Request body was rewritten")
 				r.Body = io.NopCloser(bytes.NewReader(body))
@@ -92,7 +113,7 @@ var rootCmd = &cobra.Command{
 		}
 		proxy.ModifyResponse = func(r *http.Response) error {
 			logger.Debugf("Original response content-length: %d", r.ContentLength)
-			body, err := rewriteBody(r.Body, r.Request.URL.Path, `(/.*?)?/containers(/.*?)?/json`, rewriteMounts)
+			body, err := rewriteBody(r.Body, r.Request.URL.Path)
 			if err != nil {
 				return err
 			}
@@ -114,12 +135,19 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func rewriteBody(body io.ReadCloser, urlPath string, pathRegexp string, rewriter func(map[string]interface{}, string)) (rewrittenBody []byte, err error) {
-	if body != nil {
-		ok, err := regexp.MatchString(pathRegexp, urlPath)
-		if err != nil {
-			return nil, err
+func getRewriter(urlPath string) (func(map[string]interface{}, string), bool) {
+	for _, item := range rewriteMappings {
+		ok, err := regexp.MatchString(item.pattern, urlPath)
+		if err == nil && ok {
+			return item.rewriter, true
 		}
+	}
+	return nil, false
+}
+
+func rewriteBody(body io.ReadCloser, urlPath string) (rewrittenBody []byte, err error) {
+	if body != nil {
+		rewriter, ok := getRewriter(urlPath)
 		if ok {
 			buf, err := io.ReadAll(body)
 			if baseLogger.Core().Enabled(zapcore.DebugLevel) {
@@ -180,87 +208,133 @@ func rewriteBody(body io.ReadCloser, urlPath string, pathRegexp string, rewriter
 	return nil, nil
 }
 
-func rewriteBinds(jsonMap map[string]interface{}, path string) {
+func rewriteContainerSummary(jsonMap map[string]interface{}, path string) {
 	o, ok := jsonMap["HostConfig"]
 	if ok {
 		hostConfig, ok := o.(map[string]interface{})
 		if ok {
-			o, ok := hostConfig["Binds"]
-			if ok {
-				binds, ok := o.([]interface{})
-				if ok {
-					for i, bind := range binds {
-						s := bind.(string)
-						s = strings.Replace(s, "\\", "/", -1)
-						parts := strings.Split(s, ":")
-						if rt.GOOS == "windows" {
-							if parts[0] != "/" && len(parts[0]) == 1 {
-								s = path + "/" + strings.ToLower(parts[0])
-								s += strings.Join(parts[1:], ":")
-							}
-						} else if strings.HasPrefix(s, "/") {
-							s = path + s
-						}
-						binds[i] = s
-					}
-				}
+			rewriteHostConfig(hostConfig, path)
+		}
+	}
+	o, ok = jsonMap["Mounts"]
+	if ok {
+		mounts, ok := o.([]interface{})
+		if ok {
+			rewriteMounts(mounts, path)
+		}
+	}
+}
+
+func rewriteContainerConfig(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["HostConfig"]
+	if ok {
+		hostConfig, ok := o.(map[string]interface{})
+		if ok {
+			rewriteHostConfig(hostConfig, path)
+		}
+	}
+}
+
+func rewriteService(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["Spec"]
+	if ok {
+		spec, ok := o.(map[string]interface{})
+		if ok {
+			rewriteServiceSpec(spec, path)
+		}
+	}
+}
+
+func rewriteServiceSpec(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["TaskTemplate"]
+	if ok {
+		taskSpec, ok := o.(map[string]interface{})
+		if ok {
+			rewriteTaskSpec(taskSpec, path)
+		}
+	}
+}
+
+func rewriteTaskSpec(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["ContainerSpec"]
+	if ok {
+		containerSpec, ok := o.(map[string]interface{})
+		if ok {
+			rewriteContainerSpec(containerSpec, path)
+		}
+	}
+}
+
+func rewriteContainerSpec(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["Mounts"]
+	if ok {
+		mounts, ok := o.([]interface{})
+		if ok {
+			rewriteMounts(mounts, path)
+		}
+	}
+}
+
+func rewriteTask(jsonMap map[string]interface{}, path string) {
+	o, ok := jsonMap["Spec"]
+	if ok {
+		taskSpec, ok := o.(map[string]interface{})
+		if ok {
+			rewriteTaskSpec(taskSpec, path)
+		}
+	}
+}
+
+func rewriteHostConfig(hostConfig map[string]interface{}, path string) {
+	o, ok := hostConfig["Binds"]
+	if ok {
+		binds, ok := o.([]interface{})
+		if ok {
+			for i, bind := range binds {
+				s := bind.(string)
+				s = mapPath(s, path)
+				binds[i] = s
 			}
 		}
 	}
 }
 
-func rewriteMounts(jsonMap map[string]interface{}, path string) {
-	o, ok := jsonMap["Mounts"]
-	if ok {
-		mounts, ok := o.([]interface{})
+func rewriteMounts(mounts []interface{}, path string) {
+	for _, o := range mounts {
+		mount, ok := o.(map[string]interface{})
 		if ok {
-			for _, o := range mounts {
-				mount, ok := o.(map[string]interface{})
-				if ok {
-					t := mount["Type"].(string)
-					if t == "bind" {
-						s := mount["Source"].(string)
-						if strings.HasPrefix(s, "/mnt/host/") {
-							s = s[10:]
-							parts := strings.Split(s, "/")
-							s = parts[0] + ":/" + strings.Join(parts[1:], "/")
-							s = strings.Replace(s, "/", "\\", -1)
-						} else if strings.HasPrefix(s, "/mnt/wsl/") {
-							parts := strings.Split(s[9:], "/")
-							s = strings.Join(parts[1:], "/")
-						}
-						mount["Source"] = s
-					}
-				}
+			t := mount["Type"].(string)
+			if t == "bind" {
+				s := mount["Source"].(string)
+				s = mapPath(s, path)
+				mount["Source"] = s
 			}
 		}
 	}
-	o, ok = jsonMap["HostConfig"]
-	if ok {
-		hostConfig, ok := o.(map[string]interface{})
-		if ok {
-			o, ok := hostConfig["Binds"]
-			if ok {
-				binds, ok := o.([]interface{})
-				if ok {
-					for i, bind := range binds {
-						s := bind.(string)
-						parts := strings.Split(s, ":")
-						if strings.HasPrefix(parts[0], "/mnt/host/") {
-							p := parts[0][10:]
-							parts2 := strings.Split(p, "/")
-							p = parts2[0] + ":/" + strings.Join(parts2[1:], "/")
-							parts[0] = strings.Replace(p, "/", "\\", -1)
-						} else if strings.HasPrefix(parts[0], "/mnt/wsl/") {
-							parts2 := strings.Split(parts[0][9:], "/")
-							parts[0] = strings.Join(parts2[1:], "/")
-						}
-						binds[i] = strings.Join(parts, ":")
-					}
-				}
-			}
+}
+
+func mapPath(s string, path string) string {
+	s = strings.Replace(s, "\\", "/", -1)
+	parts := strings.Split(s, ":")
+	if strings.HasPrefix(parts[0], "/mnt/host/") {
+		p := parts[0][10:]
+		parts2 := strings.Split(p, "/")
+		p = parts2[0] + ":/" + strings.Join(parts2[1:], "/")
+		parts[0] = strings.Replace(p, "/", "\\", -1)
+		s = strings.Join(parts, ":")
+	} else if strings.HasPrefix(parts[0], "/mnt/wsl/") {
+		parts2 := strings.Split(parts[0][9:], "/")
+		parts[0] = strings.Join(parts2[1:], "/")
+		s = strings.Join(parts, ":")
+	} else if rt.GOOS == "windows" {
+		if parts[0] != "/" && len(parts[0]) == 1 {
+			s = path + "/" + strings.ToLower(parts[0])
+			s += strings.Join(parts[1:], ":")
 		}
+	} else if strings.HasPrefix(s, "/") {
+		s = path + s
 	}
+	return s
 }
 
 func parseUri(s string) *url.URL {

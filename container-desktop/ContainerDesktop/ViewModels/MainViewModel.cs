@@ -82,17 +82,17 @@ public class MainViewModel : ViewModelBase
 
     private void Stop(object parameter)
     {
-        _containerEngine.Stop();
+        SafeExecute("stop", _containerEngine.Stop);
     }
 
     private void Start(object parameter)
     {
-        _containerEngine.Start();
+        SafeExecute("start", _containerEngine.Start);
     }
 
     private void Restart(object parameter)
     {
-        _containerEngine.Restart();
+        SafeExecute("restart", _containerEngine.Restart);
     }
 
     private void RunnningStateChanged(object sender, EventArgs e)
@@ -107,7 +107,7 @@ public class MainViewModel : ViewModelBase
     {
         if(parameter is WslDistributionItem distro)
         {
-            try
+            SafeExecute($"{(distro.Enabled ? "enable" : "disable")} distribution", () =>
             {
                 if (_containerEngine.RunningState == RunningState.Started)
                 {
@@ -125,11 +125,19 @@ public class MainViewModel : ViewModelBase
                     _configurationService.Configuration.EnabledDistributions.Remove(distro.Name);
                 }
                 _configurationService.Save();
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message, $"Failed to {(distro.Enabled ? "enable" : "disable")} distribution", MessageBoxButton.OK);
-            }
+            });
+        }
+    }
+
+    private void SafeExecute(string caption, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, $"Failed to {caption}", MessageBoxButton.OK);
         }
     }
 }
