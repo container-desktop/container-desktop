@@ -19,33 +19,28 @@ public class RegisterProduct : ResourceBase
     public override void Set(ConfigurationContext context)
     {
         var keyName = string.Format(ProductUninstallRegistryKeyTemplate, Expand(ProductName));
-        if (context.Uninstall)
-        {
-            Registry.LocalMachine.DeleteSubKeyTree(keyName);
-        }
-        else
-        {
-            using var registryKey = Registry.LocalMachine.CreateSubKey(keyName);
-            registryKey.SetValue("DisplayIcon", Expand(DisplayIcon));
-            registryKey.SetValue("DisplayName", Expand(DisplayName));
-            registryKey.SetValue("DisplayVersion", Expand(DisplayVersion));
-            registryKey.SetValue("Version", Expand(Version));
-            registryKey.SetValue("InstallLocation", Expand(InstallLocation));
-            registryKey.SetValue("NoModify", NoModify ? 1 : 0);
-            registryKey.SetValue("NoRepair", NoRepair ? 1 : 0);
-            registryKey.SetValue("UninstallString", Expand(UninstallString));
-        }
+        using var registryKey = Registry.LocalMachine.CreateSubKey(keyName);
+        registryKey.SetValue("DisplayIcon", Expand(DisplayIcon));
+        registryKey.SetValue("DisplayName", Expand(DisplayName));
+        registryKey.SetValue("DisplayVersion", Expand(DisplayVersion));
+        registryKey.SetValue("Version", Expand(Version));
+        registryKey.SetValue("InstallLocation", Expand(InstallLocation));
+        registryKey.SetValue("NoModify", NoModify ? 1 : 0);
+        registryKey.SetValue("NoRepair", NoRepair ? 1 : 0);
+        registryKey.SetValue("UninstallString", Expand(UninstallString));
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        var keyName = string.Format(ProductUninstallRegistryKeyTemplate, Expand(ProductName));
+        Registry.LocalMachine.DeleteSubKeyTree(keyName);
     }
 
     public override bool Test(ConfigurationContext context)
     {
         var keyName = string.Format(ProductUninstallRegistryKeyTemplate, Expand(ProductName));
         using var key = Registry.LocalMachine.OpenSubKey(keyName);
-        if (context.Uninstall)
-        {
-            return key == null;
-        }
-        else if (key != null)
+        if (key != null)
         {
             var version = (string)key.GetValue("Version");
             return version == Expand(Version);

@@ -22,7 +22,31 @@ public sealed class EnableWindowsFeatures : ResourceBase, IDisposable
 
     public override void Set(ConfigurationContext context)
     {
-        if(Features.Count == 0)
+        Do(context, (session, enabledFeatures) =>
+        {
+            var features = string.Join(';', Features.Except(enabledFeatures));
+            if (features.Length > 0)
+            {
+                DismApi.EnableFeature(session, features, false, All);
+            }
+        });
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        Do(context, (session, enabledFeatures) =>
+        {
+            var features = string.Join(';', enabledFeatures);
+            if (features.Length > 0)
+            {
+                DismApi.DisableFeature(session, features, null, false);
+            }
+        });
+    }
+
+    private void Do(ConfigurationContext context, Action<DismSession, List<string>> action)
+    {
+        if (Features.Count == 0)
         {
             context.Logger.LogWarning("[{ResourceId}]: No features specified.", Id);
             return;
@@ -33,24 +57,9 @@ public sealed class EnableWindowsFeatures : ResourceBase, IDisposable
         context.Logger.LogInformation("Enabled features: {Features}", string.Join(';', enabledFeatures));
         try
         {
-            if (context.Uninstall)
-            {       
-                var features = string.Join(';', enabledFeatures);
-                if (features.Length > 0)
-                {
-                    DismApi.DisableFeature(session, features, null, false);
-                }
-            }
-            else
-            {
-                var features = string.Join(';', Features.Except(enabledFeatures));
-                if (features.Length > 0)
-                {
-                    DismApi.EnableFeature(session, features, false, All);
-                }
-            }
+            action(session, enabledFeatures);
         }
-        catch(DismRebootRequiredException)
+        catch (DismRebootRequiredException)
         {
             context.Logger.LogInformation("Reboot required: RequiresReboot={RequiresReboot}, IgnoreRebootRequires={IgnoreRebootRequires}", RequiresReboot, IgnoreRebootRequired);
             RequiresReboot = RequiresReboot || !IgnoreRebootRequired;
@@ -69,10 +78,6 @@ public sealed class EnableWindowsFeatures : ResourceBase, IDisposable
         catch
         {
             enabled = false;
-        }
-        if (context.Uninstall)
-        {
-            enabled = !enabled;
         }
         return enabled;
     }

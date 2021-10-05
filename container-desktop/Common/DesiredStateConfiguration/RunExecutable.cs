@@ -25,8 +25,6 @@ public class RunExecutable : ResourceBase
 
     public bool UseShellExecute { get; set; }
     public bool RunAsDesktopUser { get; set; }
-    public bool OnInstall { get; set; } = true;
-    public bool OnUninstall { get; set; } = true;
     public bool ContinueOnFail { get; set; }
 
     private string ExpandedExePath => Environment.ExpandEnvironmentVariables(ExePath);
@@ -59,9 +57,14 @@ public class RunExecutable : ResourceBase
         }
     }
 
+    public override void Unset(ConfigurationContext context)
+    {
+        Set(context);
+    }
+
     public override bool Test(ConfigurationContext context)
     {
-        return !((context.Uninstall && OnUninstall) || (!context.Uninstall && OnInstall));
+        return false;
     }
 }
 

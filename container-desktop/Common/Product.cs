@@ -13,9 +13,10 @@ public static class Product
     public static string ProxyPath { get; } = Path.Combine(InstallDir, "Resources", $"container-desktop-proxy-windows-amd64.exe");
     public static string ContainerDesktopDistroName { get; } = "container-desktop";
     public static string ContainerDesktopDataDistroName { get; } = "container-desktop-data";
-
+    public static string ContainerDesktopAppDataDir { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Name);
+    public static string WebSiteUrl { get; } = "https://container-desktop.io";
     private static string GetVersion()
     {
-        return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        return ThisAssembly.AssemblyInformationalVersion;
     }
 }

@@ -42,15 +42,46 @@ public class ConfigurationManifest : IConfigurationManifest
             {
                 foreach (var resource in resources)
                 {
-                    if (!resource.Test(context))
+                    var test = resource.Test(context);
+                    if(resource.RunAllways)
+                    {
+                        test = false;
+                    }
+                    else if(context.Uninstall)
+                    {
+                        test = !test;
+                    }
+                    else if(context.Updating)
+                    {
+                        switch(resource.OnUpdateAction)
+                        {
+                            case UpdateAction.Install:
+                                if(test)
+                                {
+                                    resource.Unset(context);
+                                    test = false;
+                                }
+                                break;
+                            case UpdateAction.Skip:
+                                test = true;
+                                break;
+                        }
+                    }
+                    if(!test)
                     {
                         context.ReportProgress(count, changes, $"{prefix}: {resource.Description}", resource.ExtraInformation);
-                        resource.Set(context);
+                        if (context.Uninstall)
+                        {
+                            resource.Unset(context);
+                        }
+                        else
+                        {
+                            resource.Set(context);
+                        }
                         processedResources.Push(resource);
                         //TODO: on uninstall to a pending restart if needed
-                        if (!context.Uninstall && resource.RequiresReboot)
+                        if (resource.RequiresReboot)
                         {
-                            
                             if (!(context.AskUserConsent("You need to restart your computer before continuing the installation. Do you want to restart now ?", "Reboot required") && !context.DelayReboot && RebootHelper.RequestReboot(true, InstallerRestartArguments)))
                             {
                                 context.ReportProgress(0, changes, "Please restart your computer and run the installer again to continue the installation.");

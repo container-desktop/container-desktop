@@ -1,4 +1,7 @@
-﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
 public abstract class ResourceBase : IResource
 {
@@ -15,12 +18,20 @@ public abstract class ResourceBase : IResource
     public bool RequiresReboot { get; set; }
 
     public bool RunAllwaysFirst { get; set; }
+    
+    public bool RunAllways { get; set; }
 
     public string ExtraInformation { get; set; }
 
     public bool Optional { get; set; }
 
+    [JsonConverter(typeof(StringEnumConverter))]
+    public UpdateAction OnUpdateAction { get; set; }
+
     public abstract void Set(ConfigurationContext context);
 
+    public abstract void Unset(ConfigurationContext context);
+
     public abstract bool Test(ConfigurationContext context);
+    
 }

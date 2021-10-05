@@ -30,11 +30,15 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
                     <Separator/>
+                    <MenuItem Header="Documentation" Command="{Binding OpenDocumentationCommand}"/>
+                    <Separator/>
                     <MenuItem Header="Start" Command="{Binding StartCommand}" Visibility="{Binding IsStopped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Restart" Command="{Binding RestartCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="{x:Static cmn:Product.Version}" IsEnabled="False"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>

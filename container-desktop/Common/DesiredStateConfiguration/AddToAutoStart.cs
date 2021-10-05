@@ -14,14 +14,14 @@ public class AddToAutoStart : ResourceBase
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunRegistryKey);
         var name = Path.GetFileNameWithoutExtension(ExpandedExePath);
-        if (context.Uninstall)
-        {
-            key.DeleteValue(name);
-        }
-        else
-        {
-            key.SetValue(name, ExpandedExePath);
-        }
+        key.SetValue(name, ExpandedExePath);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        using var key = Registry.CurrentUser.CreateSubKey(RunRegistryKey);
+        var name = Path.GetFileNameWithoutExtension(ExpandedExePath);
+        key.DeleteValue(name);
     }
 
     public override bool Test(ConfigurationContext context)
@@ -29,11 +29,6 @@ public class AddToAutoStart : ResourceBase
         using var key = Registry.CurrentUser.CreateSubKey(RunRegistryKey);
         var name = Path.GetFileNameWithoutExtension(ExpandedExePath);
         var value = (string) key.GetValue(name);
-        var exists = ExpandedExePath.Equals(value, StringComparison.OrdinalIgnoreCase);
-        if(context.Uninstall)
-        {
-            exists = !exists;
-        }
-        return exists;
+        return ExpandedExePath.Equals(value, StringComparison.OrdinalIgnoreCase);
     }
 }

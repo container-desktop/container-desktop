@@ -1,8 +1,8 @@
 ﻿namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
-public enum ShutdownKind
+public enum UpdateAction
 {
-    Kill,
-    MainWindow,
-    CustomMessage
+    None,
+    Install,
+    Skip
 }

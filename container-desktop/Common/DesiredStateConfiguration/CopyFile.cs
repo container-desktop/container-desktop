@@ -8,32 +8,25 @@ public class CopyFile : ResourceBase
     public string Source { get; set; }
     public string Target { get; set; }
 
+    private string ExpandedSource => Environment.ExpandEnvironmentVariables(Source);
+    private string ExpandedTarget => Environment.ExpandEnvironmentVariables(Target);
+
     public override void Set(ConfigurationContext context)
     {
-        var expandedTarget = Environment.ExpandEnvironmentVariables(Target);
-        var expandedSource = Environment.ExpandEnvironmentVariables(Source);
-        if (context.Uninstall)
-        {
-            context.FileSystem.File.Delete(expandedTarget);
-        }
-        else
-        {
-            context.FileSystem.File.Copy(expandedSource, expandedTarget, true);
-        }
+        context.FileSystem.File.Copy(ExpandedSource, ExpandedTarget, true);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        context.FileSystem.File.Delete(ExpandedTarget);
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var expandedTarget = Environment.ExpandEnvironmentVariables(Target);
-        var expandedSource = Environment.ExpandEnvironmentVariables(Source);
-        if (context.Uninstall)
+        if (context.FileSystem.File.Exists(ExpandedTarget))
         {
-            return !context.FileSystem.File.Exists(expandedTarget);
-        }
-        else if (context.FileSystem.File.Exists(expandedTarget))
-        {
-            var sourceHash = ComputeHash(context.FileSystem, expandedSource);
-            var targetHash = ComputeHash(context.FileSystem, expandedTarget);
+            var sourceHash = ComputeHash(context.FileSystem, ExpandedSource);
+            var targetHash = ComputeHash(context.FileSystem, ExpandedTarget);
             return !sourceHash.SequenceEqual(targetHash);
         }
         return false;

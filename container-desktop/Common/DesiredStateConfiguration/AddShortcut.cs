@@ -14,26 +14,19 @@ public class AddShortcut : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
-        if (context.Uninstall)
-        {
-            context.FileSystem.File.Delete(LinkFileName);
-        }
-        else
-        {
-            var shellLink = new ShellLink();
-            shellLink.Description = Environment.ExpandEnvironmentVariables(LinkDescription);
-            shellLink.TargetPath = Environment.ExpandEnvironmentVariables(TargetPath);
-            shellLink.Save(LinkFileName);
-        }
+        var shellLink = new ShellLink();
+        shellLink.Description = Environment.ExpandEnvironmentVariables(LinkDescription);
+        shellLink.TargetPath = Environment.ExpandEnvironmentVariables(TargetPath);
+        shellLink.Save(LinkFileName);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        context.FileSystem.File.Delete(LinkFileName);
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var fileExists = context.FileSystem.File.Exists(LinkFileName);
-        if (context.Uninstall)
-        {
-            fileExists = !fileExists;
-        }
-        return fileExists;
+        return context.FileSystem.File.Exists(LinkFileName);
     }
 }

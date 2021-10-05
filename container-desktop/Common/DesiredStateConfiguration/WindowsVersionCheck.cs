@@ -2,7 +2,7 @@
 
 namespace ContainerDesktop.Common.DesiredStateConfiguration;
 
-public class VersionCheck : ResourceBase
+public class WindowsVersionCheck : ResourceBase
 {
     private const string CurrentVersionKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
     private const string CurrentMajorVersionNumber = nameof(CurrentMajorVersionNumber);
@@ -29,6 +29,11 @@ public class VersionCheck : ResourceBase
             }
             throw new ResourceException($"{Product.Name} is not supported on your version of Windows ({majorVersionNumber}.{minorVersionNumber}.{buildNumber}.{minorBuildNumber}). \r\n \r\n {Product.Name} uses WSL 2 and requires minimal Windows 10: \r\n - Version 1903 with Build 18362.1049 or higher \r\n - Version 1909 with Build 18363.1049 or higher \r\n - Version 2004 (20H1) or higher");
         }
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        Set(context);
     }
 
     public override bool Test(ConfigurationContext context)

@@ -20,6 +20,16 @@ public class InstallMsi : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
+        Do(context, false);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        Do(context, true);
+    }
+
+    private void Do(ConfigurationContext context, bool uninstall)
+    {
         var tmpFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
@@ -31,7 +41,7 @@ public class InstallMsi : ResourceBase
             {
                 s.CopyTo(fs);
             }
-            var cmd = context.Uninstall ? "/u" : "/i";
+            var cmd = uninstall ? "/u" : "/i";
             var exitCode = _processExecutor.Execute("msiexec.exe", $"{cmd} \"{tmpFileName}\" /quiet /norestart");
             if (exitCode != 0)
             {
@@ -40,7 +50,7 @@ public class InstallMsi : ResourceBase
         }
         finally
         {
-            if(context.FileSystem.File.Exists(tmpFileName))
+            if (context.FileSystem.File.Exists(tmpFileName))
             {
                 context.FileSystem.File.Delete(tmpFileName);
             }
@@ -63,10 +73,6 @@ public class InstallMsi : ResourceBase
                     break;
                 }
             }
-        }
-        if(context.Uninstall)
-        {
-            installed = !installed;
         }
         return installed;
     }

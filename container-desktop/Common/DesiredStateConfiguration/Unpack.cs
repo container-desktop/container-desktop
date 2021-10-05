@@ -16,34 +16,22 @@ public class Unpack : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
-        if (context.Uninstall)
+        if (!context.FileSystem.Directory.Exists(ExpandedTargetDirectory))
         {
-            context.FileSystem.Directory.Delete(ExpandedTargetDirectory, true);
+            context.FileSystem.Directory.CreateDirectory(ExpandedTargetDirectory);
         }
-        else
-        {
-            if (!context.FileSystem.Directory.Exists(ExpandedTargetDirectory))
-            {
-                context.FileSystem.Directory.CreateDirectory(ExpandedTargetDirectory);
-            }
-            using var s = ResourceUtilities.GetPackContent(ResourceUri);
-            using var archive = new ZipArchive(s, ZipArchiveMode.Read, true);
-            archive.ExtractToDirectory(ExpandedTargetDirectory, true);
-        }
+        using var s = ResourceUtilities.GetPackContent(ResourceUri);
+        using var archive = new ZipArchive(s, ZipArchiveMode.Read, true);
+        archive.ExtractToDirectory(ExpandedTargetDirectory, true);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        context.FileSystem.Directory.Delete(ExpandedTargetDirectory, true);
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var expandedVersion = Environment.ExpandEnvironmentVariables(Version);
-        if (context.Uninstall)
-        {
-            var expandedTargetDirectory = Environment.ExpandEnvironmentVariables(TargetDirectory);
-            return !context.FileSystem.Directory.Exists(expandedTargetDirectory);
-        }
-        else if(!string.IsNullOrWhiteSpace(expandedVersion))
-        {
-            return expandedVersion == context.InstalledVersion;
-        }
-        return false;
+        return context.FileSystem.Directory.Exists(ExpandedTargetDirectory);
     }
 }

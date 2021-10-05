@@ -12,28 +12,21 @@ public class CopyPackedFile : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
-        if(context.Uninstall)
+        using var s = ResourceUtilities.GetPackContent(ResourceUri);
+        using var fs = context.FileSystem.File.Create(TargetFilePath);
+        s.CopyTo(fs);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        if (context.FileSystem.File.Exists(TargetFilePath))
         {
-            if(context.FileSystem.File.Exists(TargetFilePath))
-            {
-                context.FileSystem.File.Delete(TargetFilePath);
-            }
-        }
-        else
-        {
-            using var s = ResourceUtilities.GetPackContent(ResourceUri);
-            using var fs = context.FileSystem.File.Create(TargetFilePath);
-            s.CopyTo(fs);
+            context.FileSystem.File.Delete(TargetFilePath);
         }
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var exists = context.FileSystem.File.Exists(TargetFilePath);
-        if(context.Uninstall)
-        {
-            exists = !exists;
-        }
-        return exists;
+        return context.FileSystem.File.Exists(TargetFilePath);
     }
 }

@@ -2,7 +2,7 @@
   "installerRestartArguments": [ "--auto-start" ],
   "resources": [
     {
-      "type": "VersionCheck",
+      "type": "WindowsVersionCheck",
       "id": "CheckWindowsVersion",
       "description": "Check Windows version",
       "runAllwaysFirst": true
@@ -18,14 +18,19 @@
       "id": "ShutdownContainerDesktop",
       "description": "Shutting down Container Desktop",
       "fileName": "%APP_PATH%",
-      "runAllwaysFirst": true
+      "runAllwaysFirst": true,
+      "runAllways": true,
+      "kind": "CustomMessage",
+      "customMessage": 32769,
+      "windowTitle": "Container Desktop"
     },
     {
       "type": "ShutdownProcess",
       "id": "ShutdownProxy",
       "description": "Shutting down Container Desktop proxy",
       "fileName": "%PROXY_PATH%",
-      "runAllwaysFirst": true
+      "runAllwaysFirst": true,
+      "runAllways": true
     },
     {
       "type": "Unpack",
@@ -33,29 +38,31 @@
       "description": "Unpacking files",
       "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop.zip",
       "targetDirectory": "%INSTALLDIR%",
-      "versionAssembly": "%INSTALLDIR%\\%PRODUCT_NAME%.dll",
-      "version": "%PRODUCT_VERSION%"
+      "onUpdateAction": "Install"
     },
     {
       "type": "CopyPackedFile",
       "id": "CopyDistro",
       "description": "Copy WSL distribution",
       "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-distro.tar.gz",
-      "targetDirectory": "%INSTALLDIR%\\Resources"
+      "targetDirectory": "%INSTALLDIR%\\Resources",
+      "onUpdateAction": "Install"
     },
     {
       "type": "CopyPackedFile",
       "id": "CopyDataDistro",
       "description": "Copy WSL Data distribution",
       "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-data-distro.tar.gz",
-      "targetDirectory": "%INSTALLDIR%\\Resources"
+      "targetDirectory": "%INSTALLDIR%\\Resources",
+      "onUpdateAction": "Install"
     },
     {
       "type": "CopyFile",
       "id": "CopyInstaller",
       "description": "Copy installer",
       "source": "%INSTALLER_SOURCE_PATH%",
-      "target": "%INSTALLER_TARGET_PATH%"
+      "target": "%INSTALLER_TARGET_PATH%",
+      "onUpdateAction": "Install"
     },
     {
       "type": "CreateDirectory",
@@ -95,7 +102,8 @@
       "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\distro",
       "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-distro.tar.gz",
       "dependsOn": [ "InstallLatestWslKernel" ],
-      "extraInformation": "Installing the WSL distribution may take a while if the system was rebooted due to enabling the features required for WSL."
+      "extraInformation": "Installing the WSL distribution may take a while if the system was rebooted due to enabling the features required for WSL.",
+      "onUpdateAction": "Install"
     },
     {
       "type": "WslDistro",
@@ -104,6 +112,7 @@
       "name": "container-desktop-data",
       "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\data-distro",
       "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-data-distro.tar.gz",
+      "onUpdateAction": "Skip",
       "dependsOn": [ "InstallLatestWslKernel" ]
     },
     {
@@ -153,7 +162,7 @@
       "description": "Run application after installation finishes.",
       "exePath": "%APP_PATH%",
       "wait": false,
-      "onUninstall": false,
+      "noUninstall": true,
       "runAsDesktopUser": true,
       "optional": true,
       "continueOnFail": true
