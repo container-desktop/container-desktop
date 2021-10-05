@@ -34,6 +34,8 @@ public class ConfigurationContext
 
     public string InstalledVersion { get; set; }
 
+    public bool Updating => !string.IsNullOrEmpty(InstalledVersion) && InstalledVersion != Product.Version;
+
     public ILogger Logger { get; }
 
     public IFileSystem FileSystem { get; }

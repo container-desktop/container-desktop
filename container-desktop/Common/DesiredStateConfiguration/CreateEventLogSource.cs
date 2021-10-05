@@ -10,23 +10,16 @@ public class CreateEventLogSource : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
-        if(context.Uninstall)
-        {
-            EventLog.DeleteEventSource(ExpandedSource);
-        }
-        else
-        {
-            EventLog.CreateEventSource(ExpandedSource, null);
-        }
+        EventLog.CreateEventSource(ExpandedSource, null);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        EventLog.DeleteEventSource(ExpandedSource);
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var exists = EventLog.SourceExists(ExpandedSource);
-        if(context.Uninstall)
-        {
-            exists = !exists;
-        }
-        return exists;
+        return EventLog.SourceExists(ExpandedSource);
     }
 }

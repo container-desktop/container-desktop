@@ -16,6 +16,7 @@ public class MainViewModel : ViewModelBase
     private readonly IContainerEngine _containerEngine;
     private readonly IWslService _wslService;
     private readonly IConfigurationService _configurationService;
+    private readonly IProcessExecutor _processExecutor;
     private bool _showTrayIcon;
     private bool _isStarted;
     private BitmapImage _trayIcon = _icon; // "/ContainerDesktop;component/app.ico";
@@ -24,19 +25,26 @@ public class MainViewModel : ViewModelBase
     private static BitmapImage _runIcon = new BitmapImage(new Uri("pack://application:,,,/app_run.ico"));
     private static BitmapImage _stopIcon = new BitmapImage(new Uri("pack://application:,,,/app_stop.ico"));
 
-    public MainViewModel(IApplicationContext applicationContext, IContainerEngine containerEngine, IWslService wslService, IConfigurationService configurationService)
+    public MainViewModel(
+        IApplicationContext applicationContext, 
+        IContainerEngine containerEngine, 
+        IWslService wslService, 
+        IConfigurationService configurationService,
+        IProcessExecutor processExecutor)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
         _containerEngine.RunningStateChanged += RunnningStateChanged;
         _wslService = wslService;
         _configurationService = configurationService;
+        _processExecutor = processExecutor;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
         StartCommand = new DelegateCommand(Start, () => _containerEngine.RunningState == RunningState.Stopped);
         StopCommand = new DelegateCommand(Stop, () => _containerEngine.RunningState == RunningState.Started);
         RestartCommand = new DelegateCommand(Restart, () => _containerEngine.RunningState == RunningState.Started);
         CheckWslDistroCommand = new DelegateCommand(ToggleWslDistro);
+        OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
     }
 
     public bool ShowTrayIcon
@@ -76,6 +84,8 @@ public class MainViewModel : ViewModelBase
     public DelegateCommand RestartCommand { get; }
 
     public DelegateCommand CheckWslDistroCommand { get; }
+
+    public DelegateCommand OpenDocumentationCommand { get; }
 
     public IEnumerable<WslDistributionItem> WslDistributions =>
         _wslService.GetDistros()
@@ -152,6 +162,11 @@ public class MainViewModel : ViewModelBase
                 });
             }
         });
+    }
+
+    private void OpenDocumentation(object parameter)
+    {
+        _processExecutor.Start(Product.WebSiteUrl, null, useShellExecute: true);
     }
 
     private void SafeExecute(string caption, Action action)

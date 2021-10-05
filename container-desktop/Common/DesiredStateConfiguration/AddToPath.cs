@@ -7,18 +7,26 @@ public class AddToPath : ResourceBase
 {
     public string Path { get; set; }
 
+    private string ExpandedPath => Environment.ExpandEnvironmentVariables(Path);
+
     public override void Set(ConfigurationContext context)
     {
-        var expandedPath = Environment.ExpandEnvironmentVariables(Path);
         var path = GetPath();
         var parts = path.Split(';').ToList();
-        var index = parts.FindIndex(s => s.Equals(expandedPath, StringComparison.OrdinalIgnoreCase));
-        if (!context.Uninstall && index < 0)
+        var index = parts.FindIndex(s => s.Equals(ExpandedPath, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
         {
-            path = $"{path};{expandedPath}";
+            path = $"{path};{ExpandedPath}";
             SetPath(path);
         }
-        else if (context.Uninstall && index >= 0)
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        var path = GetPath();
+        var parts = path.Split(';').ToList();
+        var index = parts.FindIndex(s => s.Equals(ExpandedPath, StringComparison.OrdinalIgnoreCase));
+        if(index >= 0)
         {
             parts.RemoveAt(index);
             path = string.Join(';', parts);
@@ -28,15 +36,9 @@ public class AddToPath : ResourceBase
 
     public override bool Test(ConfigurationContext context)
     {
-        var expandedPath = Environment.ExpandEnvironmentVariables(Path);
         var path = GetPath();
         var parts = path.Split(';');
-        var ret = parts.Contains(expandedPath, StringComparer.OrdinalIgnoreCase);
-        if (context.Uninstall)
-        {
-            ret = !ret;
-        }
-        return ret;
+        return parts.Contains(ExpandedPath, StringComparer.OrdinalIgnoreCase);
     }
 
     private string GetPath()

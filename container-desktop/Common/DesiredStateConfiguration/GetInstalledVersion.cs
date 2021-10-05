@@ -18,6 +18,11 @@ public class GetInstalledVersion : ResourceBase
         }
     }
 
+    public override void Unset(ConfigurationContext context)
+    {
+        Set(context);
+    }
+
     public override bool Test(ConfigurationContext context)
     {
         return false;

@@ -106,7 +106,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         _proxyProcess?.Dispose();
         foreach(var proxy in _enabledDistroProxies)
         {
-            proxy.Value.cts.Cancel();
+            EnableDistro(proxy.Key, false);
         }
     }
 

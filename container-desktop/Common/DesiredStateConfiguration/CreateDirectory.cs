@@ -4,27 +4,20 @@ public class CreateDirectory : ResourceBase
 {
     public string Directory { get; set; }
 
+    private string ExpandedDirectory => Environment.ExpandEnvironmentVariables(Directory);
+
     public override void Set(ConfigurationContext context)
     {
-        var expandedDirectory = Environment.ExpandEnvironmentVariables(Directory);
-        if (context.Uninstall)
-        {
-            context.FileSystem.Directory.Delete(expandedDirectory, true);
-        }
-        else
-        {
-            context.FileSystem.Directory.CreateDirectory(expandedDirectory);
-        }
+        context.FileSystem.Directory.CreateDirectory(ExpandedDirectory);
+    }
+
+    public override void Unset(ConfigurationContext context)
+    {
+        context.FileSystem.Directory.Delete(ExpandedDirectory, true);
     }
 
     public override bool Test(ConfigurationContext context)
     {
-        var expandedDirectory = Environment.ExpandEnvironmentVariables(Directory);
-        var exists = context.FileSystem.Directory.Exists(expandedDirectory);
-        if (context.Uninstall)
-        {
-            exists = !exists;
-        }
-        return exists;
+        return context.FileSystem.Directory.Exists(ExpandedDirectory);
     }
 }

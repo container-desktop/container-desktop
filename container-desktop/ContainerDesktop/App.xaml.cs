@@ -6,7 +6,6 @@ using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
-
 public partial class App : ApplicationWithContext
 {
     public App()
@@ -41,7 +40,7 @@ public partial class App : ApplicationWithContext
         catch (Exception ex)
         {
             Logger.LogError(ex, ex.Message);
-            MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.", "Failed to start", MessageBoxButton.OK);
+            MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
             QuitApplication();
         }
     }

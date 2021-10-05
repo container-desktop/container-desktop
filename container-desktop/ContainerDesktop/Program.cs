@@ -36,6 +36,7 @@ static class Program
             .UseConsoleLifetime(x => x.SuppressStatusMessages = true)
             .UseSerilog((_, config) =>
             {
+                config.WriteTo.File(Path.Combine(Product.ContainerDesktopAppDataDir, "logs", "log.txt"), fileSizeLimitBytes: 1024 * 1024 * 10, rollOnFileSizeLimit: true);
                 config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(Product.DisplayName));
             });
 
