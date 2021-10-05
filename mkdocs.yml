@@ -39,7 +39,7 @@ theme:
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: light blue
+      primary: "indigo"
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -84,6 +84,9 @@ plugins:
 extra:
   version:
     provider: mike
+  analytics:
+    provider: google
+    property: G-7EDQW6BH82
 
 # Other Settings
 strict: true # halt processing when a warning is raised
