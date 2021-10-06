@@ -1,29 +1,23 @@
 ﻿namespace ContainerDesktop.Common.Input;
 
-using System.Windows.Input;
-
-public class DelegateCommand : ICommand
+public class DelegateCommand : DelegateCommandBase
 {
-    private readonly Func<bool> _canExecute;
-    private readonly Action<object> _execute;
+    private readonly Action _executeMethod;
+    private readonly Func<bool> _canExecuteMethod;
 
-    public DelegateCommand(Action<object> execute, Func<bool> canExecute = null)
+    public DelegateCommand(Action executeMethod) : this(executeMethod, () => true) { }
+
+    public DelegateCommand(Action executeMethod, Func<bool> canExecuteMethod) : base()
     {
-        _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-        _canExecute = canExecute;
+        _executeMethod = executeMethod ?? throw new ArgumentNullException(nameof(executeMethod));
+        _canExecuteMethod = canExecuteMethod ?? throw new ArgumentNullException(nameof(canExecuteMethod));
     }
 
-    public event EventHandler CanExecuteChanged;
+    public void Execute() => _executeMethod();
 
-    public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
+    public bool CanExecute() => _canExecuteMethod();
 
-    public void Execute(object parameter) => _execute(parameter);
+    protected override void Execute(object parameter) => Execute();
 
-    public void RaiseCanExecuteChanged()
-    {
-        if (CanExecuteChanged != null)
-        {
-            CanExecuteChanged(this, EventArgs.Empty);
-        }
-    }
+    protected override bool CanExecute(object parameter) => CanExecute();
 }
