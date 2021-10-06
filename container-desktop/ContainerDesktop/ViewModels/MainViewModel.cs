@@ -1,16 +1,15 @@
 ﻿namespace ContainerDesktop.ViewModels;
 
 using ContainerDesktop.Common;
-using ContainerDesktop.Common.Input;
-using ContainerDesktop.Common.Services;
-using ContainerDesktop.Common.UI;
+using ContainerDesktop.Processes;
 using ContainerDesktop.Services;
-using System.Reactive.Threading.Tasks;
+using ContainerDesktop.UI.Wpf.Input;
+using ContainerDesktop.Wsl;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
-public class MainViewModel : ViewModelBase
+public class MainViewModel : NotifyObject
 {
     private readonly IApplicationContext _applicationContext;
     private readonly IContainerEngine _containerEngine;
@@ -30,7 +29,8 @@ public class MainViewModel : ViewModelBase
         IContainerEngine containerEngine, 
         IWslService wslService, 
         IConfigurationService configurationService,
-        IProcessExecutor processExecutor)
+        IProcessExecutor processExecutor,
+        IProductInformation productInformation)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
@@ -38,6 +38,7 @@ public class MainViewModel : ViewModelBase
         _wslService = wslService;
         _configurationService = configurationService;
         _processExecutor = processExecutor;
+        ProductInformation = productInformation;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
         StartCommand = new DelegateCommand(Start, () => _containerEngine.RunningState == RunningState.Stopped);
@@ -46,6 +47,8 @@ public class MainViewModel : ViewModelBase
         CheckWslDistroCommand = new DelegateCommand<WslDistributionItem>(ToggleWslDistro);
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
     }
+
+    public IProductInformation ProductInformation { get; }
 
     public bool ShowTrayIcon
     {
@@ -120,7 +123,7 @@ public class MainViewModel : ViewModelBase
 
     private void RunnningStateChanged(object sender, EventArgs e)
     {
-        _applicationContext.Dispatcher.Invoke(() =>
+        _applicationContext.InvokeOnDispatcher(() =>
         {
             IsStarted = _containerEngine.RunningState == RunningState.Started;
             StartCommand.RaiseCanExecuteChanged();
@@ -163,7 +166,7 @@ public class MainViewModel : ViewModelBase
 
     private void OpenDocumentation()
     {
-        _processExecutor.Start(Product.WebSiteUrl, null, useShellExecute: true);
+        _processExecutor.Start(ProductInformation.WebSiteUrl, null, useShellExecute: true);
     }
 
     private void SafeExecute(string caption, Action action)
@@ -174,7 +177,7 @@ public class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _applicationContext.Dispatcher.Invoke(() =>
+            _applicationContext.InvokeOnDispatcher(() =>
                 MessageBox.Show(ex.Message, $"Failed to {caption}", MessageBoxButton.OK));
         }
     }

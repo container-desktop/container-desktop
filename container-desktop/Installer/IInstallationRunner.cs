@@ -1,4 +1,4 @@
-﻿using ContainerDesktop.Common.DesiredStateConfiguration;
+﻿using ContainerDesktop.DesiredStateConfiguration;
 
 namespace ContainerDesktop.Installer;
 

@@ -8,7 +8,7 @@
     xmlns:cmn="http://container-desktop.io/common"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d"
-    Title="{x:Static cmn:Product.DisplayName}"
+    Title="{Binding ProductInformation.DisplayName}"
     Icon="/ContainerDesktop;component/app.ico"
     ui:WindowHelper.UseModernWindowStyle="True" d:Width="1024" d:Height="600">
     <Window.Resources>
@@ -16,7 +16,7 @@
     </Window.Resources>
     <Grid>
         <tb:TaskbarIcon Visibility="{Binding ShowTrayIcon, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        ToolTipText="{x:Static cmn:Product.DisplayName}"
+                        ToolTipText="{Binding ProductInformation.DisplayName}"
                         IconSource="{Binding TrayIcon}"
                         MenuActivation="RightClick"
                         LeftClickCommand="{Binding OpenCommand}">
@@ -38,7 +38,7 @@
                     <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
                     <Separator/>
-                    <MenuItem Header="{x:Static cmn:Product.Version}" IsEnabled="False"/>
+                    <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>

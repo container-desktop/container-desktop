@@ -1,6 +1,7 @@
 ﻿namespace ContainerDesktop.Installer;
 
 using ContainerDesktop.Common;
+using ContainerDesktop.UI.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.IO.Abstractions;
@@ -26,11 +27,15 @@ public partial class App : ApplicationWithContext
 
     public IServiceProvider ServiceProvider { get; private set; }
 
+    public IProductInformation ProductInformation {  get; private set; }
+
     private void AppStartup(object sender, StartupEventArgs e)
     {
+        ProductInformation = ServiceProvider.GetRequiredService<IProductInformation>();
         SetEnvironmentVariables();
+
         var runner = ServiceProvider.GetRequiredService<IInstallationRunner>();
-        if (runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(Product.InstallDir, StringComparison.OrdinalIgnoreCase))
+        if (runner.InstallationMode == InstallationMode.Uninstall && Path.GetDirectoryName(GetInstallerExePath()).Equals(ProductInformation.InstallDir, StringComparison.OrdinalIgnoreCase))
         {
             RestartInTempLocation();
             Shutdown();
@@ -63,14 +68,14 @@ public partial class App : ApplicationWithContext
 
     private void SetEnvironmentVariables()
     {
-        Environment.SetEnvironmentVariable("INSTALLDIR", Product.InstallDir, EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("PRODUCT_VERSION", Product.Version, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("INSTALLDIR", ProductInformation.InstallDir, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PRODUCT_VERSION", ProductInformation.Version, EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable("INSTALLER_SOURCE_PATH", GetInstallerExePath(), EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("INSTALLER_TARGET_PATH", Path.Combine(Product.InstallDir, Path.GetFileName(GetInstallerExePath())), EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("APP_PATH", Product.AppPath, EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("PRODUCT_DISPLAYNAME", Product.DisplayName, EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("PRODUCT_NAME", Product.Name, EnvironmentVariableTarget.Process);
-        Environment.SetEnvironmentVariable("PROXY_PATH", Product.ProxyPath, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("INSTALLER_TARGET_PATH", Path.Combine(ProductInformation.InstallDir, Path.GetFileName(GetInstallerExePath())), EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("APP_PATH", ProductInformation.AppPath, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PRODUCT_DISPLAYNAME", ProductInformation.DisplayName, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PRODUCT_NAME", ProductInformation.Name, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PROXY_PATH", ProductInformation.ProxyPath, EnvironmentVariableTarget.Process);
     }
 
     private string GetInstallerExePath()

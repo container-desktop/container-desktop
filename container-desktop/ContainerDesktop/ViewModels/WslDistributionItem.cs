@@ -1,8 +1,8 @@
-﻿using ContainerDesktop.Common.UI;
+﻿using ContainerDesktop.Common;
 
 namespace ContainerDesktop.ViewModels;
 
-public class WslDistributionItem : ViewModelBase
+public class WslDistributionItem : NotifyObject
 {
     private string _name;
     private bool _enabled;

@@ -1,15 +1,15 @@
 ﻿namespace ContainerDesktop.Installer.ViewModels;
 
 using ContainerDesktop.Common;
-using ContainerDesktop.Common.DesiredStateConfiguration;
-using ContainerDesktop.Common.Input;
-using ContainerDesktop.Common.UI;
+using ContainerDesktop.DesiredStateConfiguration;
+using ContainerDesktop.UI.Wpf;
+using ContainerDesktop.UI.Wpf.Input;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-public class MainViewModel : ViewModelBase, IUserInteraction
+public class MainViewModel : NotifyObject, IUserInteraction
 {
     private string _title;
     private bool _showApplyButton;
@@ -25,9 +25,10 @@ public class MainViewModel : ViewModelBase, IUserInteraction
     private readonly IInstallationRunner _runner;
     private readonly IApplicationContext _applicationContext;
 
-    public MainViewModel(IInstallationRunner runner, IApplicationContext applicationContext, ILogger<MainViewModel> logger)
+    public MainViewModel(IInstallationRunner runner, IApplicationContext applicationContext, IProductInformation productInformation, ILogger<MainViewModel> logger)
     {
-        Title = $"{Product.DisplayName} Installer ({Product.Version})";
+        ProductInformation = productInformation;
+        Title = $"{ProductInformation.DisplayName} Installer ({ProductInformation.Version})";
         ShowApplyButton = true;
         ShowCloseButton = false;
         ApplyCommand = new DelegateCommand(Apply);
@@ -42,6 +43,8 @@ public class MainViewModel : ViewModelBase, IUserInteraction
             Apply();
         }
     }
+
+    public IProductInformation ProductInformation { get; }
 
     public IEnumerable<IResource> OptionalResources => _runner.ConfigurationManifest.Resources.Where(x => x.Optional);
 
@@ -133,7 +136,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         var runnerTask = Task.Run(() => _runner.Run());
         runnerTask.ToObservable().Subscribe(result =>
         {
-            _applicationContext.Dispatcher.Invoke(() =>
+            _applicationContext.InvokeOnDispatcher(() =>
             {
                 _applicationContext.ExitCode = result switch
                 {
@@ -153,7 +156,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         }, ex =>
         {
             Logger.LogError(ex, ex.Message);
-            _applicationContext.Dispatcher.Invoke(() =>
+            _applicationContext.InvokeOnDispatcher(() =>
             {
                 if (_runner.Options.Quiet)
                 {
