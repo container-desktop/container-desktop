@@ -43,7 +43,7 @@ public class MainViewModel : ViewModelBase
         StartCommand = new DelegateCommand(Start, () => _containerEngine.RunningState == RunningState.Stopped);
         StopCommand = new DelegateCommand(Stop, () => _containerEngine.RunningState == RunningState.Started);
         RestartCommand = new DelegateCommand(Restart, () => _containerEngine.RunningState == RunningState.Started);
-        CheckWslDistroCommand = new DelegateCommand(ToggleWslDistro);
+        CheckWslDistroCommand = new DelegateCommand<WslDistributionItem>(ToggleWslDistro);
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
     }
 
@@ -83,7 +83,7 @@ public class MainViewModel : ViewModelBase
 
     public DelegateCommand RestartCommand { get; }
 
-    public DelegateCommand CheckWslDistroCommand { get; }
+    public DelegateCommand<WslDistributionItem> CheckWslDistroCommand { get; }
 
     public DelegateCommand OpenDocumentationCommand { get; }
 
@@ -92,28 +92,28 @@ public class MainViewModel : ViewModelBase
             .Where(x => !_configurationService.Configuration.HiddenDistributions.Contains(x))
             .Select(x => new WslDistributionItem { Name = x, Enabled = _configurationService.Configuration.EnabledDistributions.Contains(x)});
     
-    private void Open(object parameter)
+    private void Open()
     {
         // TODO: uncomment when window has actually something to show.
         //_applicationContext.ShowMainWindow();
     }
 
-    private void Quit(object parameter)
+    private void Quit()
     {
         _applicationContext.QuitApplication();
     }
 
-    private void Stop(object parameter)
+    private void Stop()
     {
         Task.Run(() => SafeExecute("stop", _containerEngine.Stop));
     }
 
-    private void Start(object parameter)
+    private void Start()
     {
         Task.Run(() => SafeExecute("start", _containerEngine.Start));
     }
 
-    private void Restart(object parameter)
+    private void Restart()
     {
         Task.Run(() => SafeExecute("restart", _containerEngine.Restart));
     }
@@ -135,36 +135,33 @@ public class MainViewModel : ViewModelBase
         });
     }
 
-    private void ToggleWslDistro(object parameter)
+    private void ToggleWslDistro(WslDistributionItem distro)
     {
         Task.Run(() =>
         {
-            if (parameter is WslDistributionItem distro)
+            SafeExecute($"{(distro.Enabled ? "enable" : "disable")} distribution", () =>
             {
-                SafeExecute($"{(distro.Enabled ? "enable" : "disable")} distribution", () =>
+                if (_containerEngine.RunningState == RunningState.Started)
                 {
-                    if (_containerEngine.RunningState == RunningState.Started)
+                    _containerEngine.EnableDistro(distro.Name, distro.Enabled);
+                }
+                if (distro.Enabled)
+                {
+                    if (!_configurationService.Configuration.EnabledDistributions.Contains(distro.Name))
                     {
-                        _containerEngine.EnableDistro(distro.Name, distro.Enabled);
+                        _configurationService.Configuration.EnabledDistributions.Add(distro.Name);
                     }
-                    if (distro.Enabled)
-                    {
-                        if (!_configurationService.Configuration.EnabledDistributions.Contains(distro.Name))
-                        {
-                            _configurationService.Configuration.EnabledDistributions.Add(distro.Name);
-                        }
-                    }
-                    else
-                    {
-                        _configurationService.Configuration.EnabledDistributions.Remove(distro.Name);
-                    }
-                    _configurationService.Save();
-                });
-            }
+                }
+                else
+                {
+                    _configurationService.Configuration.EnabledDistributions.Remove(distro.Name);
+                }
+                _configurationService.Save();
+            });
         });
     }
 
-    private void OpenDocumentation(object parameter)
+    private void OpenDocumentation()
     {
         _processExecutor.Start(Product.WebSiteUrl, null, useShellExecute: true);
     }

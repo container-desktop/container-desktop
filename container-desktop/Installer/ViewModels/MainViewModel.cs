@@ -39,7 +39,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
         if (runner.Options.AutoStart)
         {
-            Apply(null);
+            Apply();
         }
     }
 
@@ -123,7 +123,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
 
     public ILogger<MainViewModel> Logger { get; }
 
-    private void Apply(object parameter)
+    private void Apply()
     {
         ShowApplyButton = false;
         ShowProgress = true;
@@ -169,7 +169,7 @@ public class MainViewModel : ViewModelBase, IUserInteraction
         });
     }
 
-    private void Close(object parameter)
+    private void Close()
     {
         _applicationContext.QuitApplication();
     }

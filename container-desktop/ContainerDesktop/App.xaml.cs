@@ -4,6 +4,8 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Services;
 using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Windows;
 
 public partial class App : ApplicationWithContext
@@ -29,20 +31,19 @@ public partial class App : ApplicationWithContext
 
     private void AppStartup(object sender, StartupEventArgs e)
     {
-        try
-        {
-            MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            MainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
-            ContainerEngine = ServiceProvider.GetRequiredService<IContainerEngine>();
-            ContainerEngine.Start();
-            MainViewModel.ShowTrayIcon = true;
-        }
-        catch (Exception ex)
+        MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+        MainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
+        ContainerEngine = ServiceProvider.GetRequiredService<IContainerEngine>();
+        MainViewModel.ShowTrayIcon = true;
+        Task.Run(() => ContainerEngine.Start()).ToObservable().Subscribe(_ => { }, ex =>
         {
             Logger.LogError(ex, ex.Message);
-            MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
-            QuitApplication();
-        }
+            Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
+                QuitApplication();
+            });
+        });
     }
 
     public override void QuitApplication()
