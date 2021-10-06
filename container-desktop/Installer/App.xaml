@@ -1,8 +1,8 @@
-﻿<cmn:ApplicationWithContext x:Class="ContainerDesktop.Installer.App"
+﻿<wpf:ApplicationWithContext x:Class="ContainerDesktop.Installer.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ContainerDesktop.Installer"
-             xmlns:cmn="http://container-desktop.io/common"
+             xmlns:wpf="http://container-desktop.io/wpf"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              Startup="AppStartup" Exit="AppExit">
     <Application.Resources>
@@ -15,4 +15,4 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
-</cmn:ApplicationWithContext>
+</wpf:ApplicationWithContext>

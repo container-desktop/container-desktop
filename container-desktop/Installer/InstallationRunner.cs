@@ -1,7 +1,5 @@
 ﻿namespace ContainerDesktop.Installer;
-
-using CommandLine;
-using ContainerDesktop.Common.DesiredStateConfiguration;
+using ContainerDesktop.DesiredStateConfiguration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -32,19 +30,5 @@ public class InstallationRunner : IInstallationRunner
         configure?.Invoke(context);
         context.DelayReboot = Options.Unattended;
         return ConfigurationManifest.Apply(context);
-    }
-
-    private InstallerOptions PostConfigureOptions(InstallerOptions options)
-    {
-        if(options.Quiet)
-        {
-            options.AutoStart = true;
-        }
-        if(options.Unattended)
-        {
-            options.AutoStart = true;
-            options.Quiet = true;
-        }
-        return options;
     }
 }

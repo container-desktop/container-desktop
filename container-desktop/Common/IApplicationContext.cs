@@ -1,6 +1,4 @@
-﻿using System.Windows.Threading;
-
-namespace ContainerDesktop.Common;
+﻿namespace ContainerDesktop.Common;
 
 public interface IApplicationContext
 {
@@ -8,5 +6,5 @@ public interface IApplicationContext
     string LastErrorMessage { get; set; }
     void QuitApplication();
     void ShowMainWindow();
-    Dispatcher Dispatcher { get; }
+    void InvokeOnDispatcher(Action action);
 }

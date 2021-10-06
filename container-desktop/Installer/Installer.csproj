@@ -58,6 +58,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\DesiredStateConfiguration\DesiredStateConfiguration.csproj" />
+    <ProjectReference Include="..\Wpf\Wpf.csproj" />
   </ItemGroup>
 
   <ItemGroup>

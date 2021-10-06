@@ -2,6 +2,7 @@
 
 using ContainerDesktop.Common;
 using ContainerDesktop.Services;
+using ContainerDesktop.UI.Wpf;
 using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reactive.Linq;
@@ -34,13 +35,14 @@ public partial class App : ApplicationWithContext
         MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         MainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
         ContainerEngine = ServiceProvider.GetRequiredService<IContainerEngine>();
+        var productInfo = ServiceProvider.GetRequiredService<IProductInformation>();
         MainViewModel.ShowTrayIcon = true;
         Task.Run(() => ContainerEngine.Start()).ToObservable().Subscribe(_ => { }, ex =>
         {
             Logger.LogError(ex, ex.Message);
             Dispatcher.Invoke(() =>
             {
-                MessageBox.Show($"{Product.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
+                MessageBox.Show($"{productInfo.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
                 QuitApplication();
             });
         });

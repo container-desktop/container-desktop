@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>ContainerDesktop.DesiredStateConfiguration</RootNamespace>
+    <AssemblyName>ContainerDesktop.DesiredStateConfiguration</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\markr\.nuget\packages\microsoft.dism\2.4.0\contentFiles\any\netstandard2.0\PublicAPI.Shipped.txt" />
+    <Content Remove="C:\Users\markr\.nuget\packages\microsoft.dism\2.4.0\contentFiles\any\netstandard2.0\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Dism" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="PInvoke.AdvApi32" Version="0.7.104" />
+    <PackageReference Include="PInvoke.User32" Version="0.7.104" />
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Processes\Processes.csproj" />
+    <ProjectReference Include="..\Wsl\Wsl.csproj" />
+  </ItemGroup>
+
+</Project>

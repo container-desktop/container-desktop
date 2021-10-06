@@ -6,20 +6,22 @@ namespace ContainerDesktop.Services;
 
 public class ConfigurationService : IConfigurationService
 {
-    private static readonly string _configurationFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "config.json");
+    private readonly string _configurationFilePath;
     private readonly IFileSystem _fileSystem;
 
-    public ConfigurationService(IFileSystem fileSystem)
+    public ConfigurationService(IFileSystem fileSystem, IProductInformation productInformation)
     {
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-        if(_fileSystem.File.Exists(_configurationFilePath))
+        if(productInformation == null)
+        {
+            throw new ArgumentNullException(nameof(productInformation));
+        }
+        _configurationFilePath = Path.Combine(productInformation.ContainerDesktopAppDataDir, "config.json");
+        Configuration = new ContainerDesktopConfiguration(productInformation);
+        if (_fileSystem.File.Exists(_configurationFilePath))
         {
             var json = _fileSystem.File.ReadAllText(_configurationFilePath);
-            Configuration = JsonConvert.DeserializeObject<ContainerDesktopConfiguration>(json);
-        }
-        else
-        {
-            Configuration = new ContainerDesktopConfiguration();
+            JsonConvert.PopulateObject(json, Configuration);
         }
     }
 

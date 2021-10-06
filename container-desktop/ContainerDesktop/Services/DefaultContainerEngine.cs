@@ -1,7 +1,8 @@
 ﻿namespace ContainerDesktop.Services;
 
 using ContainerDesktop.Common;
-using ContainerDesktop.Common.Services;
+using ContainerDesktop.Processes;
+using ContainerDesktop.Wsl;
 using Docker.DotNet;
 using System.Diagnostics;
 using System.Threading;
@@ -11,17 +12,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly IWslService _wslService;
     private readonly IProcessExecutor _processExecutor;
     private readonly IConfigurationService _configurationService;
+    private readonly IProductInformation _productInformation;
     private Process _proxyProcess;
     private RunningState _runningState;
     private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
 
-    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService)
+    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService, IProductInformation productInformation)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+        _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
         // TODO: query the state
         _runningState = RunningState.Stopped;
+        LocalCertsPath = Path.Combine(_productInformation.ContainerDesktopAppDataDir, "certs\\");
     }
 
     public event EventHandler RunningStateChanged;
@@ -45,7 +49,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     public void Start()
     {
         RunningState = RunningState.Starting;
-        _wslService.Terminate(Product.ContainerDesktopDistroName);
+        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
         InitializeDataDistro();
         InitializeAndStartDaemon();
         StartProxy();
@@ -56,7 +60,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private void InitializeDataDistro()
     {
-        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", Product.ContainerDesktopDataDistroName))
+        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", _productInformation.ContainerDesktopDataDistroName))
         {
             throw new ContainerEngineException("Could not initialize the data distribution.");
         }
@@ -67,7 +71,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         RunningState = RunningState.Stopping;
         StopDistros();
         StopProxy();
-        _wslService.Terminate(Product.ContainerDesktopDistroName);
+        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
         RunningState = RunningState.Stopped;
     }
 
@@ -113,7 +117,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private void InitializeAndStartDaemon()
     {
         var certPath = GetWslPathInDistro(LocalCertsPath);
-        if (!_wslService.ExecuteCommand($"/usr/local/bin/wsl-init.sh \"{certPath}\"", Product.ContainerDesktopDistroName))
+        if (!_wslService.ExecuteCommand($"/usr/local/bin/wsl-init.sh \"{certPath}\"", _productInformation.ContainerDesktopDistroName))
         {
             throw new ContainerEngineException("Could not initialize and start the daemon.");
         }
@@ -136,7 +140,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     }
 
 
-    private string LocalCertsPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Product.Name, "certs\\");
+    private string LocalCertsPath { get; }
     
     private string GetWslPathInDistro(string windowsPath)
     {

@@ -44,6 +44,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Wpf\Wpf.csproj" />
+    <ProjectReference Include="..\Wsl\Wsl.csproj" />
   </ItemGroup>
 
   <ItemGroup>

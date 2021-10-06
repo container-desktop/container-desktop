@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <TextBlock Style="{DynamicResource SubheaderTextBlockStyle}">
-                <Run Text="{x:Static cmn:Product.DisplayName}"/>
+                <Run Text="{Binding Mode=OneTime, Path=ProductInformation.DisplayName}"/>
                 <Run Text="Installer"/>
             </TextBlock>
         </StackPanel>

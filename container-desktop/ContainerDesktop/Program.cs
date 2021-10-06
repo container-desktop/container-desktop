@@ -1,5 +1,4 @@
 ﻿using ContainerDesktop.Common;
-using ContainerDesktop.Common.Services;
 using ContainerDesktop.Services;
 using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -34,10 +33,11 @@ static class Program
             })
             .ConfigureServices(ConfigureServices)
             .UseConsoleLifetime(x => x.SuppressStatusMessages = true)
-            .UseSerilog((_, config) =>
+            .UseSerilog((_, sp, config) =>
             {
-                config.WriteTo.File(Path.Combine(Product.ContainerDesktopAppDataDir, "logs", "log.txt"), fileSizeLimitBytes: 1024 * 1024 * 10, rollOnFileSizeLimit: true);
-                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(Product.DisplayName));
+                var productInfo = sp.GetRequiredService<IProductInformation>();
+                config.WriteTo.File(Path.Combine(productInfo.ContainerDesktopAppDataDir, "logs", "log.txt"), fileSizeLimitBytes: 1024 * 1024 * 10, rollOnFileSizeLimit: true);
+                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.DisplayName));
             });
 
     static void ConfigureServices(IServiceCollection services)
@@ -46,10 +46,10 @@ static class Program
         services.AddSingleton<IApplicationContext>(sp => sp.GetRequiredService<App>());
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
-        services.AddSingleton<IWslService, WslService>();
-        services.AddSingleton<IProcessExecutor, ProcessExecutor>();
+        services.AddCommon();
+        services.AddWsl();
+        services.AddProcessExecutor();
         services.AddSingleton<IContainerEngine, DefaultContainerEngine>();
-        services.AddTransient<IFileSystem, FileSystem>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
     }
 }

@@ -1,6 +1,5 @@
 ﻿using ContainerDesktop.Common;
-using ContainerDesktop.Common.DesiredStateConfiguration;
-using ContainerDesktop.Common.Services;
+using ContainerDesktop.DesiredStateConfiguration;
 using ContainerDesktop.Installer.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,10 +35,11 @@ static class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices(s => ConfigureServices(s, options))
             .UseConsoleLifetime(x => x.SuppressStatusMessages = true)
-            .UseSerilog((_, config) =>
+            .UseSerilog((_, sp, config) =>
             {
+                var productInfo = sp.GetRequiredService<IProductInformation>();
                 config.WriteTo.Console(theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true);
-                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(Product.InstallerDisplayName, manageEventSource: true));
+                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.InstallerDisplayName, manageEventSource: true));
             });
 
     static void ConfigureServices(IServiceCollection services, InstallerOptions options)
@@ -50,10 +50,10 @@ static class Program
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<IUserInteraction>(sp => sp.GetRequiredService<MainViewModel>());
-        services.AddSingleton<IWslService, WslService>();
-        services.AddSingleton<IProcessExecutor, ProcessExecutor>();
+        services.AddWsl();
+        services.AddProcessExecutor();
+        services.AddCommon();
         services.AddSingleton<IConfigurationManifest>(sp => new PackedConfigurationManifest(App.ConfigurationManifestUri, sp));
-        services.AddTransient<IFileSystem, FileSystem>();
         services.AddSingleton<IInstallationRunner, InstallationRunner>();
     }
 
