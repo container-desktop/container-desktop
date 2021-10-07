@@ -24,6 +24,7 @@ static class Program
         var app = host.Services.GetRequiredService<App>();
         app.InitializeComponent();
         var exitCode = app.Run();
+        host.StopAsync().GetAwaiter().GetResult();
         if (unattendedWithConsole)
         {
             SendKeys.SendWait("{ENTER}");

@@ -16,6 +16,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private Process _proxyProcess;
     private RunningState _runningState;
     private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
+    private (Task task, CancellationTokenSource cts) _dataDistroInitTask;
 
     public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService, IProductInformation productInformation)
     {
@@ -60,10 +61,19 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private void InitializeDataDistro()
     {
-        if (!_wslService.ExecuteCommand($"/wsl-init-data.sh", _productInformation.ContainerDesktopDataDistroName))
+        var cts = new CancellationTokenSource();
+        var task = Task.Run(async () =>
         {
-            throw new ContainerEngineException("Could not initialize the data distribution.");
-        }
+            while (!cts.IsCancellationRequested)
+            {
+                await _wslService.ExecuteCommandAsync($"/wsl-init-data.sh", _productInformation.ContainerDesktopDataDistroName, cancellationToken: cts.Token);
+                if (!cts.IsCancellationRequested)
+                {
+                    await Task.Delay(1000);
+                }
+            }
+        });
+        _dataDistroInitTask = (task, cts);
     }
 
     public void Stop()
@@ -71,7 +81,9 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         RunningState = RunningState.Stopping;
         StopDistros();
         StopProxy();
+        _dataDistroInitTask.cts.Cancel();
         _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+        _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
         RunningState = RunningState.Stopped;
     }
 
@@ -106,12 +118,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Dispose()
     {
-        StopProxy();
+        Stop();
         _proxyProcess?.Dispose();
-        foreach(var proxy in _enabledDistroProxies)
-        {
-            EnableDistro(proxy.Key, false);
-        }
     }
 
     private void InitializeAndStartDaemon()
