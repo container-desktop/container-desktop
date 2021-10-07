@@ -19,7 +19,9 @@ static class Program
         host.Start();
         var app = host.Services.GetRequiredService<App>();
         app.InitializeComponent();
-        return app.Run();
+        var ret = app.Run();
+        host.StopAsync().GetAwaiter().GetResult();
+        return ret;
     }
 
     static IHostBuilder CreateHostBuilder(string[] args) =>
