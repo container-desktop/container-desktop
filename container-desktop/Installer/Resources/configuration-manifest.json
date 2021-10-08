@@ -147,7 +147,8 @@
       "displayVersion": "%PRODUCT_VERSION%",
       "version": "%PRODUCT_VERSION%",
       "installLocation": "%INSTALLDIR%",
-      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall --auto-start"
+      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall --auto-start",
+      "onUpdateAction": "Install"
     },
     {
       "type": "AddToAutoStart",

@@ -41,6 +41,9 @@ func RewriteBody(body io.ReadCloser, urlPath string, wslDistroName string, logge
 			if err != nil {
 				return nil, err
 			}
+			if len(buf) == 0 {
+				return buf, nil
+			}
 			var jsonArray []interface{}
 			isArray := false
 			if buf[0] == '{' {
