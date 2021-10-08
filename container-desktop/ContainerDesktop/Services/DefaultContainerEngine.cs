@@ -74,6 +74,10 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             }
         });
         _dataDistroInitTask = (task, cts);
+        if(!WaitForDataDistroInitialization(2000))
+        {
+            throw new ContainerEngineException($"Could not initialize data distribution.");
+        }
     }
 
     public void Stop()
@@ -98,7 +102,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         if (enabled)
         {
             var cts = new CancellationTokenSource();
-            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, "root", cts.Token));
+            var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, "root", cancellationToken: cts.Token));
             
             _enabledDistroProxies[name] = (task, cts);
         }
@@ -205,5 +209,16 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             using var client = new DockerClientConfiguration().CreateClient();
             client.Containers.ListContainersAsync(new Docker.DotNet.Models.ContainersListParameters());
         });
+    }
+
+    private bool WaitForDataDistroInitialization(int timeoutMs)
+    {
+        bool tailIsRunning = false;
+        using var cts = new CancellationTokenSource(timeoutMs);
+        while (!cts.IsCancellationRequested && !tailIsRunning)
+        {
+            _wslService.ExecuteCommand("ps -o comm", _productInformation.ContainerDesktopDataDistroName, stdout: s => tailIsRunning = s.StartsWith("tail"));
+        }
+        return cts.IsCancellationRequested;
     }
 }
