@@ -55,3 +55,19 @@ Container Desktop requires WLS2 which is supported on these Windows versions:
 ## Unsupported
 
 * Using Docker from other WSL2 distributions is not yet supported.
+
+## Credits
+
+Container Desktop is made possible by using the following great projects:
+
+* [Command Line Parser Library](https://github.com/commandlineparser/commandline)
+* [Docker.DotNet](https://github.com/dotnet/Docker.DotNet)
+* [Hardcodet NotifyIcon for WPF](https://github.com/hardcodet/wpf-notifyicon)
+* [Managed DismApi Wrapper](https://github.com/jeffkl/ManagedDism)
+* [ModernWPF UI Library](https://github.com/Kinnara/ModernWpf)
+* [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning)
+* [Newtonsoft.Json](https://www.newtonsoft.com/json)
+* [P/Invoke](https://github.com/dotnet/pinvoke)
+* [Serilog](https://serilog.net/)
+* [System.IO.Abstractions](https://github.com/System-IO-Abstractions/System.IO.Abstractions)
+* [System.Reactive](https://github.com/dotnet/reactive)
