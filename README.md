@@ -3,17 +3,27 @@
 
 # Container Desktop
 
-Container Desktop is alternative to Docker for Desktop on Windows.
-It is not a replacement and can only run on Windows versions that support WSL2. It is intended as a simple way to run the Docker daemon in its on WSL2 distribution and use the Docker CLI for windows to connect to it.
+Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running om Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.
+## How it works?
+
+![](docs/static/img/container-desktop-overview.png)
+
+Container Desktop Proxy handles the communication with the Docker Engine running in container-desktop distribution within Windows System Linux v2 (WSL2). The proxy enables native docker experience on Microsoft Windows, where it translates Windows Paths to WSL2 paths local to the container-desktop distribution.
+
+With the Container Desktop System Tray Application you can manage the behavior of container-desktop. You can start, stop and restart the Container Desktop Proxy on the Windows Host or Enable or Disable a Docker Engine proxy in any available WSL2 distribution.
+Container Desktop installs the docker and the docker-compose command line interface tools.
+
+> Note: Container Desktop will not support Windows Containers.
 
 ## Supported features
 
 The solution is in its early days and supports the following features:
 
 * Run Docker daemon in its own distribution
-* Use Docker CLI on Windows to connect to the daemon
+* Use 'docker' and 'docker-compose' cli on Windows to connect to the daemon
 * You can use Windows paths as volumes, the container-desktop-proxy translates these paths to WSL2 paths local to the daemon distribution
-* You can stop/start/restart and quit Container Desktop by right clicking on the icon in the system tray.
+* Start/stop/restart and quit Container Desktop by right clicking on the icon in the system tray.
+* Enable container-desktop integration in installed WSL2 distributions.
 
 ## Installation
 
@@ -71,3 +81,6 @@ Container Desktop is made possible by using the following great projects:
 * [Serilog](https://serilog.net/)
 * [System.IO.Abstractions](https://github.com/System-IO-Abstractions/System.IO.Abstractions)
 * [System.Reactive](https://github.com/dotnet/reactive)
+* [Docker CLI](https://github.com/docker/cli)
+* [Docker Compose CLI](https://github.com/docker/compose-cli)
+* [Docker Community Edition](https://github.com/docker/docker-ce)
