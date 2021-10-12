@@ -3,18 +3,11 @@ name: docs
 on:
   push:
     branches:
-      - docs-initial # temp switch to main 
+      - main  
     tags:
-      # only run on tags for real releases and special docs releases
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-docs.[0-9]+'
-    # tags-ignore:
-    #   - "*rc*"
-    #   - "*beta*"
-    #   - "*alpha*"
-    #   - "*test*"
-    #   - "*dev*"
-
+      # only run on for releases, beta and docs releases
+      - v*
+      
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -32,15 +25,16 @@ jobs:
           mkdocs build --verbose --clean
           rm -r site/
       - name: Configure Git
-        #if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
         id: git
         run: |
           git config --global user.name pipeline-container-desktop.io
           git config --global user.email pipeline@container-desktop.io
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
       - name: Build & Deploy with Mike (versioned)
-        #if: startsWith(github.ref, 'refs/tags/')
-        #mike deploy --update-aliases --push --rebase ${{ steps.git.outputs.tag }} stable
+        if: startsWith(github.ref, 'refs/tags/')
+        #mike deploy --branch gh-pages --push test
         run: |
-          mike deploy --branch gh-pages --push test
+          mike deploy --update-aliases --push --rebase ${{ steps.git.outputs.tag }} stable
+          
           
