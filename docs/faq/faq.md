@@ -17,4 +17,3 @@ Windows Defender SmartScreen may pop-up and prevent StartContainerDesktopInstall
 **When downloading with Microsoft Edge**: SmartScreen may pop-up with the warning "ContainerDesktopInstaller.exe was blocked because it could harm your device". Please select "keep", then again a warning is shown, please select "Show More" and proceed with the download.
 
 **When installing**: Windows Defender SmartScreen may pop-up and prevent StartContainerDesktopInstaller.exe to start. When this is the case do the following: please select "More Info" and Select "Run Anyway".
-
