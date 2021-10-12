@@ -23,10 +23,10 @@
     position: relative;
 }
 
-[data-md-color-primary=black] .md-tabs {
+[data-md-color-primary=white] .md-tabs {
     background-color: #0DCEFF;
 }
 
 .md-tabs {
-    color: black;
+    color: white;
 }
