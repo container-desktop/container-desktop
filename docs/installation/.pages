@@ -1,3 +1,4 @@
 title: Installation
 nav:
-  - installation.md
+  - howto.md
+  - pre-requisites.md
