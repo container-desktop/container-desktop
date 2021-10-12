@@ -1,0 +1,5 @@
+nav:
+  - index.md
+  - installation 
+  - faq
+collapse: false
