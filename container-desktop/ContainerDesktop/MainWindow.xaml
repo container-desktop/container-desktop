@@ -1,0 +1,55 @@
+﻿<Window
+    x:Class="ContainerDesktop.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="http://www.hardcodet.net/taskbar"
+    xmlns:cmn="http://container-desktop.io/common"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    mc:Ignorable="d"
+    Title="{Binding ProductInformation.DisplayName}"
+    Icon="/ContainerDesktop;component/app.ico"
+    ui:WindowHelper.UseModernWindowStyle="True" d:Width="1024" d:Height="600">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <tb:TaskbarIcon Visibility="{Binding ShowTrayIcon, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        ToolTipText="{Binding ProductInformation.DisplayName}"
+                        IconSource="{Binding TrayIcon}"
+                        MenuActivation="RightClick"
+                        LeftClickCommand="{Binding OpenCommand}">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="WSL2 Integration" ItemsSource="{Binding WslDistributions}">
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <MenuItem Header="{Binding Name}" IsCheckable="True" IsChecked="{Binding Enabled, Mode=TwoWay}" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=DataContext.CheckWslDistroCommand}" CommandParameter="{Binding .}"/>
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Documentation" Command="{Binding OpenDocumentationCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="Start" Command="{Binding StartCommand}" Visibility="{Binding IsStopped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <MenuItem Header="Restart" Command="{Binding RestartCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Separator/>
+                    <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+        <ui:NavigationView IsSettingsVisible="True" 
+                           AlwaysShowHeader="True"
+                           Loaded="NavigationViewLoaded" 
+                           SelectionChanged="NavigationViewSelectionChanged">
+            <ScrollViewer>
+                <ui:Frame x:Name="contentFrame" Padding="12,0,12,24" IsTabStop="True"></ui:Frame>
+            </ScrollViewer>
+        </ui:NavigationView>
+
+    </Grid>
+</Window>

@@ -1,0 +1,172 @@
+﻿{
+  "installerRestartArguments": [ "--auto-start" ],
+  "resources": [
+    {
+      "type": "WindowsVersionCheck",
+      "id": "CheckWindowsVersion",
+      "description": "Check Windows version",
+      "runAllwaysFirst": true
+    },
+    {
+      "type": "GetInstalledVersion",
+      "id": "GetInstalledVersion",
+      "productName": "%PRODUCT_NAME%",
+      "runAllwaysFirst": true
+    },
+    {
+      "type": "ShutdownProcess",
+      "id": "ShutdownContainerDesktop",
+      "description": "Shutting down Container Desktop",
+      "fileName": "%APP_PATH%",
+      "runAllwaysFirst": true,
+      "runAllways": true,
+      "kind": "CustomMessage",
+      "customMessage": 32769,
+      "windowTitle": "Container Desktop"
+    },
+    {
+      "type": "ShutdownProcess",
+      "id": "ShutdownProxy",
+      "description": "Shutting down Container Desktop proxy",
+      "fileName": "%PROXY_PATH%",
+      "runAllwaysFirst": true,
+      "runAllways": true
+    },
+    {
+      "type": "Unpack",
+      "id": "UnpackFiles",
+      "description": "Unpacking files",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop.zip",
+      "targetDirectory": "%INSTALLDIR%",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "CopyPackedFile",
+      "id": "CopyDistro",
+      "description": "Copy WSL distribution",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-distro.tar.gz",
+      "targetDirectory": "%INSTALLDIR%\\Resources",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "CopyPackedFile",
+      "id": "CopyDataDistro",
+      "description": "Copy WSL Data distribution",
+      "resourceUri": "pack://application:,,,/ContainerDesktopInstaller;component/Resources/container-desktop-data-distro.tar.gz",
+      "targetDirectory": "%INSTALLDIR%\\Resources",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "CopyFile",
+      "id": "CopyInstaller",
+      "description": "Copy installer",
+      "source": "%INSTALLER_SOURCE_PATH%",
+      "target": "%INSTALLER_TARGET_PATH%",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "CreateDirectory",
+      "id": "CreateAppDataDirectory",
+      "description": "Creating Application data directory",
+      "directory": "%LOCALAPPDATA%\\%PRODUCT_NAME%"
+    },
+    {
+      "type": "EnableWindowsFeatures",
+      "id": "EnableWsl",
+      "description": "Enable Windows feature Windows Subsystem for Linux",
+      "features": [ "Microsoft-Windows-Subsystem-Linux" ],
+      "noUninstall": true,
+      "ignoreRebootRequired": true
+    },
+    {
+      "type": "EnableWindowsFeatures",
+      "id": "EnableVirtualMachinePlatform",
+      "description": "Enable Windows feature Virtual Machine Platform",
+      "features": [ "VirtualMachinePlatform" ],
+      "noUninstall": true
+    },
+    {
+      "type": "InstallMsi",
+      "id": "InstallLatestWslKernel",
+      "description": "Install latest WSL kernel",
+      "uri": "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi",
+      "uninstallDisplayName": "Windows Subsystem for Linux Update",
+      "noUninstall": true,
+      "dependsOn": [ "EnableWsl" ]
+    },
+    {
+      "type": "WslDistro",
+      "id": "InstallWslDistro",
+      "description": "Install Container Desktop WSL distribution",
+      "name": "container-desktop",
+      "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\distro",
+      "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-distro.tar.gz",
+      "dependsOn": [ "InstallLatestWslKernel" ],
+      "extraInformation": "Installing the WSL distribution may take a while if the system was rebooted due to enabling the features required for WSL.",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "WslDistro",
+      "id": "InstallWslDataDistro",
+      "description": "Install Container Desktop Data WSL distribution",
+      "name": "container-desktop-data",
+      "path": "%LOCALAPPDATA%\\%PRODUCT_NAME%\\wsl\\data-distro",
+      "rootfsFileName": "%INSTALLDIR%\\Resources\\container-desktop-data-distro.tar.gz",
+      "onUpdateAction": "Skip",
+      "dependsOn": [ "InstallLatestWslKernel" ]
+    },
+    {
+      "type": "AddToPath",
+      "id": "AddCliToPath",
+      "description": "Add Docker CLI tools to the Path",
+      "path": "%INSTALLDIR%\\cli"
+    },
+    {
+      "type": "AddShortcut",
+      "id": "AddShortcutToStartMenu",
+      "description": "Create Start Menu shortcut",
+      "location": "StartMenu",
+      "targetPath": "%APP_PATH%",
+      "linkDescription": "%PRODUCT_DISPLAYNAME%",
+      "name": "%PRODUCT_DISPLAYNAME%",
+      "optional": true
+    },
+    {
+      "type": "CreateEventLogSource",
+      "id": "CreateEventLogSource",
+      "description": "Create the event log source",
+      "source": "%PRODUCT_DISPLAYNAME%"
+    },
+    {
+      "type": "RegisterProduct",
+      "id": "RegisterProduct",
+      "description": "Registering Container Desktop",
+      "productName": "ContainerDesktop",
+      "displayIcon": "%INSTALLER_TARGET_PATH%",
+      "displayName": "Container Desktop",
+      "displayVersion": "%PRODUCT_VERSION%",
+      "version": "%PRODUCT_VERSION%",
+      "installLocation": "%INSTALLDIR%",
+      "uninstallString": "%INSTALLER_TARGET_PATH% uninstall --auto-start",
+      "onUpdateAction": "Install"
+    },
+    {
+      "type": "AddToAutoStart",
+      "id": "AddToAutoStart",
+      "description": "Start application when Windows starts.",
+      "exePath": "%APP_PATH%",
+      "optional": true
+    },
+    {
+      "type": "RunExecutable",
+      "id": "RunContainerDesktopAfterInstall",
+      "description": "Run application after installation finishes.",
+      "exePath": "%APP_PATH%",
+      "wait": false,
+      "noUninstall": true,
+      "runAsDesktopUser": true,
+      "optional": true,
+      "continueOnFail": true
+    }
+  ]
+}
