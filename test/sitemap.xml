@@ -2,17 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://container-desktop.io/test/</loc>
-         <lastmod>2021-10-05</lastmod>
+         <lastmod>2021-10-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://container-desktop.io/test/faq/faq/</loc>
-         <lastmod>2021-10-05</lastmod>
+         <lastmod>2021-10-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://container-desktop.io/test/installation/installation/</loc>
-         <lastmod>2021-10-05</lastmod>
+         <loc>https://container-desktop.io/test/installation/howto/</loc>
+         <lastmod>2021-10-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://container-desktop.io/test/installation/pre-requisites/</loc>
+         <lastmod>2021-10-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
