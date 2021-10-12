@@ -1,2 +1,8 @@
-# container-desktop
-Provides an alternative for Docker for Desktop on Windows using WSL2.
+# Documentation branch for container-desktop.io
+
+Documentation is generated and pushed to gh-pages branch. 
+
+Powered by:
+- MkDocs (https://www.mkdocs.org)
+- Mike (https://github.com/jimporter/mike)
+
