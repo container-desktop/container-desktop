@@ -131,6 +131,13 @@ func rewriteContainerConfig(jsonMap map[string]interface{}, path string) {
 			rewriteHostConfig(hostConfig, path)
 		}
 	}
+	o, ok = jsonMap["Mounts"]
+	if ok {
+		mounts, ok := o.([]interface{})
+		if ok {
+			rewriteMounts(mounts, path)
+		}
+	}
 }
 
 func rewriteService(jsonMap map[string]interface{}, path string) {
@@ -193,6 +200,13 @@ func rewriteHostConfig(hostConfig map[string]interface{}, path string) {
 				s = mapPath(s, path)
 				binds[i] = s
 			}
+		}
+	}
+	o, ok = hostConfig["Mounts"]
+	if ok {
+		mounts, ok := o.([]interface{})
+		if ok {
+			rewriteMounts(mounts, path)
 		}
 	}
 }
