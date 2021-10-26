@@ -62,10 +62,6 @@ Container Desktop requires WLS2 which is supported on these Windows versions:
 1. Clone this repo 'git clone <https://github.com/container-desktop/container-desktop.git>'
 2. Inside the container-desktop folder run '.\build.ps1'
 
-## Unsupported
-
-* Using Docker from other WSL2 distributions is not yet supported.
-
 ## Credits
 
 Container Desktop is made possible by using the following great projects:
