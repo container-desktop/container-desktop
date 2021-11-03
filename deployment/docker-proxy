@@ -1,0 +1,11 @@
+#!/bin/sh
+_term() {
+  echo "C $cmd" | nc -N -U /var/run/cd-port-forward.sock
+  kill -INT "$child" 2>/dev/null
+}
+trap _term SIGINT
+cmd=$@
+echo "O $cmd" | nc -N -U /var/run/cd-port-forward.sock
+docker-proxy-org $@ &
+child=$!
+wait "$child"
