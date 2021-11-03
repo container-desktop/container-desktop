@@ -5,6 +5,9 @@ using ContainerDesktop.Processes;
 using ContainerDesktop.Wsl;
 using Docker.DotNet;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
@@ -16,7 +19,10 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private Process _proxyProcess;
     private RunningState _runningState;
     private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
-    private (Task task, CancellationTokenSource cts) _dataDistroInitTask;
+    private Task _dataDistroInitTask;
+    private Task _portForwardListenerTask;
+    private CancellationTokenSource _cts;
+    private Dictionary<string, PortForwarder> _portForwarders = new Dictionary<string, PortForwarder>();
 
     public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService, IProductInformation productInformation)
     {
@@ -49,9 +55,11 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Start()
     {
+        _cts = new CancellationTokenSource();
         RunningState = RunningState.Starting;
         _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
         InitializeDataDistro();
+        InitializePortForwardListener();
         InitializeAndStartDaemon();
         StartProxy();
         WarmupDaemon();
@@ -59,21 +67,96 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         RunningState = RunningState.Started;
     }
 
+    private void InitializePortForwardListener()
+    {
+        _portForwardListenerTask = Task.Run(async () =>
+        {
+            while (!_cts.IsCancellationRequested)
+            {
+                await _wslService.ExecuteCommandAsync(
+                    "nc -lk -U /var/run/cd-port-forward.sock", 
+                    _productInformation.ContainerDesktopDistroName,
+                    stdout: ForwardPort,
+                    cancellationToken: _cts.Token);
+                if (!_cts.IsCancellationRequested)
+                {
+                    await Task.Delay(100);
+                }
+            }
+        });
+    }
+
+    private static readonly Regex _hostipParser = new Regex(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex _hostPortParser = new Regex(@"-host-port (?'p'\d+)", RegexOptions.Singleline | RegexOptions.Compiled);
+
+    private void ForwardPort(string line)
+    {
+        try
+        {
+            var cmdLine = line[2..];
+            (var ipAddress, var port) = ParsePortForwardCmdLine(cmdLine);
+            if (ipAddress == IPAddress.Any)
+            {
+                var key = $"{ipAddress}:{port}";
+                if (_portForwarders.TryGetValue(key, out var existing))
+                {
+                    existing.Stop();
+                    _portForwarders.Remove(key);
+                }
+
+                if (line.StartsWith('O'))
+                {
+                    var forwarder = new PortForwarder();
+                    forwarder.Start(new IPEndPoint(ipAddress, port), new IPEndPoint(ipAddress == IPAddress.Any ? IPAddress.Loopback : IPAddress.IPv6Loopback, port));
+                    _portForwarders.Add(key, forwarder);
+                }
+            }
+        }
+        catch
+        {
+            // Just swallow, port forwarding is best effort
+        }
+    }
+
+    private void StopPortForwarding()
+    {
+        try
+        {
+            foreach (var e in _portForwarders)
+            {
+                e.Value.Stop();
+            }
+        }
+        catch
+        {
+            // Just swallow, port forwarding is best effort
+        }
+        _portForwarders.Clear();
+    }
+
+    private (IPAddress ipAddress, int port) ParsePortForwardCmdLine(string cmdLine)
+    {
+        var m = _hostipParser.Match(cmdLine);
+        var ipAddress = m.Success && m.Groups["h"].Value == "::" ? IPAddress.IPv6Any : IPAddress.Any;
+        m = _hostPortParser.Match(cmdLine);
+        var port = m.Success && int.TryParse(m.Groups["p"].Value, out var v) ? v : 0;
+        return (ipAddress, port);
+    }
+
     private void InitializeDataDistro()
     {
-        var cts = new CancellationTokenSource();
         var task = Task.Run(async () =>
         {
-            while (!cts.IsCancellationRequested)
+            while (!_cts.IsCancellationRequested)
             {
-                await _wslService.ExecuteCommandAsync($"/wsl-init-data.sh", _productInformation.ContainerDesktopDataDistroName, cancellationToken: cts.Token);
-                if (!cts.IsCancellationRequested)
+                await _wslService.ExecuteCommandAsync($"/wsl-init-data.sh", _productInformation.ContainerDesktopDataDistroName, cancellationToken: _cts.Token);
+                if (!_cts.IsCancellationRequested)
                 {
                     await Task.Delay(1000);
                 }
             }
         });
-        _dataDistroInitTask = (task, cts);
+        _dataDistroInitTask = task;
         if(!WaitForDataDistroInitialization(2000))
         {
             throw new ContainerEngineException($"Could not initialize data distribution.");
@@ -83,9 +166,10 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     public void Stop()
     {
         RunningState = RunningState.Stopping;
+        StopPortForwarding();
         StopDistros();
         StopProxy();
-        _dataDistroInitTask.cts.Cancel();
+        _cts.Cancel();
         _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
         _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
         RunningState = RunningState.Stopped;
@@ -101,7 +185,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         if (enabled)
         {
-            var cts = new CancellationTokenSource();
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
             var task = Task.Run(() => _wslService.ExecuteCommandAsync($"/mnt/wsl/container-desktop/distro/wsl-distro-init.sh \"{name}\"", name, "root", cancellationToken: cts.Token));
             
             _enabledDistroProxies[name] = (task, cts);

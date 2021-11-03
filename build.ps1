@@ -20,11 +20,12 @@ docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKE
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip && unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d /src/dist"
 # Download docker-compose to /dist/docker
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
+docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64"
 # Build proxy for Windows and Linux and copy to /dist
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
 # Build distro image
-docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSION .
+docker build -t container-desktop:build --build-arg DOCKER_VERSION="$DOCKER_VERSION" .
 # Create WSL distro from the distro image and copy to /dist
 docker create --name cdbuild container-desktop:build
 docker run --rm -v "$($PWD):/src" --privileged -v //var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export cdbuild | gzip > /src/dist/container-desktop-distro.tar.gz"
