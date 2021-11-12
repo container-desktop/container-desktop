@@ -1,10 +1,10 @@
 # FAQ
-## Where does Container Desktop record errors and events during installation and runtime?
+## Where does Container Desktop record errors and events during installation and at runtime?
 
 Container Desktop uses Windows Event Log to record errors and events during installation and runtime. Use the following step to access the logs with Windows Event Viewer.
 
 1. Open a command prompt.
-2. Type eventvwr and press enter.
+2. Type `eventvwr` and press enter.
 3. Expand the "Windows Logs" and select "Application" logs.
 4. Filter the application for "Container Desktop" related events by Configuring "Filter current log..."
    1. Select Event sources "Container Desktop" and "Container Desktop Installer" and confirm by clicking "ok"
