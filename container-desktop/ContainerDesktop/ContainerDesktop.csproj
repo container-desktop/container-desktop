@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <RootNamespace>ContainerDesktop</RootNamespace>
+	<ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWPF>true</UseWPF>
     <UserSecretsId>d303237e-f4f0-4fb8-8654-3bf1e5d75c96</UserSecretsId>
@@ -14,13 +15,18 @@
     <StartupObject>ContainerDesktop.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Fonts\CascadiaCodePL.ttf" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="..\Assets\app.ico" Link="app.ico" />
     <Resource Include="..\Assets\app_run.ico" Link="app_run.ico" />
     <Resource Include="..\Assets\app_stop.ico" Link="app_stop.ico" />
+    <Resource Include="Fonts\CascadiaCodePL.ttf" />
     <Content Include="Container.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.1.2.30" />
     <PackageReference Include="Docker.DotNet" Version="3.125.5" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
@@ -36,6 +42,7 @@
     <PackageReference Include="Serilog.Extensions.Hosting" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Observable" Version="2.0.2" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />

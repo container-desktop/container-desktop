@@ -29,6 +29,13 @@
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
+                    <MenuItem Header="Port forwarding" ItemsSource="{Binding NetworkInterfaces}">
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <MenuItem Header="{Binding Name}" IsCheckable="True" IsChecked="{Binding Forwarded, Mode=TwoWay}" IsEnabled="{Binding Enabled}" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=DataContext.CheckNetworkInterfaceCommand}" CommandParameter="{Binding .}"/>
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Header="Documentation" Command="{Binding OpenDocumentationCommand}"/>
                     <Separator/>
@@ -38,6 +45,7 @@
                     <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
                     <Separator/>
+                    <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}"/>
                     <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>

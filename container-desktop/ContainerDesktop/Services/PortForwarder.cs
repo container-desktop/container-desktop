@@ -33,6 +33,24 @@ public class PortForwarder
 
     public void Stop()
     {
-        _cts.Cancel();
+        try
+        {
+            _cts.Cancel();
+            Task.WaitAll(_runningTasks.ToArray());
+        }
+        catch (AggregateException ex) when (ex.InnerExceptions.All(x => x is TaskCanceledException))
+        {
+        }
+        finally
+        {
+            try
+            {
+                _mainSocket.Close();
+                _mainSocket.Dispose();
+            }
+            catch (Exception ex)
+            {
+            }
+        }
     }
 }

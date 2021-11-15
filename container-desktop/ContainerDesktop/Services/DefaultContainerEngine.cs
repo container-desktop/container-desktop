@@ -6,6 +6,7 @@ using ContainerDesktop.Wsl;
 using Docker.DotNet;
 using System.Diagnostics;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -16,6 +17,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly IProcessExecutor _processExecutor;
     private readonly IConfigurationService _configurationService;
     private readonly IProductInformation _productInformation;
+    private readonly ILogger<DefaultContainerEngine> _logger;
     private Process _proxyProcess;
     private RunningState _runningState;
     private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
@@ -23,13 +25,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private Task _portForwardListenerTask;
     private CancellationTokenSource _cts;
     private Dictionary<string, PortForwarder> _portForwarders = new Dictionary<string, PortForwarder>();
+    private List<int> _ports = new List<int>();
 
-    public DefaultContainerEngine(IWslService wslService, IProcessExecutor processExecutor, IConfigurationService configurationService, IProductInformation productInformation)
+    public DefaultContainerEngine(
+        IWslService wslService, 
+        IProcessExecutor processExecutor, 
+        IConfigurationService configurationService, 
+        IProductInformation productInformation,
+        ILogger<DefaultContainerEngine> logger)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         // TODO: query the state
         _runningState = RunningState.Stopped;
         LocalCertsPath = Path.Combine(_productInformation.ContainerDesktopAppDataDir, "certs\\");
@@ -73,6 +82,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         {
             while (!_cts.IsCancellationRequested)
             {
+                _logger.LogInformation("Listening for port forward messages.");
                 await _wslService.ExecuteCommandAsync(
                     "nc -lk -U /var/run/cd-port-forward.sock", 
                     _productInformation.ContainerDesktopDistroName,
@@ -80,9 +90,11 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     cancellationToken: _cts.Token);
                 if (!_cts.IsCancellationRequested)
                 {
+                    _logger.LogWarning("Listening for port forward messages stopped unexpectedly, trying to restart.");
                     await Task.Delay(100);
                 }
             }
+            _logger.LogInformation("Stopped listening for port forward messages.");
         });
     }
 
@@ -94,27 +106,34 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         try
         {
             var cmdLine = line[2..];
+            var enabled = line.StartsWith('O');
             (var ipAddress, var port) = ParsePortForwardCmdLine(cmdLine);
             if (ipAddress == IPAddress.Any)
             {
-                var key = $"{ipAddress}:{port}";
-                if (_portForwarders.TryGetValue(key, out var existing))
+                if (enabled)
                 {
-                    existing.Stop();
-                    _portForwarders.Remove(key);
+                    if (!_ports.Contains(port))
+                    {
+                        _ports.Add(port);
+                    }
                 }
-
-                if (line.StartsWith('O'))
+                else
                 {
-                    var forwarder = new PortForwarder();
-                    forwarder.Start(new IPEndPoint(ipAddress, port), new IPEndPoint(ipAddress == IPAddress.Any ? IPAddress.Loopback : IPAddress.IPv6Loopback, port));
-                    _portForwarders.Add(key, forwarder);
+                    _ports.Remove(port);
+                }
+                if (_configurationService.Configuration.PortForwardInterfaces.Count > 0 && ipAddress == IPAddress.Any)
+                {
+                    foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces().Where(x => _configurationService.Configuration.PortForwardInterfaces.Contains(x.Id)))
+                    {
+                        EnablePortForwardingInterface(networkInterface, new[] { port }, enabled);
+                    }
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Just swallow, port forwarding is best effort
+            _logger.LogError(ex, $"Failed to process port forward message: {ex.Message}");
         }
     }
 
@@ -124,12 +143,14 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         {
             foreach (var e in _portForwarders)
             {
+                _logger.LogInformation($"Stop port forwarding {e.Key}");
                 e.Value.Stop();
             }
         }
-        catch
+        catch(Exception ex)
         {
             // Just swallow, port forwarding is best effort
+            _logger.LogError(ex, $"Failed to stop port forwarding: {ex.Message}");
         }
         _portForwarders.Clear();
     }
@@ -304,5 +325,38 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             _wslService.ExecuteCommand("ps -o comm", _productInformation.ContainerDesktopDataDistroName, stdout: s => tailIsRunning = s.StartsWith("tail"));
         }
         return cts.IsCancellationRequested;
+    }
+
+    public void EnablePortForwardingInterface(NetworkInterface networkInterface, bool enabled)
+    {
+        EnablePortForwardingInterface(networkInterface, _ports, enabled);
+    }
+
+    public void EnablePortForwardingInterface(NetworkInterface networkInterface, IEnumerable<int> ports, bool enabled)
+    {
+        var ipProps = networkInterface.GetIPProperties();
+        var addresses = ipProps.UnicastAddresses.Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address);
+        foreach (var port in ports)
+        {
+            foreach (var address in addresses)
+            {
+                var key = $"{address}:{port}";
+                if (_portForwarders.TryGetValue(key, out var existing))
+                {
+                    _logger.LogInformation("Stop port forwarding on {Address}:{Port}", address.ToString(), port);
+                    existing.Stop();
+                    _portForwarders.Remove(key);
+                }
+
+                if (enabled)
+                {
+                    var forwarder = new PortForwarder();
+                    _logger.LogInformation("Start port forwarding on {Address}:{Port}", address.ToString(), port);
+                    forwarder.Start(new IPEndPoint(address, port), new IPEndPoint(IPAddress.Loopback, port));
+                    _portForwarders.Add(key, forwarder);
+                }
+            }
+            
+        }
     }
 }

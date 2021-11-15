@@ -11,4 +11,5 @@ public class ContainerDesktopConfiguration
 
     public List<string> EnabledDistributions { get; } = new List<string>();
     public List<string> HiddenDistributions { get; }
+    public List<string> PortForwardInterfaces { get; } = new List<string>();
 }
