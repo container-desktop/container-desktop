@@ -45,7 +45,7 @@
                     <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
                     <Separator/>
-                    <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}"/>
+                    <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}" Visibility="Collapsed"/>
                     <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>

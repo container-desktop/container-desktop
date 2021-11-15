@@ -32,8 +32,8 @@ public class MainViewModel : NotifyObject
         IWslService wslService, 
         IConfigurationService configurationService,
         IProcessExecutor processExecutor,
-        IProductInformation productInformation,
-        LogStreamViewer logStreamViewer)
+        IProductInformation productInformation/*,
+        LogStreamViewer logStreamViewer*/)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
@@ -41,7 +41,7 @@ public class MainViewModel : NotifyObject
         _wslService = wslService;
         _configurationService = configurationService;
         _processExecutor = processExecutor;
-        _logStreamViewer = logStreamViewer;
+        //_logStreamViewer = logStreamViewer;
         ProductInformation = productInformation;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
@@ -106,7 +106,7 @@ public class MainViewModel : NotifyObject
             .Select(x => new WslDistributionItem { Name = x, Enabled = _configurationService.Configuration.EnabledDistributions.Contains(x)});
 
     public IEnumerable<PortForwardInterface> NetworkInterfaces => 
-        NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback).Select(x => new PortForwardInterface(x)
+        NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up).Select(x => new PortForwardInterface(x)
         {
             Forwarded = _configurationService.Configuration.PortForwardInterfaces.Contains(x.Id)
         });

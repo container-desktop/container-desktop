@@ -55,8 +55,8 @@ static class Program
         services.AddSingleton<IApplicationContext>(sp => sp.GetRequiredService<App>());
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
-        services.AddSingleton<LogStreamViewer>();
-        services.AddSingleton<ILogObserver>(sp => sp.GetService<LogStreamViewer>());
+        //services.AddSingleton<LogStreamViewer>();
+        //services.AddSingleton<ILogObserver>(sp => sp.GetService<LogStreamViewer>());
         services.AddCommon();
         services.AddWsl();
         services.AddProcessExecutor();
