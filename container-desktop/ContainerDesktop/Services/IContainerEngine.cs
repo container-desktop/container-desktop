@@ -1,4 +1,6 @@
-﻿namespace ContainerDesktop.Services;
+﻿using System.Net.NetworkInformation;
+
+namespace ContainerDesktop.Services;
 
 public interface IContainerEngine
 {
@@ -8,4 +10,5 @@ public interface IContainerEngine
     void Stop();
     void Restart();
     void EnableDistro(string name, bool enabled);
+    void EnablePortForwardingInterface(NetworkInterface networkInterface, bool enabled);
 }

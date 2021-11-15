@@ -30,7 +30,7 @@ static class Program
             {
                 builder
                     .AddJsonFile("appsettings.json", true)
-                    .AddUserSecrets<App>()
+                    .AddUserSecrets<App>(true)
                     .AddEnvironmentVariables("CONTAINERDESKTOP_");
             })
             .ConfigureServices(ConfigureServices)
@@ -40,6 +40,13 @@ static class Program
                 var productInfo = sp.GetRequiredService<IProductInformation>();
                 config.WriteTo.File(Path.Combine(productInfo.ContainerDesktopAppDataDir, "logs", "log.txt"), fileSizeLimitBytes: 1024 * 1024 * 10, rollOnFileSizeLimit: true);
                 config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.DisplayName));
+                config.WriteTo.Observers(observable =>
+                {
+                    foreach(var logObserver in sp.GetServices<ILogObserver>())
+                    {
+                        logObserver.SubscribeTo(observable);
+                    }
+                });
             });
 
     static void ConfigureServices(IServiceCollection services)
@@ -48,6 +55,8 @@ static class Program
         services.AddSingleton<IApplicationContext>(sp => sp.GetRequiredService<App>());
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
+        //services.AddSingleton<LogStreamViewer>();
+        //services.AddSingleton<ILogObserver>(sp => sp.GetService<LogStreamViewer>());
         services.AddCommon();
         services.AddWsl();
         services.AddProcessExecutor();

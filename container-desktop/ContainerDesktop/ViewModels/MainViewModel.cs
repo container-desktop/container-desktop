@@ -5,6 +5,7 @@ using ContainerDesktop.Processes;
 using ContainerDesktop.Services;
 using ContainerDesktop.UI.Wpf.Input;
 using ContainerDesktop.Wsl;
+using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -16,6 +17,7 @@ public class MainViewModel : NotifyObject
     private readonly IWslService _wslService;
     private readonly IConfigurationService _configurationService;
     private readonly IProcessExecutor _processExecutor;
+    private readonly LogStreamViewer _logStreamViewer;
     private bool _showTrayIcon;
     private bool _isStarted;
     private BitmapImage _trayIcon = _icon; // "/ContainerDesktop;component/app.ico";
@@ -30,7 +32,8 @@ public class MainViewModel : NotifyObject
         IWslService wslService, 
         IConfigurationService configurationService,
         IProcessExecutor processExecutor,
-        IProductInformation productInformation)
+        IProductInformation productInformation/*,
+        LogStreamViewer logStreamViewer*/)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
@@ -38,6 +41,7 @@ public class MainViewModel : NotifyObject
         _wslService = wslService;
         _configurationService = configurationService;
         _processExecutor = processExecutor;
+        //_logStreamViewer = logStreamViewer;
         ProductInformation = productInformation;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
@@ -46,6 +50,8 @@ public class MainViewModel : NotifyObject
         RestartCommand = new DelegateCommand(Restart, () => _containerEngine.RunningState == RunningState.Started);
         CheckWslDistroCommand = new DelegateCommand<WslDistributionItem>(ToggleWslDistro);
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
+        ViewLogStreamCommand = new DelegateCommand(ViewLogStream);
+        CheckNetworkInterfaceCommand = new DelegateCommand<PortForwardInterface>(TogglePortForwardInterface);
     }
 
     public IProductInformation ProductInformation { get; }
@@ -90,10 +96,20 @@ public class MainViewModel : NotifyObject
 
     public DelegateCommand OpenDocumentationCommand { get; }
 
+    public DelegateCommand ViewLogStreamCommand { get; }
+
+    public DelegateCommand<PortForwardInterface> CheckNetworkInterfaceCommand { get; }
+
     public IEnumerable<WslDistributionItem> WslDistributions =>
         _wslService.GetDistros()
             .Where(x => !_configurationService.Configuration.HiddenDistributions.Contains(x))
             .Select(x => new WslDistributionItem { Name = x, Enabled = _configurationService.Configuration.EnabledDistributions.Contains(x)});
+
+    public IEnumerable<PortForwardInterface> NetworkInterfaces => 
+        NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up).Select(x => new PortForwardInterface(x)
+        {
+            Forwarded = _configurationService.Configuration.PortForwardInterfaces.Contains(x.Id)
+        });
     
     private void Open()
     {
@@ -164,9 +180,37 @@ public class MainViewModel : NotifyObject
         });
     }
 
+    private void TogglePortForwardInterface(PortForwardInterface portForwardInterface)
+    {
+        Task.Run(() =>
+        {
+            SafeExecute($"{(portForwardInterface.Forwarded ? "start" : "stop")} port forwarding to interface {portForwardInterface.Name}", () =>
+            {
+                _containerEngine.EnablePortForwardingInterface(portForwardInterface.NetworkInterface, portForwardInterface.Forwarded);
+                if(portForwardInterface.Forwarded)
+                {
+                    if (!_configurationService.Configuration.PortForwardInterfaces.Contains(portForwardInterface.Id))
+                    {
+                        _configurationService.Configuration.PortForwardInterfaces.Add(portForwardInterface.Id);
+                    }
+                }
+                else
+                {
+                    _configurationService.Configuration.PortForwardInterfaces.Remove(portForwardInterface.Id);
+                }
+                _configurationService.Save();
+            });
+        });
+    }
+
     private void OpenDocumentation()
     {
         _processExecutor.Start(ProductInformation.WebSiteUrl, null, useShellExecute: true);
+    }
+
+    private void ViewLogStream()
+    {
+        _logStreamViewer.Show();
     }
 
     private void SafeExecute(string caption, Action action)
