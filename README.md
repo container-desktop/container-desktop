@@ -3,7 +3,7 @@
 
 # Container Desktop
 
-Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running om Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.
+Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running on Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.
 ## How it works?
 
 ![](docs/static/img/container-desktop-overview.png)
@@ -38,11 +38,12 @@ Container Desktop requires WLS2 which is supported on these Windows versions:
 
 **Installation Steps**
 
-1. Download the latest [Release](https://github.com/container-desktop/container-desktop/releases)
-2. (optional) Validate the file checksum  with the values in sha256sum.txt
+1. If you currently have docker-desktop installed, you need to **quit** *"Docker Desktop"*.
+2. Download the latest [Release](https://github.com/container-desktop/container-desktop/releases)
+3. (optional) Validate the file checksum  with the values in sha256sum.txt
 
     ```powershell
-    Get-FileHash .\ContainerDesktopInstaller.exe -Algorithm SHA256'
+    Get-FileHash .\ContainerDesktopInstaller.exe -Algorithm SHA256
     ```
 
 3. StartContainerDesktopInstaller.exe and click install to start the installation.
