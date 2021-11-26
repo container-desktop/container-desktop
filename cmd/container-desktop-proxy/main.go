@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/container-desktop/container-desktop/internal/httputil"
 	"github.com/container-desktop/container-desktop/internal/rewrite"
 	"github.com/container-desktop/container-desktop/internal/util"
 
