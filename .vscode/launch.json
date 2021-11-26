@@ -12,7 +12,7 @@
             "program": "${fileDirname}",
             "args":[
                 "--listen-address",
-                "npipe:////./pipe/mytest",
+                "http://localhost:5555",
                 "--target-address",
                 "https://localhost:2376",
                 "--tls-key",
