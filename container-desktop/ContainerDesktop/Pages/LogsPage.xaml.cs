@@ -1,23 +1,22 @@
 ﻿using ContainerDesktop.Services;
-using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Search;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 using System.Reactive.Linq;
-using System.Windows;
+using System.Windows.Controls;
 
-namespace ContainerDesktop;
+namespace ContainerDesktop.Pages;
 
 /// <summary>
-/// Interaction logic for LogStreamViewer.xaml
+/// Interaction logic for LogsPage.xaml
 /// </summary>
-public partial class LogStreamViewer : Window, ILogObserver
+public partial class LogsPage : Page, ILogObserver, IDisposable
 {
     private IDisposable _subscription;
     private static readonly JsonFormatter _formatter = new JsonFormatter(renderMessage: true);
 
-    public LogStreamViewer()
+    public LogsPage()
     {
         InitializeComponent();
         SearchPanel.Install(editor.TextArea);
@@ -43,9 +42,8 @@ public partial class LogStreamViewer : Window, ILogObserver
         }
     }
 
-    protected override void OnClosed(EventArgs e)
+    public void Dispose()
     {
         _subscription?.Dispose();
-        base.OnClosed(e);
     }
 }

@@ -26,6 +26,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private CancellationTokenSource _cts;
     private Dictionary<string, PortForwarder> _portForwarders = new Dictionary<string, PortForwarder>();
     private List<int> _ports = new List<int>();
+    private DnsConfigurator _dnsConfigurator;
 
     public DefaultContainerEngine(
         IWslService wslService, 
@@ -67,6 +68,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         _cts = new CancellationTokenSource();
         RunningState = RunningState.Starting;
         _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+        InitializeDnsConfigurator();
         InitializeDataDistro();
         InitializePortForwardListener();
         InitializeAndStartDaemon();
@@ -184,9 +186,22 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         }
     }
 
+    private void InitializeDnsConfigurator()
+    {
+        _dnsConfigurator?.Dispose();
+        _dnsConfigurator = new DnsConfigurator(_wslService, _configurationService, _productInformation, _logger);
+        _dnsConfigurator.Configure();
+    }
+
+    private void StopDnsConfigurator()
+    {
+        _dnsConfigurator?.Dispose();
+    }
+
     public void Stop()
     {
         RunningState = RunningState.Stopping;
+        StopDnsConfigurator();
         StopPortForwarding();
         StopDistros();
         StopProxy();
@@ -227,8 +242,14 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Dispose()
     {
-        Stop();
-        _proxyProcess?.Dispose();
+        try
+        {
+            Stop();
+        }
+        finally
+        {
+            _proxyProcess?.Dispose();
+        }
     }
 
     private void InitializeAndStartDaemon()

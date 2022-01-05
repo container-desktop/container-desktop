@@ -52,4 +52,17 @@ public partial class App : ApplicationWithContext
     {
         (MainWindow as MainWindow)?.QuitApplication();
     }
+
+    public override void ShowSettings()
+    {
+        var mainWindow = (MainWindow)MainWindow;
+        mainWindow.ShowSettings();
+    }
+
+    //public override void ShowMainWindow()
+    //{
+    //    base.ShowMainWindow();
+    //    var mainWindow = (MainWindow)MainWindow;
+    //    mainWindow.ShowMainPage();
+    //}
 }

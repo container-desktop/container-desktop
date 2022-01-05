@@ -57,6 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DesiredStateConfiguration\DesiredStateConfiguration.csproj" />
     <ProjectReference Include="..\Wpf\Wpf.csproj" />

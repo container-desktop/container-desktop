@@ -2,9 +2,11 @@
     x:Class="ContainerDesktop.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ContainerDesktop"
+    xmlns:local="clr-namespace:ContainerDesktop"
+    xmlns:a="clr-namespace:ContainerDesktop.Abstractions;assembly=ContainerDesktop.Abstractions"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:wpf="http://container-desktop.io/wpf"
+    xmlns:c="clr-namespace:ContainerDesktop.Converters"
     Startup="AppStartup">
     <Application.Resources>
         <ResourceDictionary>
@@ -14,6 +16,128 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <c:CategoryGlyphConverter x:Key="CategoryGlyphConverter"/>
+            <c:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+            <c:EnumNameConverter x:Key="EnumNameConverter"/>
+            <c:EnumTooltipConverter x:Key="EnumTooltipConverter"/>
+            <Style x:Key="RadioButtonList" TargetType="{x:Type ListBox}">
+                <!-- ControlTemplate taken from MSDN http://msdn.microsoft.com/en-us/library/ms754242.aspx -->
+                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                <Setter Property="OverridesDefaultStyle" Value="true"/>
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+                <Setter Property="MinWidth" Value="120"/>
+                <Setter Property="MinHeight" Value="95"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBox">
+                            <Border Name="Border" Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="2">
+                                <ScrollViewer Margin="0" Focusable="false">
+                                    <StackPanel Margin="2" IsItemsHost="True" />
+                                </ScrollViewer>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter TargetName="Border" Property="Background"
+                                Value="Transparent" />
+                                    <Setter TargetName="Border" Property="BorderBrush"
+                                Value="Transparent" />
+                                </Trigger>
+                                <Trigger Property="IsGrouping" Value="true">
+                                    <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ListBoxItem}" >
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <Border Name="theBorder" Background="Transparent">
+                                            <RadioButton Focusable="False" IsHitTestVisible="False"
+                                             IsChecked="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsSelected, Mode=TwoWay}">
+                                                <ContentPresenter />
+                                            </RadioButton>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <local:MenuItemTemplateSelector x:Key="menuItemSelector">
+                <local:MenuItemTemplateSelector.ItemTemplate>
+                    <DataTemplate DataType="a:Category">
+                        <ui:NavigationViewItem Content="{Binding Name}" ToolTip="{Binding Tooltip}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="{Binding Glyph, Converter={StaticResource CategoryGlyphConverter}}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </DataTemplate>
+                </local:MenuItemTemplateSelector.ItemTemplate>
+                <local:MenuItemTemplateSelector.HeaderTemplate>
+                    <DataTemplate DataType="a:Header">
+                        <ui:NavigationViewItemHeader Content="{Binding Name}"/>
+                    </DataTemplate>
+                </local:MenuItemTemplateSelector.HeaderTemplate>
+                <local:MenuItemTemplateSelector.SeperatorTemplate>
+                    <DataTemplate DataType="a:Separator">
+                        <ui:NavigationViewItemSeparator/>
+                    </DataTemplate>
+                </local:MenuItemTemplateSelector.SeperatorTemplate>
+            </local:MenuItemTemplateSelector>
+            <local:SettingsPropertyTemplateSelector x:Key="settingsPropertySelector">
+                <local:SettingsPropertyTemplateSelector.BooleanTemplate>
+                    <DataTemplate>
+                        <ui:ToggleSwitch Header="{Binding DisplayName}" IsOn="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.BooleanTemplate>
+                <local:SettingsPropertyTemplateSelector.StringTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <Label Content="{Binding DisplayName}"/>
+                            <TextBox Text="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" MinWidth="150" />    
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.StringTemplate>
+                <local:SettingsPropertyTemplateSelector.PasswordTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <Label Content="{Binding DisplayName}"/>
+                            <PasswordBox Password="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" MinWidth="150" />
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.PasswordTemplate>
+                <local:SettingsPropertyTemplateSelector.EnumTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <Label Content="{Binding DisplayName}"/>
+                            <ListBox Style="{DynamicResource RadioButtonList}" ItemsSource="{Binding EnumValues}" SelectedValue="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ., Converter={StaticResource EnumNameConverter}}" ToolTip="{Binding ., Converter={StaticResource EnumTooltipConverter}}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.EnumTemplate>
+                <!--<local:SettingsPropertyTemplateSelector.FileTemplate>
+                    <DataTemplate>
+                        <local:FileSelector Header="{Binding DisplayName}" FileName="{Binding Value, Mode=TwoWay}" />
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.FileTemplate>-->
+            </local:SettingsPropertyTemplateSelector>
+            
         </ResourceDictionary>
     </Application.Resources>
 </wpf:ApplicationWithContext>

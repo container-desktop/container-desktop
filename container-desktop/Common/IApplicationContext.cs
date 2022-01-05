@@ -6,5 +6,6 @@ public interface IApplicationContext
     string LastErrorMessage { get; set; }
     void QuitApplication();
     void ShowMainWindow();
+    void ShowSettings();
     void InvokeOnDispatcher(Action action);
 }

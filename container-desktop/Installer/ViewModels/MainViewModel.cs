@@ -1,8 +1,8 @@
 ﻿namespace ContainerDesktop.Installer.ViewModels;
 
+using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
 using ContainerDesktop.DesiredStateConfiguration;
-using ContainerDesktop.UI.Wpf;
 using ContainerDesktop.UI.Wpf.Input;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;

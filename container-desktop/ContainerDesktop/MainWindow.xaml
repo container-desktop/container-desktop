@@ -43,21 +43,15 @@
                     <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Restart" Command="{Binding RestartCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <Separator/>
+                    <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" />
+                    <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}" />
+                    <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
                     <Separator/>
-                    <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}" Visibility="Collapsed"/>
-                    <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False"/>
+                    <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False" HorizontalAlignment="Center"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <ui:NavigationView IsSettingsVisible="True" 
-                           AlwaysShowHeader="True"
-                           Loaded="NavigationViewLoaded" 
-                           SelectionChanged="NavigationViewSelectionChanged">
-            <ScrollViewer>
-                <ui:Frame x:Name="contentFrame" Padding="12,0,12,24" IsTabStop="True"></ui:Frame>
-            </ScrollViewer>
-        </ui:NavigationView>
-
+        <ui:Frame x:Name="mainFrame"/>
     </Grid>
 </Window>

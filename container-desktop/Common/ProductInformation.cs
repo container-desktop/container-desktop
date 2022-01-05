@@ -23,6 +23,12 @@ public class ProductInformation : IProductInformation
     
     private static string GetVersion()
     {
-        return ThisAssembly.AssemblyInformationalVersion;
+        var version = ThisAssembly.AssemblyInformationalVersion;
+        var index = version.IndexOf('+');
+        if (index >= 0)
+        {
+            return version[0..index];
+        }
+        return version;
     }
 }

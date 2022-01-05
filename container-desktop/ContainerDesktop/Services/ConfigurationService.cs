@@ -20,8 +20,11 @@ public class ConfigurationService : IConfigurationService
         Configuration = new ContainerDesktopConfiguration(productInformation);
         if (_fileSystem.File.Exists(_configurationFilePath))
         {
-            var json = _fileSystem.File.ReadAllText(_configurationFilePath);
-            JsonConvert.PopulateObject(json, Configuration);
+            Load();
+        }
+        else
+        {
+            Save();
         }
     }
 
@@ -31,5 +34,11 @@ public class ConfigurationService : IConfigurationService
     {
         var json = JsonConvert.SerializeObject(Configuration);
         _fileSystem.File.WriteAllText(_configurationFilePath, json);
+    }
+
+    public void Load()
+    {
+        var json = _fileSystem.File.ReadAllText(_configurationFilePath);
+        JsonConvert.PopulateObject(json, Configuration);
     }
 }
