@@ -63,7 +63,7 @@ jobs:
         run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
       
       - name: build port-forwarder for Windows and copy to /dist 
-        run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-port-forwarder -e GOOS=WINDOWS -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
+        run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-port-forwarder -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
 
       - name: Build distro image
         run: docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSION .
