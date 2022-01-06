@@ -27,4 +27,10 @@ require (
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 )
 
-require golang.org/x/text v0.3.6 // indirect
+require (
+	github.com/ishidawataru/sctp v0.0.0-20210707070123-9a39160e9062
+	golang.org/x/text v0.3.6 // indirect
+	gotest.tools/v3 v3.0.3
+)
+
+require github.com/pkg/errors v0.9.1 // indirect

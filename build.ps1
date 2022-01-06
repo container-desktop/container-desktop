@@ -24,6 +24,8 @@ docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -
 # Build proxy for Windows and Linux and copy to /dist
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
+# build port-forwarder for Windows and copy to /dist
+docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-port-forwarder -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
 # Build distro image
 docker build -t container-desktop:build --build-arg DOCKER_VERSION="$DOCKER_VERSION" .
 # Create WSL distro from the distro image and copy to /dist

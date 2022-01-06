@@ -30,7 +30,7 @@ public partial class MainPage : Page
     {
         if (args.IsSettingsSelected)
         {
-            NavigationService.Navigate(_settingsPage);
+            contentFrame.Navigate(_settingsPage);
         }
         else if(args.SelectedItem is Category category && category.PageType != null)
         {

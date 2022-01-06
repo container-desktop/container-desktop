@@ -24,8 +24,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private Task _dataDistroInitTask;
     private Task _portForwardListenerTask;
     private CancellationTokenSource _cts;
-    private Dictionary<string, PortForwarder> _portForwarders = new Dictionary<string, PortForwarder>();
-    private List<int> _ports = new List<int>();
+    private Dictionary<string, PortForwarder> _portForwarders = new();
+    private List<int> _ports = new();
     private DnsConfigurator _dnsConfigurator;
 
     public DefaultContainerEngine(
@@ -110,18 +110,28 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             var cmdLine = line[2..];
             var enabled = line.StartsWith('O');
             (var ipAddress, var port) = ParsePortForwardCmdLine(cmdLine);
+            _logger.LogInformation("Received port forward command. Enabled={Enabled}, IP Address={IPAddress}, Port={Port}", enabled, ipAddress, port);
             if (ipAddress == IPAddress.Any)
             {
+                _logger.LogInformation("Processing port forward command for IPv4");
                 if (enabled)
                 {
+                    _logger.LogInformation("Start port forward for port={Port}", port);
                     if (!_ports.Contains(port))
                     {
                         _ports.Add(port);
+                        _logger.LogInformation("Added Port={Port} to the list of forwarded ports", port);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Port={Port} is already in the list of forwarded ports", port);
                     }
                 }
                 else
                 {
+                    _logger.LogInformation("Stop port forward for port={Port}", port);
                     _ports.Remove(port);
+                    _logger.LogInformation("Removed Port={Port} to the list of forwarded ports", port);
                 }
                 if (_configurationService.Configuration.PortForwardInterfaces.Count > 0 && ipAddress == IPAddress.Any)
                 {
@@ -129,6 +139,10 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     {
                         EnablePortForwardingInterface(networkInterface, new[] { port }, enabled);
                     }
+                }
+                else
+                {
+                    _logger.LogInformation("No interfaces enabled to port forward to. Doing nothing");
                 }
             }
         }
@@ -361,23 +375,29 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         {
             foreach (var address in addresses)
             {
-                var key = $"{address}:{port}";
-                if (_portForwarders.TryGetValue(key, out var existing))
+                try
                 {
-                    _logger.LogInformation("Stop port forwarding on {Address}:{Port}", address.ToString(), port);
-                    existing.Stop();
-                    _portForwarders.Remove(key);
-                }
+                    var key = $"{address}:{port}";
+                    if (_portForwarders.TryGetValue(key, out var existing))
+                    {
+                        _logger.LogInformation("Stop port forwarding on {Address}:{Port}", address.ToString(), port);
+                        existing.Stop();
+                        _portForwarders.Remove(key);
+                    }
 
-                if (enabled)
+                    if (enabled)
+                    {
+                        var forwarder = new PortForwarder(_processExecutor);
+                        _logger.LogInformation("Start port forwarding on {Address}:{Port}", address.ToString(), port);
+                        forwarder.Start(new IPEndPoint(address, port), new IPEndPoint(IPAddress.Loopback, port));
+                        _portForwarders.Add(key, forwarder);
+                    }
+                }
+                catch (Exception ex)
                 {
-                    var forwarder = new PortForwarder();
-                    _logger.LogInformation("Start port forwarding on {Address}:{Port}", address.ToString(), port);
-                    forwarder.Start(new IPEndPoint(address, port), new IPEndPoint(IPAddress.Loopback, port));
-                    _portForwarders.Add(key, forwarder);
+                    _logger.LogError(ex, "Failed to forward port on {Address}:{Port}: {Message}", address.ToString(), port, ex.Message);
                 }
             }
-            
         }
     }
 }

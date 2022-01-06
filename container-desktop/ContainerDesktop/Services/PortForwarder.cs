@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using ContainerDesktop.Processes;
+using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace ContainerDesktop.Services;
 
@@ -9,48 +10,36 @@ public class PortForwarder
     private readonly Socket _mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
     private List<Task> _runningTasks = new List<Task>();
+    private readonly IProcessExecutor _processExecutor;
+    private Process _forwarder;
+
+    public PortForwarder(IProcessExecutor processExecutor)
+    {
+        _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+    }
 
     public void Start(IPEndPoint local, IPEndPoint remote)
     {
-        _mainSocket.Bind(local);
-        _mainSocket.Listen(10);
-
-        _runningTasks.Add(Task.Run(async () =>
+        var proxyPath = Path.Combine(AppContext.BaseDirectory, "Resources", "container-desktop-port-forwarder.exe");
+        var args = new ArgumentBuilder()
+            .Add("-proto", "tcp")
+            .Add("-frontend-ip", local.Address.ToString())
+            .Add("-frontend-port", local.Port.ToString())
+            .Add("-backend-ip", remote.Address.ToString())
+            .Add("-backend-port", remote.Port.ToString())
+            .Build();
+        _forwarder = _processExecutor.Start(proxyPath, args);
+        if (_forwarder.WaitForExit(1000))
         {
-            while (!_cts.IsCancellationRequested)
-            {
-                var source = await _mainSocket.AcceptAsync(_cts.Token);
-                var destination = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                await destination.ConnectAsync(remote, _cts.Token);
-                var sourceStream = new NetworkStream(source);
-                var destinationStream = new NetworkStream(destination);
-                var copySourceToDestination = Task.Run(() => sourceStream.CopyToAsync(destinationStream, _cts.Token));
-                var copyDestinationToSource = Task.Run(() => destinationStream.CopyToAsync(sourceStream, _cts.Token));
-                _runningTasks.Add(Task.WhenAll(copySourceToDestination, copyDestinationToSource));
-            }
-        }));
+            throw new ContainerEngineException("Failed to start the proxy.");
+        }
     }
 
     public void Stop()
     {
-        try
+        if (_forwarder?.HasExited == false)
         {
-            _cts.Cancel();
-            Task.WaitAll(_runningTasks.ToArray());
-        }
-        catch (AggregateException ex) when (ex.InnerExceptions.All(x => x is TaskCanceledException))
-        {
-        }
-        finally
-        {
-            try
-            {
-                _mainSocket.Close();
-                _mainSocket.Dispose();
-            }
-            catch (Exception ex)
-            {
-            }
+            _forwarder.Kill();
         }
     }
 }
