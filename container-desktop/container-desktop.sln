@@ -17,13 +17,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Installer", "Installer\Inst
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{8BF6A63A-4EBA-44AD-A61A-970BF208F13C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesiredStateConfiguration", "DesiredStateConfiguration\DesiredStateConfiguration.csproj", "{99729BBA-6ABB-4BEA-9BEE-915B2A7EE547}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesiredStateConfiguration", "DesiredStateConfiguration\DesiredStateConfiguration.csproj", "{99729BBA-6ABB-4BEA-9BEE-915B2A7EE547}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Processes", "Processes\Processes.csproj", "{EDE37527-35C3-4D02-AEC4-4EB800DC37C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf", "Wpf\Wpf.csproj", "{821F05AF-455F-4252-A5C6-554594A3B565}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wpf", "Wpf\Wpf.csproj", "{821F05AF-455F-4252-A5C6-554594A3B565}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsl", "Wsl\Wsl.csproj", "{9187EFAE-094A-42D7-9AC5-109835E14869}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wsl", "Wsl\Wsl.csproj", "{9187EFAE-094A-42D7-9AC5-109835E14869}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "Abstractions\Abstractions.csproj", "{8F55F175-0454-4C16-A70B-CC95CEF811DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,6 +149,22 @@ Global
 		{9187EFAE-094A-42D7-9AC5-109835E14869}.Release|x64.Build.0 = Release|Any CPU
 		{9187EFAE-094A-42D7-9AC5-109835E14869}.Release|x86.ActiveCfg = Release|Any CPU
 		{9187EFAE-094A-42D7-9AC5-109835E14869}.Release|x86.Build.0 = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|arm64.Build.0 = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|x64.Build.0 = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Debug|x86.Build.0 = Debug|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|arm64.ActiveCfg = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|arm64.Build.0 = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x64.ActiveCfg = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x64.Build.0 = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x86.ActiveCfg = Release|Any CPU
+		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

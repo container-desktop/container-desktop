@@ -149,7 +149,7 @@ internal static class NativeMethods
             var atts = new LUID_AND_ATTRIBUTES[privileges.Length];
             for (var i = 0; i < privileges.Length; i++)
             {
-                PInvoke.User32.LUID lid = new PInvoke.User32.LUID();
+                PInvoke.User32.LUID lid = new();
                 
                 if (!LookupPrivilegeValue(null, privileges[i], out lid))
                 {
@@ -161,7 +161,7 @@ internal static class NativeMethods
                     Luid = lid
                 };
             }
-            TOKEN_PRIVILEGES tp = new TOKEN_PRIVILEGES
+            TOKEN_PRIVILEGES tp = new()
             {
                 PrivilegeCount = atts.Length,
                 Privileges = atts

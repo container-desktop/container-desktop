@@ -1,4 +1,4 @@
-﻿using ContainerDesktop.Common;
+﻿using ContainerDesktop.Abstractions;
 
 namespace ContainerDesktop.ViewModels;
 

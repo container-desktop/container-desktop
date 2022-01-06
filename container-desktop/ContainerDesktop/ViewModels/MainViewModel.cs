@@ -1,6 +1,8 @@
 ﻿namespace ContainerDesktop.ViewModels;
 
+using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
+using ContainerDesktop.Pages;
 using ContainerDesktop.Processes;
 using ContainerDesktop.Services;
 using ContainerDesktop.UI.Wpf.Input;
@@ -12,19 +14,19 @@ using System.Windows.Media.Imaging;
 
 public class MainViewModel : NotifyObject
 {
+    private static readonly BitmapImage _icon = new(new Uri("pack://application:,,,/app.ico"));
+    private static readonly BitmapImage _runIcon = new(new Uri("pack://application:,,,/app_run.ico"));
+    private static readonly BitmapImage _stopIcon = new(new Uri("pack://application:,,,/app_stop.ico"));
+
     private readonly IApplicationContext _applicationContext;
     private readonly IContainerEngine _containerEngine;
     private readonly IWslService _wslService;
     private readonly IConfigurationService _configurationService;
     private readonly IProcessExecutor _processExecutor;
-    private readonly LogStreamViewer _logStreamViewer;
     private bool _showTrayIcon;
     private bool _isStarted;
     private BitmapImage _trayIcon = _icon; // "/ContainerDesktop;component/app.ico";
-
-    private static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/app.ico"));
-    private static BitmapImage _runIcon = new BitmapImage(new Uri("pack://application:,,,/app_run.ico"));
-    private static BitmapImage _stopIcon = new BitmapImage(new Uri("pack://application:,,,/app_stop.ico"));
+    private IMenuItem _selectedMenuItem;
 
     public MainViewModel(
         IApplicationContext applicationContext, 
@@ -32,8 +34,7 @@ public class MainViewModel : NotifyObject
         IWslService wslService, 
         IConfigurationService configurationService,
         IProcessExecutor processExecutor,
-        IProductInformation productInformation/*,
-        LogStreamViewer logStreamViewer*/)
+        IProductInformation productInformation)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
@@ -41,7 +42,6 @@ public class MainViewModel : NotifyObject
         _wslService = wslService;
         _configurationService = configurationService;
         _processExecutor = processExecutor;
-        //_logStreamViewer = logStreamViewer;
         ProductInformation = productInformation;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
@@ -52,6 +52,13 @@ public class MainViewModel : NotifyObject
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
         ViewLogStreamCommand = new DelegateCommand(ViewLogStream);
         CheckNetworkInterfaceCommand = new DelegateCommand<PortForwardInterface>(TogglePortForwardInterface);
+        OpenSettingsCommand = new DelegateCommand(OpenSettings);
+        var menuItems = new List<IMenuItem>
+        {
+            new Category { Name = "Logs", PageType = typeof(LogsPage), Glyph = Symbol.Dictionary }
+        };
+        MenuItems = menuItems;
+        SelectedMenuItem = menuItems[0];
     }
 
     public IProductInformation ProductInformation { get; }
@@ -84,6 +91,8 @@ public class MainViewModel : NotifyObject
 
     public DelegateCommand OpenCommand { get; }
 
+    public DelegateCommand OpenSettingsCommand { get; }
+
     public ICommand QuitCommand { get; }
 
     public DelegateCommand StartCommand { get; }
@@ -110,11 +119,24 @@ public class MainViewModel : NotifyObject
         {
             Forwarded = _configurationService.Configuration.PortForwardInterfaces.Contains(x.Id)
         });
-    
+
+    public IEnumerable<IMenuItem> MenuItems { get; }
+
+    public IMenuItem SelectedMenuItem
+    {
+        get => _selectedMenuItem;
+        set => SetValueAndNotify(ref _selectedMenuItem, value);
+    }
+
     private void Open()
     {
         // TODO: uncomment when window has actually something to show.
-        //_applicationContext.ShowMainWindow();
+        _applicationContext.ShowMainWindow();
+    }
+
+    private void OpenSettings()
+    {
+        _applicationContext.ShowSettings();
     }
 
     private void Quit()
@@ -210,7 +232,13 @@ public class MainViewModel : NotifyObject
 
     private void ViewLogStream()
     {
-        _logStreamViewer.Show();
+        _applicationContext.ShowMainWindow();
+        var menuItem = MenuItems.OfType<Category>().FirstOrDefault(x => x.PageType == typeof(LogsPage));
+        if(menuItem != null)
+        {
+            SelectedMenuItem = null;
+            SelectedMenuItem = menuItem;
+        }
     }
 
     private void SafeExecute(string caption, Action action)

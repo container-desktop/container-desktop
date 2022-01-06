@@ -1,11 +1,11 @@
 ﻿using ContainerDesktop.Common;
+using ContainerDesktop.Pages;
 using ContainerDesktop.Services;
 using ContainerDesktop.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System.IO.Abstractions;
 
 namespace ContainerDesktop;
 
@@ -55,12 +55,15 @@ static class Program
         services.AddSingleton<IApplicationContext>(sp => sp.GetRequiredService<App>());
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
-        //services.AddSingleton<LogStreamViewer>();
-        //services.AddSingleton<ILogObserver>(sp => sp.GetService<LogStreamViewer>());
         services.AddCommon();
         services.AddWsl();
         services.AddProcessExecutor();
         services.AddSingleton<IContainerEngine, DefaultContainerEngine>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
+        services.AddSingleton<MainPage>();
+        services.AddSingleton<SettingsPage>();
+        services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<LogsPage>();
+        services.AddSingleton<ILogObserver>(sp => sp.GetService<LogsPage>());
     }
 }

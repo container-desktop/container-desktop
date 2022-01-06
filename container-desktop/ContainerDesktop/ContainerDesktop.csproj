@@ -26,9 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.1.2.30" />
+    <PackageReference Include="AvalonEdit" Version="6.1.3.50" />
     <PackageReference Include="Docker.DotNet" Version="3.125.5" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.0" />
@@ -50,7 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\DesiredStateConfiguration\DesiredStateConfiguration.csproj" />
     <ProjectReference Include="..\Wpf\Wpf.csproj" />
     <ProjectReference Include="..\Wsl\Wsl.csproj" />
   </ItemGroup>
@@ -61,6 +64,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\dist\container-desktop-port-forwarder.exe" Link="Resources\container-desktop-port-forwarder.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\..\dist\container-desktop-proxy-windows-amd64.exe" Link="Resources\container-desktop-proxy-windows-amd64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

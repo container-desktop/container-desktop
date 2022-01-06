@@ -6,6 +6,7 @@ public class ProductInformation : IProductInformation
         InstallDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Name);
         AppPath = Path.Combine(InstallDir, $"{Name}.exe");
         ProxyPath = Path.Combine(InstallDir, "Resources", $"container-desktop-proxy-windows-amd64.exe");
+        ProxyPath = Path.Combine(InstallDir, "Resources", $"container-desktop-port-forwarder.exe");
         ContainerDesktopAppDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Name);
     }
 
@@ -16,6 +17,7 @@ public class ProductInformation : IProductInformation
     public string InstallDir { get; } 
     public string AppPath { get; }
     public string ProxyPath { get; } 
+    public string PortForwarderPath { get; }
     public string ContainerDesktopDistroName { get; } = "container-desktop";
     public string ContainerDesktopDataDistroName { get; } = "container-desktop-data";
     public string ContainerDesktopAppDataDir { get; } 
@@ -23,6 +25,12 @@ public class ProductInformation : IProductInformation
     
     private static string GetVersion()
     {
-        return ThisAssembly.AssemblyInformationalVersion;
+        var version = ThisAssembly.AssemblyInformationalVersion;
+        var index = version.IndexOf('+');
+        if (index >= 0)
+        {
+            return version[0..index];
+        }
+        return version;
     }
 }

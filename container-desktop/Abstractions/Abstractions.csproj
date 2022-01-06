@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<RootNamespace>ContainerDesktop.Abstractions</RootNamespace>
+	<AssemblyName>ContainerDesktop.Abstractions</AssemblyName>
+	<UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

@@ -9,7 +9,7 @@ public class ShellLink : IDisposable
 {
     private IShellLink _shellLinkW;
 
-    private readonly PropertyKey _appUserModelIDKey = new PropertyKey("{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}", 5);
+    private readonly PropertyKey _appUserModelIDKey = new("{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}", 5);
 
     public ShellLink() : this(null)
     {
@@ -49,8 +49,8 @@ public class ShellLink : IDisposable
     {
         get
         {
-            StringBuilder targetPath = new StringBuilder(260);
-            WIN32_FIND_DATAW data = default(WIN32_FIND_DATAW);
+            StringBuilder targetPath = new(260);
+            WIN32_FIND_DATAW data = default;
             VerifySucceeded(_shellLinkW.GetPath(targetPath, targetPath.Capacity, ref data, 2u));
             return targetPath.ToString();
         }
@@ -64,7 +64,7 @@ public class ShellLink : IDisposable
     {
         get
         {
-            StringBuilder desc = new StringBuilder(1024);
+            StringBuilder desc = new(1024);
             VerifySucceeded(_shellLinkW.GetDescription(desc, desc.Capacity));
             return desc.ToString();
         }
@@ -78,7 +78,7 @@ public class ShellLink : IDisposable
     {
         get
         {
-            StringBuilder iconPath = new StringBuilder(260);
+            StringBuilder iconPath = new(260);
             VerifySucceeded(_shellLinkW.GetIconLocation(iconPath, iconPath.Capacity, out var _));
             return iconPath.ToString();
         }
@@ -92,7 +92,7 @@ public class ShellLink : IDisposable
     {
         get
         {
-            StringBuilder arguments = new StringBuilder(1024);
+            StringBuilder arguments = new(1024);
             VerifySucceeded(_shellLinkW.GetArguments(arguments, arguments.Capacity));
             return arguments.ToString();
         }
@@ -106,7 +106,7 @@ public class ShellLink : IDisposable
     {
         get
         {
-            using PropVariant pv = new PropVariant();
+            using PropVariant pv = new();
             IPropertyStore propertyStore = GetPropertyStore();
             PropertyKey key = _appUserModelIDKey;
             VerifySucceeded(propertyStore.GetValue(ref key, pv));
@@ -118,7 +118,7 @@ public class ShellLink : IDisposable
         }
         set
         {
-            using PropVariant pv = new PropVariant(value);
+            using PropVariant pv = new(value);
             IPropertyStore propertyStore = GetPropertyStore();
             PropertyKey key = _appUserModelIDKey;
             VerifySucceeded(propertyStore.SetValue(ref key, pv));
@@ -179,8 +179,7 @@ public class ShellLink : IDisposable
 
     private IPersistFile GetPersistFile()
     {
-        IPersistFile persistFile;
-        if ((persistFile = _shellLinkW as IPersistFile) == null)
+        if (_shellLinkW is not IPersistFile persistFile)
         {
             throw new InvalidCastException("Failed to create IPersistFile.");
         }
@@ -189,8 +188,7 @@ public class ShellLink : IDisposable
 
     private IPropertyStore GetPropertyStore()
     {
-        IPropertyStore propertyStore;
-        if ((propertyStore = _shellLinkW as IPropertyStore) == null)
+        if (_shellLinkW is not IPropertyStore propertyStore)
         {
             throw new InvalidCastException("Failed to create IPropertyStore.");
         }

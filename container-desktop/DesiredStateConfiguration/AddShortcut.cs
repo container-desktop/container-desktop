@@ -14,9 +14,11 @@ public class AddShortcut : ResourceBase
 
     public override void Set(ConfigurationContext context)
     {
-        var shellLink = new ShellLink();
-        shellLink.Description = Environment.ExpandEnvironmentVariables(LinkDescription);
-        shellLink.TargetPath = Environment.ExpandEnvironmentVariables(TargetPath);
+        ShellLink shellLink = new() 
+        {
+            Description = Environment.ExpandEnvironmentVariables(LinkDescription),
+            TargetPath = Environment.ExpandEnvironmentVariables(TargetPath)
+        };
         shellLink.Save(LinkFileName);
     }
 

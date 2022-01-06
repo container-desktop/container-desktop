@@ -13,7 +13,7 @@ using System.Reflection;
 /// </summary>
 public class SubTypeJsonConverter<TBase> : JsonConverter
 {
-    private static readonly Dictionary<Type, Dictionary<string, Type>> _subTypeCache = new Dictionary<Type, Dictionary<string, Type>>();
+    private static readonly Dictionary<Type, Dictionary<string, Type>> _subTypeCache = new();
     private readonly string _typePropertyName;
     private readonly IServiceProvider _serviceProvider;
     private readonly Func<Type, string> _typeNameFormatter;

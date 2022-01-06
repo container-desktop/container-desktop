@@ -1,6 +1,8 @@
 ﻿namespace ContainerDesktop;
 
+using ContainerDesktop.Pages;
 using ContainerDesktop.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Interop;
@@ -15,23 +17,37 @@ public partial class MainWindow : Window
 
     private bool _applicationQuit;
     private readonly ILogger<MainWindow> _logger;
+    private readonly MainPage _mainPage;
 
-    public MainWindow(MainViewModel mainViewModel, ILogger<MainWindow> logger)
+    public MainWindow(MainViewModel mainViewModel, ILogger<MainWindow> logger, MainPage mainPage)
     {
         _logger = logger;
+        _mainPage = mainPage;
         InitializeComponent();
         DataContext = mainViewModel;
         var helper = new WindowInteropHelper(this);
         var handle = helper.EnsureHandle();
-        logger.LogInformation($"MainWindow handle: {handle:X}");
+        logger.LogInformation("MainWindow handle: {MainWindowHandle}", $"{handle:X}");
         var source = HwndSource.FromHwnd(handle);
         source.AddHook(HwndProcHook);
+        mainFrame.Navigate(mainPage);
     }
 
     public void QuitApplication()
     {
         _applicationQuit = true;
         Close();
+    }
+
+    public void ShowSettings()
+    {
+        Show();
+        _mainPage.ShowSettings();
+    }
+
+    public void ShowMainPage()
+    {
+        mainFrame.Navigate(_mainPage);
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -44,19 +60,6 @@ public partial class MainWindow : Window
         else
         {
             base.OnClosing(e);
-        }
-    }
-
-    private void NavigationViewLoaded(object sender, RoutedEventArgs e)
-    {
-        
-    }
-
-    private void NavigationViewSelectionChanged(ModernWpf.Controls.NavigationView sender, ModernWpf.Controls.NavigationViewSelectionChangedEventArgs args)
-    {
-        if(args.IsSettingsSelected)
-        {
-            contentFrame.Navigate(typeof(Settings), null, args.RecommendedNavigationTransitionInfo);
         }
     }
 

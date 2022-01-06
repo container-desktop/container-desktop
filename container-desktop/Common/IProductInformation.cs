@@ -8,6 +8,7 @@ public interface IProductInformation
     string InstallDir { get; }
     string AppPath { get; }
     string ProxyPath { get; }
+    string PortForwarderPath { get; }
     string ContainerDesktopDistroName { get; }
     string ContainerDesktopDataDistroName { get; }
     string ContainerDesktopAppDataDir { get; }

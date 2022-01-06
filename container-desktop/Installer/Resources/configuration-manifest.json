@@ -22,6 +22,7 @@
       "runAllways": true,
       "kind": "CustomMessage",
       "customMessage": 32769,
+      "WaitForExitTimeoutMs": 10000,
       "windowTitle": "Container Desktop"
     },
     {
@@ -29,6 +30,14 @@
       "id": "ShutdownProxy",
       "description": "Shutting down Container Desktop proxy",
       "fileName": "%PROXY_PATH%",
+      "runAllwaysFirst": true,
+      "runAllways": true
+    },
+    {
+      "type": "ShutdownProcess",
+      "id": "ShutdownForwarders",
+      "description": "Shutting down port forwarders",
+      "fileName": "%PORTFORWARDER_PATH%",
       "runAllwaysFirst": true,
       "runAllways": true
     },
