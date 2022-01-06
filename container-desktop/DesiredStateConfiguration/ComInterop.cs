@@ -2,8 +2,6 @@
 
 using System.Runtime.InteropServices;
 
-#pragma warning disable S101
-
 static class ComInterop
 {
     public const int MAXPATH = 260;
@@ -126,7 +124,7 @@ static class ComInterop
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct PropertyKey
     {
-        private Guid _formatId;
+        private readonly Guid _formatId;
 
         public Guid FormatId => _formatId;
 
@@ -211,4 +209,3 @@ static class ComInterop
 
 
 }
-#pragma warning restore S101

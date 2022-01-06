@@ -1,15 +1,11 @@
 ﻿using ContainerDesktop.Processes;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 
 namespace ContainerDesktop.Services;
 
 public class PortForwarder
 {
-    private readonly Socket _mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-    private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-    private List<Task> _runningTasks = new List<Task>();
     private readonly IProcessExecutor _processExecutor;
     private Process _forwarder;
 

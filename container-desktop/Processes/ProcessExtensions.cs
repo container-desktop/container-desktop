@@ -14,7 +14,7 @@ public static class ProcessExtensions
 
     public static int Complete(this Process process, CancellationToken cancellationToken = default)
     {
-        ManualResetEvent mre = new ManualResetEvent(false);
+        ManualResetEvent mre = new(false);
         Task.Run(async () =>
         {
             await process.WaitForExitAsync(cancellationToken);
@@ -23,7 +23,7 @@ public static class ProcessExtensions
                 process.Kill();
             }
             mre.Set();
-        });
+        }, CancellationToken.None);
 
         mre.WaitOne();
         return process.ExitCode;
@@ -170,8 +170,7 @@ public static class ProcessExtensions
         try
         {
             // Get the PID of the desktop shell process.
-            int dwPID;
-            if (User32.GetWindowThreadProcessId(hwnd, out dwPID) == 0)
+            if (User32.GetWindowThreadProcessId(hwnd, out int dwPID) == 0)
             {
                 return null;
             }

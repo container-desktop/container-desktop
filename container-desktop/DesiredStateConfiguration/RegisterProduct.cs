@@ -48,5 +48,5 @@ public class RegisterProduct : ResourceBase
         return false;
     }
 
-    private string Expand(string s) => Environment.ExpandEnvironmentVariables(s);
+    private static string Expand(string s) => Environment.ExpandEnvironmentVariables(s);
 }

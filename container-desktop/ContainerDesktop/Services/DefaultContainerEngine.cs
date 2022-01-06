@@ -18,14 +18,14 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly IConfigurationService _configurationService;
     private readonly IProductInformation _productInformation;
     private readonly ILogger<DefaultContainerEngine> _logger;
+    private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
+    private readonly Dictionary<string, PortForwarder> _portForwarders = new();
+    private readonly List<int> _ports = new();
     private Process _proxyProcess;
     private RunningState _runningState;
-    private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
     private Task _dataDistroInitTask;
     private Task _portForwardListenerTask;
     private CancellationTokenSource _cts;
-    private Dictionary<string, PortForwarder> _portForwarders = new();
-    private List<int> _ports = new();
     private DnsConfigurator _dnsConfigurator;
 
     public DefaultContainerEngine(
@@ -55,10 +55,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             if (_runningState != value)
             {
                 _runningState = value;
-                if (RunningStateChanged != null)
-                {
-                    RunningStateChanged(this, EventArgs.Empty);
-                }
+                RunningStateChanged?.Invoke(this, EventArgs.Empty);
             }
         } 
     }
@@ -100,8 +97,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         });
     }
 
-    private static readonly Regex _hostipParser = new Regex(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
-    private static readonly Regex _hostPortParser = new Regex(@"-host-port (?'p'\d+)", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex _hostipParser = new(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex _hostPortParser = new(@"-host-port (?'p'\d+)", RegexOptions.Singleline | RegexOptions.Compiled);
 
     private void ForwardPort(string line)
     {
@@ -171,7 +168,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         _portForwarders.Clear();
     }
 
-    private (IPAddress ipAddress, int port) ParsePortForwardCmdLine(string cmdLine)
+    private static (IPAddress ipAddress, int port) ParsePortForwardCmdLine(string cmdLine)
     {
         var m = _hostipParser.Match(cmdLine);
         var ipAddress = m.Success && m.Groups["h"].Value == "::" ? IPAddress.IPv6Any : IPAddress.Any;
@@ -341,7 +338,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         }
     }
 
-    private void WarmupDaemon()
+    private static void WarmupDaemon()
     {
         //TODO: make client available in DI with all configuration set.
         Task.Run(() =>

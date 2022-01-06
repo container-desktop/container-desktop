@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.1.2.30" />
+    <PackageReference Include="AvalonEdit" Version="6.1.3.50" />
     <PackageReference Include="Docker.DotNet" Version="3.125.5" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />

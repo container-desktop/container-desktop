@@ -3,7 +3,7 @@
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
 public class UIEditorAttribute : Attribute
 {
-    private static readonly Dictionary<Type, UIEditor> _defaultEditors = new Dictionary<Type, UIEditor>
+    private static readonly Dictionary<Type, UIEditor> _defaultEditors = new()
     {
         [typeof(string)] = UIEditor.Text,
         [typeof(DateTime)] = UIEditor.DateTime,

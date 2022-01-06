@@ -17,19 +17,17 @@ public partial class MainWindow : Window
 
     private bool _applicationQuit;
     private readonly ILogger<MainWindow> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly MainPage _mainPage;
 
-    public MainWindow(MainViewModel mainViewModel, ILogger<MainWindow> logger, MainPage mainPage, IServiceProvider serviceProvider)
+    public MainWindow(MainViewModel mainViewModel, ILogger<MainWindow> logger, MainPage mainPage)
     {
         _logger = logger;
         _mainPage = mainPage;
-        _serviceProvider = serviceProvider;
         InitializeComponent();
         DataContext = mainViewModel;
         var helper = new WindowInteropHelper(this);
         var handle = helper.EnsureHandle();
-        logger.LogInformation($"MainWindow handle: {handle:X}");
+        logger.LogInformation("MainWindow handle: {MainWindowHandle}", $"{handle:X}");
         var source = HwndSource.FromHwnd(handle);
         source.AddHook(HwndProcHook);
         mainFrame.Navigate(mainPage);
@@ -43,9 +41,8 @@ public partial class MainWindow : Window
 
     public void ShowSettings()
     {
-        var settingsPage = _serviceProvider.GetRequiredService<SettingsPage>();
-        mainFrame.Navigate(settingsPage);
         Show();
+        _mainPage.ShowSettings();
     }
 
     public void ShowMainPage()

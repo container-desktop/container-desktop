@@ -62,7 +62,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
                                         <Border Name="theBorder" Background="Transparent">
-                                            <RadioButton Focusable="False" IsHitTestVisible="False"
+                                            <RadioButton Focusable="False" 
                                              IsChecked="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsSelected, Mode=TwoWay}">
                                                 <ContentPresenter />
                                             </RadioButton>

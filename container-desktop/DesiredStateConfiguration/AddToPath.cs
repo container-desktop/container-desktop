@@ -41,12 +41,12 @@ public class AddToPath : ResourceBase
         return parts.Contains(ExpandedPath, StringComparer.OrdinalIgnoreCase);
     }
 
-    private string GetPath()
+    private static string GetPath()
     {
         return Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
     }
 
-    private void SetPath(string path)
+    private static void SetPath(string path)
     {
         Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.User);
         var lParam = Marshal.StringToHGlobalUni("Environment");

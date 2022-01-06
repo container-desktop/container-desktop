@@ -32,7 +32,7 @@ public class CopyFile : ResourceBase
         return false;
     }
 
-    public byte[] ComputeHash(IFileSystem fileSystem, string fileName)
+    private static byte[] ComputeHash(IFileSystem fileSystem, string fileName)
     {
         using var algorithm = SHA1.Create();
         using var fs = fileSystem.File.OpenRead(fileName);

@@ -10,22 +10,13 @@ namespace ContainerDesktop.ViewModels;
 public class SettingsViewModel : NotifyObject
 {
     private readonly IConfigurationService _configurationService;
-    private IMenuItem _selectedMenuItem;
     private ObservableCollection<SettingsCategory> _settingsCategories;
 
     public SettingsViewModel(IConfigurationService configurationService)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
-        //MenuItems.Add(new Category 
-        //{ 
-        //    Name = "General", 
-        //    Tooltip = "General settings", 
-        //    Glyph = Symbol.Setting, 
-        //    SettingsObject = configurationService.Configuration 
-        //});
         SaveChangesCommand = new DelegateCommand(SaveChanges, IsValid);
         DiscardChangesCommand = new DelegateCommand(DiscardChanges);
-        //SelectedMenuItem = MenuItems[0];
         LoadSettings();
     }
 
@@ -34,35 +25,12 @@ public class SettingsViewModel : NotifyObject
     public DelegateCommand DiscardChangesCommand { get; }
 
     public ConfigurationObject SettingsObject => _configurationService.Configuration;
-    
-    //public ObservableCollection<IMenuItem> MenuItems { get; } = new ObservableCollection<IMenuItem>();
-        
+           
     public ObservableCollection<SettingsCategory> SettingsCategories 
     {
         get => _settingsCategories; 
         set => SetValueAndNotify(ref _settingsCategories, value); 
     } 
-
-    //public IMenuItem SelectedMenuItem
-    //{
-    //    get => _selectedMenuItem;
-    //    set
-    //    {
-    //        var oldValue = _selectedMenuItem;
-    //        if (SetValueAndNotify(ref _selectedMenuItem, value))
-    //        {
-    //            if(oldValue is Category category && category.SettingsObject is INotifyPropertyChanged npc)
-    //            {
-    //                npc.PropertyChanged -= OnSelectedSettingsObjectPropertyChanged;
-    //            }
-    //            if (value is Category category2 && category2.SettingsObject is INotifyPropertyChanged npc2)
-    //            {
-    //                npc2.PropertyChanged += OnSelectedSettingsObjectPropertyChanged;
-    //            }
-    //            LoadSettings(value);
-    //        }
-    //    }
-    //}
 
     private void LoadSettings()
     {

@@ -41,7 +41,12 @@ public class ShutdownProcess : ResourceBase
                         else
                         {
                             var le = Marshal.GetLastWin32Error();
+                            context.Logger.LogError("Could not post the custom message '{CustomMessage}' to process '{ProcessId}', Last Win32 Error: '{LastWin32Error}'.", CustomMessage, process.Id, le);
                         }
+                    }
+                    else
+                    {
+                        context.Logger.LogWarning("Cound not find a Window with title '{WindowTitle}' for process '{ProcessId}'.", WindowTitle, process.Id);
                     }
                     break;
                 default:

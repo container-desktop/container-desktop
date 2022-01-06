@@ -18,7 +18,7 @@ public sealed class DnsConfigurator : IDisposable
     private readonly IConfigurationService _configurationService;
     private readonly IProductInformation _productInformation;
     private readonly ILogger _logger;
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
 
     public DnsConfigurator(IWslService wslService, IConfigurationService configurationService, IProductInformation productInformation, ILogger logger)
     {
@@ -97,11 +97,11 @@ public sealed class DnsConfigurator : IDisposable
         }
         else
         {
-            _logger.LogError($"Failed to update /etc/resolv.conf with: {content}", content);
+            _logger.LogError("Failed to update /etc/resolv.conf with: {content}", content);
         }
     }
 
-    private string[] GetWslDnsAddresses()
+    private static string[] GetWslDnsAddresses()
     {
         //TODO: make it more robust
         var wslNetworkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(x => x.Name == "vEthernet (WSL)");
@@ -118,7 +118,7 @@ public sealed class DnsConfigurator : IDisposable
         return Array.Empty<string>();
     }
 
-    private string[] GetPrimaryAdapterDnsAddresses()
+    private static string[] GetPrimaryAdapterDnsAddresses()
     {
         uint bufferLength = 0;
         var ret = DnsQueryConfig(DNS_CONFIG_TYPE.DnsConfigDnsServerList, 0, null, IntPtr.Zero, IntPtr.Zero, ref bufferLength);

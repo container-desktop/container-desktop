@@ -157,17 +157,17 @@ public class ConfigurationManifest : IConfigurationManifest
         return resolvedGraph;
     }
 
-    private IEnumerable<string> GetDisabledResourceIdsFromState(ConfigurationContext context)
+    private static IEnumerable<string> GetDisabledResourceIdsFromState(ConfigurationContext context)
     {
         string[] ret = null;
         if(context.State.TryGetValue("DisabledResources", out var value) && value is JArray a)
         {
             ret = a.Values<string>().ToArray();
         }
-        return ret ?? new string[0];
+        return ret ?? Array.Empty<string>();
     }
 
-    private void SaveDisabledResourceIdsToState(IEnumerable<IResource> resources, ConfigurationContext context)
+    private static void SaveDisabledResourceIdsToState(IEnumerable<IResource> resources, ConfigurationContext context)
     {
         var ids = resources.Where(x => !x.Enabled).Select(x => x.Id).ToArray();
         context.State["DisabledResources"] = ids;

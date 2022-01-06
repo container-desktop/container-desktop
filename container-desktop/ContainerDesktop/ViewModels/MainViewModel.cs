@@ -14,6 +14,10 @@ using System.Windows.Media.Imaging;
 
 public class MainViewModel : NotifyObject
 {
+    private static readonly BitmapImage _icon = new(new Uri("pack://application:,,,/app.ico"));
+    private static readonly BitmapImage _runIcon = new(new Uri("pack://application:,,,/app_run.ico"));
+    private static readonly BitmapImage _stopIcon = new(new Uri("pack://application:,,,/app_stop.ico"));
+
     private readonly IApplicationContext _applicationContext;
     private readonly IContainerEngine _containerEngine;
     private readonly IWslService _wslService;
@@ -24,18 +28,13 @@ public class MainViewModel : NotifyObject
     private BitmapImage _trayIcon = _icon; // "/ContainerDesktop;component/app.ico";
     private IMenuItem _selectedMenuItem;
 
-    private static BitmapImage _icon = new BitmapImage(new Uri("pack://application:,,,/app.ico"));
-    private static BitmapImage _runIcon = new BitmapImage(new Uri("pack://application:,,,/app_run.ico"));
-    private static BitmapImage _stopIcon = new BitmapImage(new Uri("pack://application:,,,/app_stop.ico"));
-
     public MainViewModel(
         IApplicationContext applicationContext, 
         IContainerEngine containerEngine, 
         IWslService wslService, 
         IConfigurationService configurationService,
         IProcessExecutor processExecutor,
-        IProductInformation productInformation/*,
-        LogStreamViewer logStreamViewer*/)
+        IProductInformation productInformation)
     {
         _applicationContext = applicationContext;
         _containerEngine = containerEngine;
@@ -43,7 +42,6 @@ public class MainViewModel : NotifyObject
         _wslService = wslService;
         _configurationService = configurationService;
         _processExecutor = processExecutor;
-        //_logStreamViewer = logStreamViewer;
         ProductInformation = productInformation;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
@@ -57,7 +55,7 @@ public class MainViewModel : NotifyObject
         OpenSettingsCommand = new DelegateCommand(OpenSettings);
         var menuItems = new List<IMenuItem>
         {
-            new Category { Name = "Logs", PageType = typeof(LogsPage) }
+            new Category { Name = "Logs", PageType = typeof(LogsPage), Glyph = Symbol.Dictionary }
         };
         MenuItems = menuItems;
         SelectedMenuItem = menuItems[0];
@@ -238,6 +236,7 @@ public class MainViewModel : NotifyObject
         var menuItem = MenuItems.OfType<Category>().FirstOrDefault(x => x.PageType == typeof(LogsPage));
         if(menuItem != null)
         {
+            SelectedMenuItem = null;
             SelectedMenuItem = menuItem;
         }
     }

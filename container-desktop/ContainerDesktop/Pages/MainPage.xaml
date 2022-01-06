@@ -11,6 +11,7 @@
 
     <Grid>
         <ui:NavigationView IsSettingsVisible="True" 
+                           OpenPaneLength="180"
                            AlwaysShowHeader="True"
                            IsBackButtonVisible="Collapsed"
                            Loaded="NavigationViewLoaded" 
@@ -21,7 +22,7 @@
                            x:Name="navigationView">
             
             <ScrollViewer>
-                <ui:Frame x:Name="contentFrame" Padding="12,0,12,24" IsTabStop="True"></ui:Frame>
+                <ui:Frame x:Name="contentFrame" IsTabStop="True"></ui:Frame>
             </ScrollViewer>
         </ui:NavigationView>
     </Grid>

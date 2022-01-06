@@ -13,7 +13,7 @@ using System.Windows;
 /// </summary>
 public partial class App : ApplicationWithContext
 {
-    public static readonly Uri ConfigurationManifestUri = new Uri($"pack://application:,,,/{typeof(App).Assembly.GetName().Name};component/Resources/configuration-manifest.json");
+    public static readonly Uri ConfigurationManifestUri = new($"pack://application:,,,/{typeof(App).Assembly.GetName().Name};component/Resources/configuration-manifest.json");
     
     public App()
     {
@@ -76,9 +76,10 @@ public partial class App : ApplicationWithContext
         Environment.SetEnvironmentVariable("PRODUCT_DISPLAYNAME", ProductInformation.DisplayName, EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable("PRODUCT_NAME", ProductInformation.Name, EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable("PROXY_PATH", ProductInformation.ProxyPath, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PORTFORWARDER_PATH", ProductInformation.PortForwarderPath, EnvironmentVariableTarget.Process);
     }
 
-    private string GetInstallerExePath()
+    private static string GetInstallerExePath()
     {
         var path = Environment.GetCommandLineArgs()[0];
         if (Path.GetExtension(path) == ".dll")

@@ -76,14 +76,14 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
             var otherProp = properties.FirstOrDefault(x => x.PropertyInfo.Name.Equals(visAttr.PropertyName, StringComparison.OrdinalIgnoreCase));
             if (otherProp != null)
             {
-                EventHandler handler = (sender, e) =>
+                void handler(object sender, EventArgs e)
                 {
                     if (sender is SettingsProperty sp)
                     {
                         var b = (visAttr.Value ?? true).Equals(sp.Value);
                         Visibility = b && visAttr.Show || !b && !visAttr.Show ? Visibility.Visible : Visibility.Collapsed;
                     }
-                };
+                }
                 otherProp.ValueChanged += handler;
                 handler(otherProp, EventArgs.Empty);
             }
@@ -105,7 +105,7 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         return properties;
     }
 
-    private (string name, string description, int order, string groupName) GetDisplayAttributes(PropertyInfo property)
+    private static (string name, string description, int order, string groupName) GetDisplayAttributes(PropertyInfo property)
     {
         var attr = property.GetCustomAttribute<DisplayAttribute>();
         return (attr?.GetName() ?? property.Name, attr?.GetDescription(), attr?.GetOrder() ?? 0, attr?.GetGroupName());
@@ -118,10 +118,7 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
 
     private void NotifyValueChanged()
     {
-        if (ValueChanged != null)
-        {
-            ValueChanged(this, EventArgs.Empty);
-        }
+        ValueChanged?.Invoke(this, EventArgs.Empty);
         if (Value?.GetType().IsEnum == true)
         {
             NotifyPropertyChanged(nameof(EnumValues));

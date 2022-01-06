@@ -198,5 +198,6 @@ public enum Symbol
     GlobalNavigationButton = 59136,
     Share = 59181,
     Print = 59209,
-    XboxOneConsole = 59792
+    XboxOneConsole = 59792,
+    Dictionary = 59437
 }

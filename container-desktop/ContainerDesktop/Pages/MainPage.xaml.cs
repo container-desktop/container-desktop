@@ -21,6 +21,11 @@ public partial class MainPage : Page
         navigationView.IsSettingsVisible = _settingsPage != null;
     }
 
+    public void ShowSettings()
+    {
+        navigationView.SelectedItem = navigationView.SettingsItem;    
+    }
+
     private void NavigationViewLoaded(object sender, RoutedEventArgs e)
     {
 
