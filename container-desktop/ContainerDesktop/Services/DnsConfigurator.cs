@@ -1,8 +1,6 @@
 ﻿using ContainerDesktop.Common;
 using ContainerDesktop.Wsl;
-using IniParser;
 using IniParser.Parser;
-using System.ComponentModel;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -26,9 +24,9 @@ public sealed class DnsConfigurator : IDisposable
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        PropertyChangedEventManager.AddHandler(_configurationService.Configuration, OnDnsConfigurationChanged, nameof(ContainerDesktopConfiguration.DnsMode));
-        PropertyChangedEventManager.AddHandler(_configurationService.Configuration, OnDnsConfigurationChanged, nameof(ContainerDesktopConfiguration.DnsAddresses));
+        ConfigurationChangedEventManager.AddHandler(_configurationService, OnConfigurationChanged);
         NetworkChange.NetworkAddressChanged += NetworkAddressChanged;
+        Configure();
     }
 
     public void Configure()
@@ -86,18 +84,21 @@ public sealed class DnsConfigurator : IDisposable
             DnsMode.Static => GetStaticDnsAddresses(),
             _ => Array.Empty<string>()
         };
-        if(ipAddresses.Length == 0)
+        if (ipAddresses.Length == 0)
         {
             _logger.LogWarning("Could not resolve DNS IP addresses for DNS Mode={dnsMode}", _configurationService.Configuration.DnsMode);
         }
-        var content = string.Join('\n', ipAddresses.Select(x => $"nameserver {x}"));
-        if (_wslService.ExecuteCommand($"cat <<EOF > /etc/resolv.conf\n{content}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
-        {
-            _logger.LogInformation("Successfully updated /etc/resolv.conf to :{content}", content);
-        }
         else
         {
-            _logger.LogError("Failed to update /etc/resolv.conf with: {content}", content);
+            var content = string.Join('\n', ipAddresses.Select(x => $"nameserver {x}"));
+            if (_wslService.ExecuteCommand($"cat <<EOF > /etc/resolv.conf\n{content}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
+            {
+                _logger.LogInformation("Successfully updated /etc/resolv.conf to :{content}", content);
+            }
+            else
+            {
+                _logger.LogError("Failed to update /etc/resolv.conf with: {content}", content);
+            }
         }
     }
 
@@ -154,9 +155,12 @@ public sealed class DnsConfigurator : IDisposable
         Configure();
     }
 
-    private void OnDnsConfigurationChanged(object sender, PropertyChangedEventArgs e)
+    private void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
-        Configure();
+        if (e.PropertiesChanged.Any(x => x.StartsWith("Dns")))
+        {
+            Configure();
+        }
     }
 
     [DllImport("DnsApi", ExactSpelling = true)]
@@ -165,8 +169,7 @@ public sealed class DnsConfigurator : IDisposable
 
     public void Dispose()
     {
-        PropertyChangedEventManager.RemoveHandler(_configurationService.Configuration, OnDnsConfigurationChanged, nameof(ContainerDesktopConfiguration.DnsMode));
-        PropertyChangedEventManager.RemoveHandler(_configurationService.Configuration, OnDnsConfigurationChanged, nameof(ContainerDesktopConfiguration.DnsAddresses));
+        ConfigurationChangedEventManager.RemoveHandler(_configurationService, OnConfigurationChanged);
         NetworkChange.NetworkAddressChanged -= NetworkAddressChanged;
     }
 

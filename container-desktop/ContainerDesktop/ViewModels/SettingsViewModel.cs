@@ -2,7 +2,6 @@
 using ContainerDesktop.Services;
 using ContainerDesktop.UI.Wpf.Input;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ContainerDesktop.ViewModels;
@@ -15,8 +14,10 @@ public class SettingsViewModel : NotifyObject
     public SettingsViewModel(IConfigurationService configurationService)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
-        SaveChangesCommand = new DelegateCommand(SaveChanges, IsValid);
-        DiscardChangesCommand = new DelegateCommand(DiscardChanges);
+        SaveChangesCommand = new DelegateCommand(SaveChanges, () => IsValid() && _configurationService.IsChanged());
+        DiscardChangesCommand = new DelegateCommand(DiscardChanges, () => _configurationService.IsChanged());
+        _configurationService.Configuration.PropertyChanged += (_,_) => UpdateButtonState();
+        ConfigurationChangedEventManager.AddHandler(_configurationService, (_,_) => UpdateButtonState());
         LoadSettings();
     }
 
@@ -66,8 +67,9 @@ public class SettingsViewModel : NotifyObject
         return false;
     }
 
-    protected void OnSelectedSettingsObjectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void UpdateButtonState()
     {
         SaveChangesCommand.RaiseCanExecuteChanged();
+        DiscardChangesCommand.RaiseCanExecuteChanged();
     }
 }
