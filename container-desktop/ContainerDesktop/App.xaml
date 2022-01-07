@@ -98,14 +98,14 @@
             <local:SettingsPropertyTemplateSelector x:Key="settingsPropertySelector">
                 <local:SettingsPropertyTemplateSelector.BooleanTemplate>
                     <DataTemplate>
-                        <ui:ToggleSwitch Header="{Binding DisplayName}" IsOn="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                        <ui:ToggleSwitch Header="{Binding DisplayName}" IsOn="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" />
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.BooleanTemplate>
                 <local:SettingsPropertyTemplateSelector.StringTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
                             <Label Content="{Binding DisplayName}"/>
-                            <TextBox Text="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" MinWidth="150" />    
+                            <TextBox Text="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" />    
                         </StackPanel>
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.StringTemplate>
@@ -113,7 +113,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
                             <Label Content="{Binding DisplayName}"/>
-                            <PasswordBox Password="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" MinWidth="150" />
+                            <PasswordBox Password="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" />
                         </StackPanel>
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.PasswordTemplate>
@@ -121,7 +121,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
                             <Label Content="{Binding DisplayName}"/>
-                            <ListBox Style="{DynamicResource RadioButtonList}" ItemsSource="{Binding EnumValues}" SelectedValue="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True}">
+                            <ListBox Style="{DynamicResource RadioButtonList}" ItemsSource="{Binding EnumValues}" SelectedValue="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding ., Converter={StaticResource EnumNameConverter}}" ToolTip="{Binding ., Converter={StaticResource EnumTooltipConverter}}"/>
