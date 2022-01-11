@@ -22,6 +22,7 @@ public class ProductInformation : IProductInformation
     public string ContainerDesktopDataDistroName { get; } = "container-desktop-data";
     public string ContainerDesktopAppDataDir { get; } 
     public string WebSiteUrl { get; } = "https://container-desktop.io";
+    public string ReleasesFeed { get; } = "https://api.github.com/repos/container-desktop/container-desktop/releases";
     
     private static string GetVersion()
     {
