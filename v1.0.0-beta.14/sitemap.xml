@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://container-desktop.io/v1.0.0-beta.14/</loc>
+         <lastmod>2022-01-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://container-desktop.io/v1.0.0-beta.14/faq/faq/</loc>
+         <lastmod>2022-01-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://container-desktop.io/v1.0.0-beta.14/installation/howto/</loc>
+         <lastmod>2022-01-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://container-desktop.io/v1.0.0-beta.14/installation/pre-requisites/</loc>
+         <lastmod>2022-01-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
