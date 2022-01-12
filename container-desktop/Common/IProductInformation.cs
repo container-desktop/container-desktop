@@ -14,5 +14,6 @@ public interface IProductInformation
     string ContainerDesktopAppDataDir { get; }
     string WebSiteUrl { get; }
     string Version { get; }
+    string ReleasesFeed { get; }
 }
 

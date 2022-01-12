@@ -7,12 +7,15 @@
     xmlns:tb="http://www.hardcodet.net/taskbar"
     xmlns:cmn="http://container-desktop.io/common"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:conv="clr-namespace:ContainerDesktop.Converters"
     mc:Ignorable="d"
     Title="{Binding ProductInformation.DisplayName}"
     Icon="/ContainerDesktop;component/app.ico"
     ui:WindowHelper.UseModernWindowStyle="True" Width="1024" Height="640" MinWidth="660" MinHeight="210" WindowStartupLocation="CenterScreen" >
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:UpdateIconConverter x:Key="UpdateIconConverter"/>
+        <conv:UpdateAvailableAlignmentConverter x:Key="UpdateAvailableAlignmentConverter"/>
     </Window.Resources>
     <Grid>
         <tb:TaskbarIcon Visibility="{Binding ShowTrayIcon, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -37,7 +40,7 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="Documentation" Command="{Binding OpenDocumentationCommand}"/>
+                    <MenuItem Header="Documentation" Command="{Binding OpenDocumentationCommand}" />
                     <Separator/>
                     <MenuItem Header="Start" Command="{Binding StartCommand}" Visibility="{Binding IsStopped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <MenuItem Header="Stop" Command="{Binding StopCommand}" Visibility="{Binding IsStarted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -46,9 +49,9 @@
                     <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" />
                     <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}" />
                     <Separator/>
-                    <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}"/>
-                    <Separator/>
-                    <MenuItem Header="{Binding ProductInformation.Version}" IsEnabled="False" HorizontalAlignment="Center"/>
+                    <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}" />
+                    <Separator />
+                    <MenuItem Header="{Binding ProductInformation.Version}" Icon="{Binding UpdateAvailable, Converter={StaticResource UpdateIconConverter}, ConverterParameter=UpdateIcon}" ToolTip="{Binding UpdateAvailableTooltip}" Command="{Binding ShowLatestReleaseCommand}" HorizontalAlignment="{Binding UpdateAvailable, Converter={StaticResource UpdateAvailableAlignmentConverter}}" />
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
