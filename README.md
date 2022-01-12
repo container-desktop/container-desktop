@@ -17,14 +17,13 @@ Container Desktop installs the docker and the docker-compose command line interf
 
 ## Supported features
 
-The solution is in its early days and supports the following features:
-
 * Run Docker daemon in its own distribution
-* Use 'docker' and 'docker-compose' cli on Windows to connect to the daemon
+* Use 'docker' and 'docker-compose' cli on Windows and enabled WSL2 Distributions to connect to the daemon. 
 * You can use Windows paths as volumes, the container-desktop-proxy translates these paths to WSL2 paths local to the daemon distribution
 * Start/stop/restart and quit Container Desktop by right clicking on the icon in the system tray.
 * Enable container-desktop integration in installed WSL2 distributions.
-
+* Use Port Forwarding to expose containers on a specific network. 
+* Configure DNS Mode for Container Desktop (WLS2/Primary Network Adapter/Static).
 ## Installation
 
 **System requirements**
