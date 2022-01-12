@@ -1,0 +1,7 @@
+title: Installation
+nav:
+  - installation.md
+  - wsl2-distro-integration.md
+  - port-forwarding.md
+  - dns-mode-configuration.md
+  - logs-and-run-time-behavior.md
