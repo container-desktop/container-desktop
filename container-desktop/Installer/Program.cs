@@ -12,11 +12,21 @@ namespace ContainerDesktop.Installer;
 
 static class Program
 {
-    
+
     [STAThread]
     static int Main(string[] args)
     {
-        var options = InstallerOptions.ParseOptions(args);
+        InstallerOptions options;
+        try
+        {
+            options = InstallerOptions.ParseOptions(args);
+        }
+        catch (CommandLineException ex)
+        {
+            MessageBox.Show($"Invalid command line arguments. Please check the command line arguments you passed in.\r\n{ex.Message}", "Command line arguments", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return 1;
+        }
+
         var unattendedWithConsole = options.Unattended && (PInvoke.Kernel32.AttachConsole(-1 /* ATTACH_PARENT_PROCESS */) || PInvoke.Kernel32.AllocConsole());
         var hostBuilder = CreateHostBuilder(options, args);
         using var host = hostBuilder.Build();
@@ -54,6 +64,7 @@ static class Program
         services.AddWsl();
         services.AddProcessExecutor();
         services.AddCommon();
+        services.AddConfiguration(options => options.SaveOnInitialize = false);
         services.AddSingleton<IConfigurationManifest>(sp => new PackedConfigurationManifest(App.ConfigurationManifestUri, sp));
         services.AddSingleton<IInstallationRunner, InstallationRunner>();
     }

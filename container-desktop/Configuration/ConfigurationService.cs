@@ -1,30 +1,33 @@
 ﻿using ContainerDesktop.Common;
 using KellermanSoftware.CompareNetObjects;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.IO;
 using System.IO.Abstractions;
 
-namespace ContainerDesktop.Services;
+namespace ContainerDesktop.Configuration;
 
 public class ConfigurationService : IConfigurationService
 {
     private readonly string _configurationFilePath;
     private readonly IFileSystem _fileSystem;
     private readonly IProductInformation _productInformation;
-    private ContainerDesktopConfiguration _loadedConfiguration;
+    private ContainerDesktopConfiguration? _loadedConfiguration;
     private readonly CompareLogic _comparer;
 
-    public ConfigurationService(IFileSystem fileSystem, IProductInformation productInformation)
+    public ConfigurationService(IFileSystem fileSystem, IProductInformation productInformation, IOptions<ConfigurationOptions> options)
     {
         _comparer = new CompareLogic(new ComparisonConfig {  MaxDifferences = int.MaxValue});
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
+        var configOptions = options?.Value ?? new ConfigurationOptions();
         _configurationFilePath = Path.Combine(productInformation.ContainerDesktopAppDataDir, "config.json");
         Configuration = new ContainerDesktopConfiguration(productInformation);
         if (_fileSystem.File.Exists(_configurationFilePath))
         {
             Load(false);
         }
-        else
+        else if(configOptions.SaveOnInitialize)
         {
             Save(false);
         }
@@ -32,9 +35,9 @@ public class ConfigurationService : IConfigurationService
 
     public bool IsChanged() => !_comparer.Compare(_loadedConfiguration, Configuration).AreEqual;
     
-    public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
+    public event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
 
-    public ContainerDesktopConfiguration Configuration { get; }
+    public IContainerDesktopConfiguration Configuration { get; }
 
     public void Save() => Save(true);
 
@@ -42,18 +45,21 @@ public class ConfigurationService : IConfigurationService
 
     protected void Save(bool notify)
     {
-        var result = _comparer.Compare(_loadedConfiguration, Configuration);
-        if(!result.AreEqual)
+        if (Configuration.IsValid)
         {
-            var json = JsonConvert.SerializeObject(Configuration, Formatting.Indented);
-            _fileSystem.File.WriteAllText(_configurationFilePath, json);
-            if (notify)
+            var result = _comparer.Compare(_loadedConfiguration, Configuration);
+            if (!result.AreEqual)
             {
-                var changedProperties = result.Differences.Select(x => x.PropertyName).ToArray();
-                ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(changedProperties));
+                var json = JsonConvert.SerializeObject(Configuration, Formatting.Indented);
+                _fileSystem.File.WriteAllText(_configurationFilePath, json);
+                if (notify)
+                {
+                    var changedProperties = result.Differences.Select(x => x.PropertyName).ToArray();
+                    ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(changedProperties));
+                }
+                _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation);
+                JsonConvert.PopulateObject(json, _loadedConfiguration);
             }
-            _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation);
-            JsonConvert.PopulateObject(json, _loadedConfiguration);
         }
     }
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ContainerDesktop.Services;
+namespace ContainerDesktop.Configuration;
 
 public enum DnsMode
 {

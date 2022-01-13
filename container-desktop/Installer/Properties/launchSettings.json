@@ -7,6 +7,10 @@
       "commandName": "Project",
       "commandLineArgs": "install --auto-start"
     },
+    "Installer (install --settings DnsMode=Static DnsAddresses=1.1.1.1)": {
+      "commandName": "Project",
+      "commandLineArgs": "install --settings DnsMode=Static DnsAddresses=1.1.1.1"
+    },
     "Installer (uninstall)": {
       "commandName": "Project",
       "commandLineArgs": "uninstall"

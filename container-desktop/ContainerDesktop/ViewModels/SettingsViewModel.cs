@@ -1,5 +1,5 @@
 ﻿using ContainerDesktop.Abstractions;
-using ContainerDesktop.Services;
+using ContainerDesktop.Configuration;
 using ContainerDesktop.UI.Wpf.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,7 +25,7 @@ public class SettingsViewModel : NotifyObject
     
     public DelegateCommand DiscardChangesCommand { get; }
 
-    public ConfigurationObject SettingsObject => _configurationService.Configuration;
+    public IConfigurationObject SettingsObject => _configurationService.Configuration;
            
     public ObservableCollection<SettingsCategory> SettingsCategories 
     {

@@ -1,10 +1,32 @@
-﻿using System.ComponentModel;
+﻿using Newtonsoft.Json;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
+
 
 namespace ContainerDesktop.Abstractions
 {
-    public abstract class ConfigurationObject : NotifyObject, IDataErrorInfo
+    public abstract class ConfigurationObject : NotifyObject, IDataErrorInfo, IConfigurationObject
     {
+        private Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
+
+        [JsonIgnore]
+        public bool IsValid => ((IDataErrorInfo)this).Error == null;
+
+        protected bool SetValueAndNotify<T>(T value, [CallerMemberName] string propertyName = null)
+        {
+            return SetValueAndNotify<T>(() => GetValue<T>(propertyName), valueToSet => _values[propertyName] = valueToSet, value, propertyName);
+        }
+
+        protected T GetValue<T>([CallerMemberName] string propertyName = null)
+        {
+            if(_values.TryGetValue(propertyName, out var objectValue))
+            {
+                return (T)objectValue;
+            }
+            return default;
+        }
+
         string IDataErrorInfo.this[string columnName]
         {
             get

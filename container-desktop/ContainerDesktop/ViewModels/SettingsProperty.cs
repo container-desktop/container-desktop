@@ -11,7 +11,7 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
 {
     private Visibility _visibility;
 
-    private SettingsProperty(ConfigurationObject settingsObject, PropertyInfo propertyInfo)
+    private SettingsProperty(IConfigurationObject settingsObject, PropertyInfo propertyInfo)
     {
         SettingsObject = settingsObject;
         PropertyChangedEventManager.AddHandler(settingsObject, SettingsObjectPropertyChanged, propertyInfo.Name);
@@ -22,7 +22,7 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
 
     public event EventHandler ValueChanged;
 
-    public ConfigurationObject SettingsObject { get; }
+    public IConfigurationObject SettingsObject { get; }
     protected PropertyInfo PropertyInfo { get; }
     public string DisplayName { get; }
 
@@ -94,7 +94,7 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         }
     }
 
-    public static IEnumerable<SettingsProperty> CreateSettingsProperties(ConfigurationObject settingsObject)
+    public static IEnumerable<SettingsProperty> CreateSettingsProperties(IConfigurationObject settingsObject)
     {
         var properties = settingsObject.GetType().GetProperties().Select(
             x => new SettingsProperty(settingsObject, x)).ToList();

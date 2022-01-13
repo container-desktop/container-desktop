@@ -1,6 +1,7 @@
 ﻿namespace ContainerDesktop.Services;
 
 using ContainerDesktop.Common;
+using ContainerDesktop.Configuration;
 using ContainerDesktop.Processes;
 using ContainerDesktop.Wsl;
 using Docker.DotNet;

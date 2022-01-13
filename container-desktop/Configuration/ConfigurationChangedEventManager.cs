@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ContainerDesktop.Services;
+namespace ContainerDesktop.Configuration;
 
 public class ConfigurationChangedEventManager : WeakEventManager
 {
@@ -64,7 +64,7 @@ public class ConfigurationChangedEventManager : WeakEventManager
         typedSource.ConfigurationChanged -= new EventHandler<ConfigurationChangedEventArgs>(OnNotifyConfigurationChanged);
     }
 
-    private void OnNotifyConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
+    private void OnNotifyConfigurationChanged(object? sender, ConfigurationChangedEventArgs? e)
     {
         DeliverEvent(sender, e);
     }

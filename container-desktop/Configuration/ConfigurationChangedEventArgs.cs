@@ -1,4 +1,4 @@
-﻿namespace ContainerDesktop.Services;
+﻿namespace ContainerDesktop.Configuration;
 
 public class ConfigurationChangedEventArgs : EventArgs
 {
