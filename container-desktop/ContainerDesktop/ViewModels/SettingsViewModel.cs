@@ -43,7 +43,7 @@ public class SettingsViewModel : NotifyObject
             {
                 categories.Add(new SettingsCategory(settingsCategory.Key, settingsCategory.OrderBy(x => x.Order).ThenBy(x => x.DisplayName)));
             }
-            SettingsCategories = new ObservableCollection<SettingsCategory>(categories.OrderBy(x => x.Name));
+            SettingsCategories = new ObservableCollection<SettingsCategory>(categories.OrderBy(x => ConfigurationGroups.GetGroupOrder(x.Name)));
         }
     }
 

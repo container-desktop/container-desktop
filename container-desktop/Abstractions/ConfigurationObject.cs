@@ -11,6 +11,7 @@ namespace ContainerDesktop.Abstractions
         private Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
 
         [JsonIgnore]
+        [Hide]
         public bool IsValid => ((IDataErrorInfo)this).Error == null;
 
         protected bool SetValueAndNotify<T>(T value, [CallerMemberName] string propertyName = null)

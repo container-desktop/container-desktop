@@ -7,7 +7,7 @@ public abstract class InstallerOptions
 {
     private static readonly Type[] _verbOptions = new[] { typeof(InstallOptions), typeof(UninstallOptions) };
 
-    [Option("auto-start", HelpText = "Inmediately starts the installation at application start.")]
+    [Option("auto-start", Hidden = true, HelpText = "Inmediately starts the installation at application start.")]
     public bool AutoStart { get; set; }
 
     [Option("quiet", HelpText = "Do not prompt the user.")]

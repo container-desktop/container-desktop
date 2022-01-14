@@ -24,7 +24,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     public HashSet<string> PortForwardInterfaces { get; } = new HashSet<string>();
     
     [UIEditor(UIEditor.RadioList)]
-    [Display(Name = "DNS Mode", GroupName = "Network")]
+    [Display(Name = "DNS Mode", GroupName = ConfigurationGroups.Network)]
     public DnsMode DnsMode 
     {
         get => GetValue<DnsMode>();
@@ -32,7 +32,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     }
 
     [Show(nameof(DnsMode), DnsMode.Static)]
-    [Display(Name = "DNS Addresses", GroupName = "Network", Description = "A comma seperated list of IP addresses.", Order = 1)]
+    [Display(Name = "DNS Addresses", GroupName = ConfigurationGroups.Network, Description = "A comma seperated list of IP addresses.", Order = 1)]
     [RequiredIf(nameof(DnsMode), DnsMode.Static)]
     [RegularExpression(@"(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}(\s*,\s*(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})*", ErrorMessage = "Not a valid comma separated list of IP addresses")]
     public string? DnsAddresses 
@@ -42,7 +42,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     }
 
     [JsonIgnore]
-    [Display(Name = "Automatically start at login", GroupName = "Startup")]
+    [Display(Name = "Automatically start at login", GroupName = ConfigurationGroups.Miscellaneous)]
     public bool AutoStart 
     {
         get => AutoStartHelper.IsAutoStartEnabled(_productInformation.AppPath);
