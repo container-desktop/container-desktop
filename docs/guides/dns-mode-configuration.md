@@ -12,3 +12,27 @@ You can configure the DNS mode via the system tray application by selecting the 
 
 
 >***Note:*** You can review the Container Desktop DNS mode changes with the ***View log stream*** option.  
+
+## Examples for Unattended installations
+
+The unattended installation option provides a convenient way to install without manual intervention. Unattedded installation can be performed with DnsMode configuration. Please see the following examples: 
+
+### DnsMode Primary network adapter
+
+```Powershell
+.\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=auto
+```
+### DnsMode Static 
+
+With static you can set multiple nameservers by providing an comma seperated list of nameservers.
+
+```Powershell
+.\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=Static DnsAddresses=1.0.0.1,8.8.8.8
+```
+### DnsMode WSL 
+
+By default the DnsMode Wsl is used (so this is explicit configuration and optional). 
+
+```Powershell
+.\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=Wsl
+```
