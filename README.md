@@ -83,5 +83,5 @@ Container Desktop is made possible by using the following great projects:
 * [NuGet.Versioning](https://github.com/NuGet/Home)
 * [Docker CLI](https://github.com/docker/cli)
 * [Docker Compose CLI](https://github.com/docker/compose-cli)
-* [Docker Community Edition](https://github.com/moby/moby)
+* [The Moby Project](https://github.com/moby/moby)
 
