@@ -49,7 +49,7 @@ The unattended installation option provides a convenient way to install without 
 ```powershell
 ContainerDesktopInstaller.exe install --unattended
 ```
-> **Unattended DnsMode settings**: To configure the the DnsMode settings during Unatteded installtions, please see the  [DnsMode Examples for Unattended installations](dns-mode-configuration.md)
+> **Unattended DnsMode settings**: To configure the DnsMode settings during Unatteded installtions, please see the  [DnsMode Examples for Unattended installations](dns-mode-configuration.md)
 
 ## Upgrade Container Desktop
 
@@ -78,4 +78,4 @@ The user will be proped wo confirm to uninstall container desktop. When ```--qui
 ContainerDesktopInstaller.exe uninstall --quiet
 ```
 
-> Note: When the above command performed in a PowerShell session you will be prompted by User Account Control. The Uninstallation of Container Desktop requires elevated permissions. 
+> Note: When the above command is executed in a PowerShell session you will be prompted by User Account Control. The Uninstallation of Container Desktop requires elevated permissions. 

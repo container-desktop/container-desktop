@@ -20,11 +20,11 @@ The unattended installation option provides a convenient way to install without 
 ### DnsMode Primary network adapter
 
 ```Powershell
-.\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=auto
+.\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=Auto
 ```
 ### DnsMode Static 
 
-With static you can set multiple nameservers by providing an comma seperated list of nameservers.
+With static you can set multiple name servers by providing an comma seperated list of name servers.
 
 ```Powershell
 .\ContainerDesktopInstaller.exe install --unattended --settings DnsMode=Static DnsAddresses=1.0.0.1,8.8.8.8
