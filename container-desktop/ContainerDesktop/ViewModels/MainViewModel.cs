@@ -2,6 +2,7 @@
 
 using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
+using ContainerDesktop.Configuration;
 using ContainerDesktop.Pages;
 using ContainerDesktop.Processes;
 using ContainerDesktop.Services;

@@ -25,7 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wpf", "Wpf\Wpf.csproj", "{8
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wsl", "Wsl\Wsl.csproj", "{9187EFAE-094A-42D7-9AC5-109835E14869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "Abstractions\Abstractions.csproj", "{8F55F175-0454-4C16-A70B-CC95CEF811DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "Abstractions\Abstractions.csproj", "{8F55F175-0454-4C16-A70B-CC95CEF811DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Configuration", "Configuration\Configuration.csproj", "{FA8A4562-3005-4906-8673-81C38B9A54AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -165,6 +167,22 @@ Global
 		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x64.Build.0 = Release|Any CPU
 		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x86.ActiveCfg = Release|Any CPU
 		{8F55F175-0454-4C16-A70B-CC95CEF811DD}.Release|x86.Build.0 = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|arm64.Build.0 = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Debug|x86.Build.0 = Debug|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|arm64.ActiveCfg = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|arm64.Build.0 = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|x64.Build.0 = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|x86.ActiveCfg = Release|Any CPU
+		{FA8A4562-3005-4906-8673-81C38B9A54AA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

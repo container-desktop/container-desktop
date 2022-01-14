@@ -59,7 +59,7 @@ static class Program
         services.AddWsl();
         services.AddProcessExecutor();
         services.AddSingleton<IContainerEngine, DefaultContainerEngine>();
-        services.AddSingleton<IConfigurationService, ConfigurationService>();
+        services.AddConfiguration();
         services.AddSingleton<MainPage>();
         services.AddSingleton<SettingsPage>();
         services.AddSingleton<SettingsViewModel>();

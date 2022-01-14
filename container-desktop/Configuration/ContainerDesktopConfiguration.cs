@@ -1,16 +1,13 @@
 ﻿using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
-using ContainerDesktop.DesiredStateConfiguration;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace ContainerDesktop.Services;
+namespace ContainerDesktop.Configuration;
 
-public class ContainerDesktopConfiguration : ConfigurationObject
+public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesktopConfiguration
 {
     private readonly IProductInformation _productInformation;
-    private DnsMode _dnsMode;
-    private string _dnsAddresses;
 
     public ContainerDesktopConfiguration(IProductInformation productInformation)
     {
@@ -27,41 +24,28 @@ public class ContainerDesktopConfiguration : ConfigurationObject
     public HashSet<string> PortForwardInterfaces { get; } = new HashSet<string>();
     
     [UIEditor(UIEditor.RadioList)]
-    [Display(Name = "DNS Mode", GroupName = "Network")]
+    [Display(Name = "DNS Mode", GroupName = ConfigurationGroups.Network)]
     public DnsMode DnsMode 
     {
-        get => _dnsMode;
-        set => SetValueAndNotify(ref _dnsMode, value);
+        get => GetValue<DnsMode>();
+        set => SetValueAndNotify(value);
     }
 
     [Show(nameof(DnsMode), DnsMode.Static)]
-    [Display(Name = "DNS Addresses", GroupName = "Network", Description = "A comma seperated list of IP addresses.", Order = 1)]
+    [Display(Name = "DNS Addresses", GroupName = ConfigurationGroups.Network, Description = "A comma seperated list of IP addresses.", Order = 1)]
     [RequiredIf(nameof(DnsMode), DnsMode.Static)]
     [RegularExpression(@"(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}(\s*,\s*(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})*", ErrorMessage = "Not a valid comma separated list of IP addresses")]
-    public string DnsAddresses 
+    public string? DnsAddresses 
     {
-        get => _dnsAddresses;
-        set => SetValueAndNotify(ref _dnsAddresses, value);
+        get => GetValue<string>();
+        set => SetValueAndNotify(value);
     }
 
     [JsonIgnore]
-    [Display(Name = "Automatically start at login", GroupName = "Startup")]
+    [Display(Name = "Automatically start at login", GroupName = ConfigurationGroups.Miscellaneous)]
     public bool AutoStart 
     {
-        get => new AddToAutoStart { ExePath = _productInformation.AppPath }.Test(null);
-        set => SetValueAndNotify(() => AutoStart, v =>
-        {
-
-            var addToAutoStart = new AddToAutoStart { ExePath = _productInformation.AppPath };
-            if (v)
-            {
-                addToAutoStart.Set(null);
-            }
-            else
-            {
-                addToAutoStart.Unset(null);
-            }
-
-        }, value);
+        get => AutoStartHelper.IsAutoStartEnabled(_productInformation.AppPath);
+        set => SetValueAndNotify(() => AutoStart, v => AutoStartHelper.SetAutoStart(v, _productInformation.AppPath), value);
     }
 }

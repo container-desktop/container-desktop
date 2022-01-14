@@ -160,6 +160,15 @@
       "onUpdateAction": "Install"
     },
     {
+      "type": "CallServiceMethod",
+      "id": "PreconfigureSettings",
+      "description": "Configuring settings for the application.",
+      "serviceTypeName": "ContainerDesktop.Configuration.IConfigurationService, ContainerDesktop.Configuration",
+      "setMethod": {
+        "name": "Save"
+      }
+    },
+    {
       "type": "AddToAutoStart",
       "id": "AddToAutoStart",
       "description": "Start application when Windows starts.",

@@ -1,8 +1,8 @@
-﻿namespace ContainerDesktop.Services;
+﻿namespace ContainerDesktop.Configuration;
 
 public interface IConfigurationService : INotifyConfigurationChanged
 {
-    ContainerDesktopConfiguration Configuration { get; }
+    IContainerDesktopConfiguration Configuration { get; }
     bool IsChanged();
     void Load();
     void Save();

@@ -2,10 +2,13 @@
 
 using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
+using ContainerDesktop.Configuration;
 using ContainerDesktop.DesiredStateConfiguration;
 using ContainerDesktop.UI.Wpf.Input;
+using System;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 
@@ -24,8 +27,14 @@ public class MainViewModel : NotifyObject, IUserInteraction
     private string _applyButtonText = "Install";
     private readonly IInstallationRunner _runner;
     private readonly IApplicationContext _applicationContext;
+    private readonly IConfigurationService _configurationService;
 
-    public MainViewModel(IInstallationRunner runner, IApplicationContext applicationContext, IProductInformation productInformation, ILogger<MainViewModel> logger)
+    public MainViewModel(
+        IInstallationRunner runner, 
+        IApplicationContext applicationContext, 
+        IProductInformation productInformation, 
+        IConfigurationService configurationService,
+        ILogger<MainViewModel> logger)
     {
         ProductInformation = productInformation;
         Title = $"{ProductInformation.DisplayName} Installer ({ProductInformation.Version})";
@@ -35,6 +44,7 @@ public class MainViewModel : NotifyObject, IUserInteraction
         CloseCommand = new DelegateCommand(Close);
         _runner = runner;
         _applicationContext = applicationContext;
+        _configurationService = configurationService;
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
@@ -142,6 +152,9 @@ public class MainViewModel : NotifyObject, IUserInteraction
         ShowOptions = false;
 
         Message = $"Preparing {_runner.InstallationMode}";
+
+        SetConfigurationSettings();
+
         var runnerTask = Task.Run(() => _runner.Run());
         runnerTask.ToObservable().Subscribe(result =>
         {
@@ -179,6 +192,23 @@ public class MainViewModel : NotifyObject, IUserInteraction
                 }
             });
         });
+    }
+
+    private void SetConfigurationSettings()
+    {
+        foreach(var kv in _runner.Options.Settings)
+        {
+            var parts = kv.Split('=');
+            if(parts.Length == 2)
+            {
+                var propInfo = typeof(IContainerDesktopConfiguration).GetProperty(parts[0], BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if(propInfo != null)
+                {
+                    var value = ConvertValueHelper.ConvertFrom(propInfo.PropertyType, parts[1]);
+                    propInfo.SetValue(_configurationService.Configuration, value);
+                }
+            }
+        }
     }
 
     private void Close()
