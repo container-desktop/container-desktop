@@ -41,6 +41,13 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
         set => SetValueAndNotify(value);
     }
 
+    [Display(Name = "Enable Port Forwarding", GroupName = ConfigurationGroups.Network, Description = "Enables port forwarding on external network interfaces.", Order = 2)]
+    public bool PortForwardingEnabled 
+    { 
+        get => GetValue<bool>(); 
+        set => SetValueAndNotify(value);
+    }
+
     [JsonIgnore]
     [Display(Name = "Automatically start at login", GroupName = ConfigurationGroups.Miscellaneous)]
     public bool AutoStart 

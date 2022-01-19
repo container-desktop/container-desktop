@@ -75,6 +75,8 @@ public class MainViewModel : NotifyObject
         Task.Run(() => CheckForUpdateAsync());
     }
 
+    public IContainerDesktopConfiguration Configuration => _configurationService.Configuration;
+
     public IProductInformation ProductInformation { get; }
 
     public bool ShowTrayIcon
