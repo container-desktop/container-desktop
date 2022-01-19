@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wsl", "Wsl\Wsl.csproj", "{9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "Abstractions\Abstractions.csproj", "{8F55F175-0454-4C16-A70B-CC95CEF811DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Configuration", "Configuration\Configuration.csproj", "{FA8A4562-3005-4906-8673-81C38B9A54AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{FA8A4562-3005-4906-8673-81C38B9A54AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,8 +67,8 @@ Global
 		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|Any CPU.ActiveCfg = Release|x86
 		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|arm64.ActiveCfg = Release|arm64
 		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|arm64.Build.0 = Release|arm64
-		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x64.ActiveCfg = Release|x64
-		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x64.Build.0 = Release|x64
+		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x64.Build.0 = Release|Any CPU
 		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x86.ActiveCfg = Release|x86
 		{6B190400-010A-4100-A97A-314B05D25F1A}.Release|x86.Build.0 = Release|x86
 		{00816323-9F10-4065-8913-C268028FEAD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

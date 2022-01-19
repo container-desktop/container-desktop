@@ -4,6 +4,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>ContainerDesktop.Common</RootNamespace>
     <AssemblyName>ContainerDesktop.Common</AssemblyName>
+		<UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>

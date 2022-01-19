@@ -49,6 +49,8 @@
                     <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" />
                     <MenuItem Header="View log stream" Command="{Binding ViewLogStreamCommand}" />
                     <Separator/>
+                    <MenuItem Header="Reset" Command="{Binding ResetCommand}" />
+                    <Separator/>
                     <MenuItem Header="Quit Container Desktop" Command="{Binding QuitCommand}" />
                     <Separator />
                     <MenuItem Header="{Binding ProductInformation.Version}" Icon="{Binding UpdateAvailable, Converter={StaticResource UpdateIconConverter}, ConverterParameter=UpdateIcon}" ToolTip="{Binding UpdateAvailableTooltip}" Command="{Binding ShowLatestReleaseCommand}" HorizontalAlignment="{Binding UpdateAvailable, Converter={StaticResource UpdateAvailableAlignmentConverter}}" />

@@ -8,6 +8,8 @@ public class ProductInformation : IProductInformation
         ProxyPath = Path.Combine(InstallDir, "Resources", $"container-desktop-proxy-windows-amd64.exe");
         ProxyPath = Path.Combine(InstallDir, "Resources", $"container-desktop-port-forwarder.exe");
         ContainerDesktopAppDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Name);
+        ContainerDesktopDataDistroDir = Path.Combine(ContainerDesktopAppDataDir, "wsl", "data-distro");
+        ContainerDesktopDistroDir = Path.Combine(ContainerDesktopAppDataDir, "wsl", "distro");
     }
 
     public string Name { get; } = "ContainerDesktop";
@@ -23,7 +25,9 @@ public class ProductInformation : IProductInformation
     public string ContainerDesktopAppDataDir { get; } 
     public string WebSiteUrl { get; } = "https://container-desktop.io";
     public string ReleasesFeed { get; } = "https://api.github.com/repos/container-desktop/container-desktop/releases";
-    
+    public string ContainerDesktopDistroDir { get; }
+    public string ContainerDesktopDataDistroDir { get; }
+
     private static string GetVersion()
     {
         var version = ThisAssembly.AssemblyInformationalVersion;

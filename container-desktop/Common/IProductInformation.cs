@@ -12,6 +12,8 @@ public interface IProductInformation
     string ContainerDesktopDistroName { get; }
     string ContainerDesktopDataDistroName { get; }
     string ContainerDesktopAppDataDir { get; }
+    string ContainerDesktopDistroDir { get; }
+    string ContainerDesktopDataDistroDir { get; }
     string WebSiteUrl { get; }
     string Version { get; }
     string ReleasesFeed { get; }

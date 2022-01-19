@@ -65,17 +65,25 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Start()
     {
-        _cts = new CancellationTokenSource();
-        RunningState = RunningState.Starting;
-        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
-        InitializeDnsConfigurator();
-        InitializeDataDistro();
-        InitializePortForwardListener();
-        InitializeAndStartDaemon();
-        StartProxy();
-        WarmupDaemon();
-        InitializeDistros();
-        RunningState = RunningState.Started;
+        try
+        {
+            _cts = new CancellationTokenSource();
+            RunningState = RunningState.Starting;
+            _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+            InitializeDnsConfigurator();
+            InitializeDataDistro();
+            InitializePortForwardListener();
+            InitializeAndStartDaemon();
+            StartProxy();
+            WarmupDaemon();
+            InitializeDistros();
+            RunningState = RunningState.Started;
+        }
+        catch
+        {
+            Stop();
+            throw;
+        }
     }
 
     private void InitializePortForwardListener()
@@ -214,7 +222,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             }
         });
         _dataDistroInitTask = task;
-        if(!WaitForDataDistroInitialization(2000))
+        if(!WaitForDataDistroInitialization(5000))
         {
             throw new ContainerEngineException($"Could not initialize data distribution.");
         }
@@ -234,15 +242,21 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Stop()
     {
-        RunningState = RunningState.Stopping;
-        StopDnsConfigurator();
-        StopPortForwarding();
-        StopDistros();
-        StopProxy();
-        _cts.Cancel();
-        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
-        _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
-        RunningState = RunningState.Stopped;
+        try
+        {
+            RunningState = RunningState.Stopping;
+            StopDnsConfigurator();
+            StopPortForwarding();
+            StopDistros();
+            StopProxy();
+            _cts.Cancel();
+            _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+            _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
+        }
+        finally
+        {
+            RunningState = RunningState.Stopped;
+        }
     }
 
     public void Restart()
