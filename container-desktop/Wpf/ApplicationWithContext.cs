@@ -35,4 +35,9 @@ public class ApplicationWithContext : Application, IApplicationContext
     {
         Dispatcher.Invoke(action);
     }
+
+    public T InvokeOnDispatcher<T>(Func<T> action)
+    {
+        return Dispatcher.Invoke<T>(action);
+    }
 }

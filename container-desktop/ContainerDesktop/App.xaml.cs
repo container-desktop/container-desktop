@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
 
 public partial class App : ApplicationWithContext
 {
@@ -36,13 +37,14 @@ public partial class App : ApplicationWithContext
         MainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
         ContainerEngine = ServiceProvider.GetRequiredService<IContainerEngine>();
         var productInfo = ServiceProvider.GetRequiredService<IProductInformation>();
+        new WindowInteropHelper(MainWindow).EnsureHandle();
         MainViewModel.ShowTrayIcon = true;
         Task.Run(() => ContainerEngine.Start()).ToObservable().Subscribe(_ => { }, ex =>
         {
             Logger.LogError(ex, ex.Message);
             Dispatcher.Invoke(() =>
             {
-                MessageBox.Show($"{productInfo.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
+                MessageBox.Show(MainWindow, $"{productInfo.DisplayName} failed to startup, please view the event log for errors.\r\n\r\nMessage:\r\n{ex.Message}", "Failed to start", MessageBoxButton.OK);
                 QuitApplication();
             });
         });
@@ -58,11 +60,4 @@ public partial class App : ApplicationWithContext
         var mainWindow = (MainWindow)MainWindow;
         mainWindow.ShowSettings();
     }
-
-    //public override void ShowMainWindow()
-    //{
-    //    base.ShowMainWindow();
-    //    var mainWindow = (MainWindow)MainWindow;
-    //    mainWindow.ShowMainPage();
-    //}
 }

@@ -11,6 +11,10 @@ mount --bind /proxy /mnt/host/wsl/container-desktop/proxy
 mount --bind /distro /mnt/host/wsl/container-desktop/distro
 mount --bind /mnt/host/wsl /mnt/wsl
 mount --bind /mnt/host/wsl/container-desktop-data/data /var/lib/docker
+mkdir -p /sys/fs/cgroup/systemd
+if ! mountpoint -q /sys/fs/cgroup/systemd; then
+  mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+fi
 export DOCKER_TLS_CERTDIR=/certs
 nohup /usr/local/bin/dockerd-entrypoint.sh >/dev/null 2>&1 &
 c=0

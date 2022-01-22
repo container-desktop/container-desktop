@@ -10,6 +10,7 @@ using ContainerDesktop.UI.Wpf.Input;
 using ContainerDesktop.Wsl;
 using NuGet.Versioning;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.NetworkInformation;
@@ -29,6 +30,7 @@ public class MainViewModel : NotifyObject
     private readonly IConfigurationService _configurationService;
     private readonly IProcessExecutor _processExecutor;
     private readonly ILogger<MainViewModel> _logger;
+    private readonly IFileSystem _fileSystem;
     private bool _showTrayIcon;
     private bool _isStarted;
     private BitmapImage _trayIcon = _icon; // "/ContainerDesktop;component/app.ico";
@@ -44,6 +46,7 @@ public class MainViewModel : NotifyObject
         IConfigurationService configurationService,
         IProcessExecutor processExecutor,
         IProductInformation productInformation,
+        IFileSystem fileSystem,
         ILogger<MainViewModel> logger)
     {
         _applicationContext = applicationContext;
@@ -53,6 +56,7 @@ public class MainViewModel : NotifyObject
         _configurationService = configurationService;
         _processExecutor = processExecutor;
         ProductInformation = productInformation;
+        _fileSystem = fileSystem;
         _logger = logger;
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
@@ -65,6 +69,7 @@ public class MainViewModel : NotifyObject
         CheckNetworkInterfaceCommand = new DelegateCommand<PortForwardInterface>(TogglePortForwardInterface);
         OpenSettingsCommand = new DelegateCommand(OpenSettings);
         ShowLatestReleaseCommand = new DelegateCommand(ShowLatestRelease, () => UpdateAvailable);
+        ResetCommand = new DelegateCommand(Reset, () => _containerEngine.RunningState != RunningState.Starting);
 
         var menuItems = new List<IMenuItem>
         {
@@ -74,6 +79,8 @@ public class MainViewModel : NotifyObject
         SelectedMenuItem = menuItems[0];
         Task.Run(() => CheckForUpdateAsync());
     }
+
+    public IContainerDesktopConfiguration Configuration => _configurationService.Configuration;
 
     public IProductInformation ProductInformation { get; }
 
@@ -124,6 +131,8 @@ public class MainViewModel : NotifyObject
     public DelegateCommand ShowLatestReleaseCommand { get; }
 
     public DelegateCommand<PortForwardInterface> CheckNetworkInterfaceCommand { get; }
+
+    public DelegateCommand ResetCommand { get; }
 
     public IEnumerable<WslDistributionItem> WslDistributions =>
         _wslService.GetDistros()
@@ -195,6 +204,7 @@ public class MainViewModel : NotifyObject
             StartCommand.RaiseCanExecuteChanged();
             StopCommand.RaiseCanExecuteChanged();
             RestartCommand.RaiseCanExecuteChanged();
+            ResetCommand.RaiseCanExecuteChanged();
             TrayIcon = _containerEngine.RunningState switch
             {
                 RunningState.Started => _runIcon,
@@ -294,7 +304,7 @@ public class MainViewModel : NotifyObject
         catch (Exception ex)
         {
             _applicationContext.InvokeOnDispatcher(() =>
-                MessageBox.Show(ex.Message, $"Failed to {caption}", MessageBoxButton.OK));
+                MessageBox.Show(_applicationContext.MainWindow, ex.Message, $"Failed to {caption}", MessageBoxButton.OK, MessageBoxImage.Error));
         }
     }
 
@@ -318,6 +328,51 @@ public class MainViewModel : NotifyObject
         catch(Exception ex)
         {
             _logger.LogError(ex, "Could not retrieve a list of releases.");
+        }
+    }
+
+    private async void Reset()
+    {
+        if(MessageBox.Show(_applicationContext.MainWindow, $"This will reinstall the {ProductInformation.DisplayName} WSL2 distributions. This will remove all data. \r\nDo you want to continue ?", "Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+        await Task.Run(() =>
+        {
+            SafeExecute("Reset", () =>
+            {
+                using (var dlg = _applicationContext.InvokeOnDispatcher(() => ProgressDialog.Show("Reset", 5)))
+                {
+                    LogAndProgress(dlg, "Stopping");
+                    _containerEngine.Stop();
+                    LogAndProgress(dlg, "Unregistering distributions");
+                    _wslService.Unregister(ProductInformation.ContainerDesktopDistroName);
+                    _wslService.Unregister(ProductInformation.ContainerDesktopDataDistroName);
+                    LogAndProgress(dlg, "Deleting distribution folders");
+                    _fileSystem.Directory.Delete(ProductInformation.ContainerDesktopDistroDir, true);
+                    _fileSystem.Directory.Delete(ProductInformation.ContainerDesktopDataDistroDir, true);
+                    LogAndProgress(dlg, "Importing distributions");
+                    _fileSystem.Directory.CreateDirectory(ProductInformation.ContainerDesktopDistroDir);
+                    _fileSystem.Directory.CreateDirectory(ProductInformation.ContainerDesktopDataDistroDir);
+                    if (!_wslService.Import(ProductInformation.ContainerDesktopDistroName, ProductInformation.ContainerDesktopDistroDir, Path.Combine(ProductInformation.InstallDir, "Resources", "container-desktop-distro.tar.gz")))
+                    {
+                        throw new ContainerEngineException("Could not import distribution.");
+                    }
+                    if (!_wslService.Import(ProductInformation.ContainerDesktopDataDistroName, ProductInformation.ContainerDesktopDataDistroDir, Path.Combine(ProductInformation.InstallDir, "Resources", "container-desktop-data-distro.tar.gz")))
+                    {
+                        throw new ContainerEngineException("Could not import data distribution.");
+                    }
+                    LogAndProgress(dlg, "Starting");
+                    _containerEngine.Start();
+                }
+                _applicationContext.InvokeOnDispatcher(() => MessageBox.Show(_applicationContext.MainWindow, $"Successfully reset {ProductInformation.DisplayName}.", "Reset"));
+            });
+        });
+
+        void LogAndProgress(IProgress<string> progress, string msg)
+        {
+            _logger.LogInformation(msg);
+            progress?.Report(msg);
         }
     }
 

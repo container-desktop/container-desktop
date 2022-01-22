@@ -10,4 +10,5 @@ public interface IContainerDesktopConfiguration : IConfigurationObject
     DnsMode DnsMode { get; set; }
     string? DnsAddresses { get; set; }
     bool AutoStart { get; set; }
+    bool PortForwardingEnabled { get; set; }
 }

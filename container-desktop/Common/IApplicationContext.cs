@@ -1,4 +1,6 @@
-﻿namespace ContainerDesktop.Common;
+﻿using System.Windows;
+
+namespace ContainerDesktop.Common;
 
 public interface IApplicationContext
 {
@@ -8,4 +10,6 @@ public interface IApplicationContext
     void ShowMainWindow();
     void ShowSettings();
     void InvokeOnDispatcher(Action action);
+    T InvokeOnDispatcher<T>(Func<T> action);
+    Window MainWindow { get; }
 }

@@ -27,6 +27,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private Task _dataDistroInitTask;
     private Task _portForwardListenerTask;
     private CancellationTokenSource _cts;
+    private CancellationTokenSource _portforwardListenerCts;
     private DnsConfigurator _dnsConfigurator;
 
     public DefaultContainerEngine(
@@ -44,6 +45,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         // TODO: query the state
         _runningState = RunningState.Stopped;
         LocalCertsPath = Path.Combine(_productInformation.ContainerDesktopAppDataDir, "certs\\");
+        ConfigurationChangedEventManager.AddHandler(_configurationService, OnConfigurationChanged);
     }
 
     public event EventHandler RunningStateChanged;
@@ -63,39 +65,67 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Start()
     {
-        _cts = new CancellationTokenSource();
-        RunningState = RunningState.Starting;
-        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
-        InitializeDnsConfigurator();
-        InitializeDataDistro();
-        InitializePortForwardListener();
-        InitializeAndStartDaemon();
-        StartProxy();
-        WarmupDaemon();
-        InitializeDistros();
-        RunningState = RunningState.Started;
+        try
+        {
+            _cts = new CancellationTokenSource();
+            RunningState = RunningState.Starting;
+            _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+            InitializeDnsConfigurator();
+            InitializeDataDistro();
+            InitializePortForwardListener();
+            InitializeAndStartDaemon();
+            StartProxy();
+            WarmupDaemon();
+            InitializeDistros();
+            RunningState = RunningState.Started;
+        }
+        catch
+        {
+            Stop();
+            throw;
+        }
     }
 
     private void InitializePortForwardListener()
     {
-        _portForwardListenerTask = Task.Run(async () =>
+        if (_configurationService.Configuration.PortForwardingEnabled)
         {
-            while (!_cts.IsCancellationRequested)
+            _portforwardListenerCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            if(!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-shim /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
             {
-                _logger.LogInformation("Listening for port forward messages.");
-                await _wslService.ExecuteCommandAsync(
-                    "nc -lk -U /var/run/cd-port-forward.sock", 
-                    _productInformation.ContainerDesktopDistroName,
-                    stdout: ForwardPort,
-                    cancellationToken: _cts.Token);
-                if (!_cts.IsCancellationRequested)
-                {
-                    _logger.LogWarning("Listening for port forward messages stopped unexpectedly, trying to restart.");
-                    await Task.Delay(100);
-                }
+                _logger.LogError("Could not initialize port forwarding.");
+                return;
             }
-            _logger.LogInformation("Stopped listening for port forward messages.");
-        });
+            _portForwardListenerTask = Task.Run(async () =>
+            {
+                try
+                {
+                    while (!_portforwardListenerCts.IsCancellationRequested)
+                    {
+                        _logger.LogInformation("Listening for port forward messages.");
+                        await _wslService.ExecuteCommandAsync(
+                            "nc -lk -U /var/run/cd-port-forward.sock",
+                            _productInformation.ContainerDesktopDistroName,
+                            stdout: ForwardPort,
+                            cancellationToken: _portforwardListenerCts.Token);
+                        if (!_portforwardListenerCts.IsCancellationRequested)
+                        {
+                            _logger.LogWarning("Listening for port forward messages stopped unexpectedly, trying to restart.");
+                            await Task.Delay(100);
+                        }
+                    }
+                    _logger.LogInformation("Stopped listening for port forward messages.");
+                }
+                catch(TaskCanceledException)
+                {
+                    _logger.LogInformation("Stopped listening for port forward messages.");
+                }
+            });
+        }
+        else
+        {
+            _portForwardListenerTask = Task.CompletedTask;
+        }
     }
 
     private static readonly Regex _hostipParser = new(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
@@ -192,7 +222,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             }
         });
         _dataDistroInitTask = task;
-        if(!WaitForDataDistroInitialization(2000))
+        if(!WaitForDataDistroInitialization(5000))
         {
             throw new ContainerEngineException($"Could not initialize data distribution.");
         }
@@ -212,15 +242,21 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Stop()
     {
-        RunningState = RunningState.Stopping;
-        StopDnsConfigurator();
-        StopPortForwarding();
-        StopDistros();
-        StopProxy();
-        _cts.Cancel();
-        _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
-        _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
-        RunningState = RunningState.Stopped;
+        try
+        {
+            RunningState = RunningState.Stopping;
+            StopDnsConfigurator();
+            StopPortForwarding();
+            StopDistros();
+            StopProxy();
+            _cts.Cancel();
+            _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+            _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
+        }
+        finally
+        {
+            RunningState = RunningState.Stopped;
+        }
     }
 
     public void Restart()
@@ -257,6 +293,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         try
         {
             Stop();
+            ConfigurationChangedEventManager.RemoveHandler(_configurationService, OnConfigurationChanged);
         }
         finally
         {
@@ -395,6 +432,38 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                 {
                     _logger.LogError(ex, "Failed to forward port on {Address}:{Port}: {Message}", address.ToString(), port, ex.Message);
                 }
+            }
+        }
+    }
+
+    private async void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
+    {
+        if (RunningState == RunningState.Started && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
+        {
+            try
+            {
+                if (_configurationService.Configuration.PortForwardingEnabled)
+                {
+                    _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to true, trying to initialize port forwarding");
+                    InitializePortForwardListener();
+                }
+                else
+                {
+                    _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to false, trying to stop port forwarding");
+                    if (_portforwardListenerCts != null)
+                    {
+                        _portforwardListenerCts.Cancel();
+                        await _portForwardListenerTask;
+                    }
+                    if(!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-org /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
+                    {
+                        _logger.LogError("Could not disable port forwarding");
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to change the {nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting.");
             }
         }
     }
