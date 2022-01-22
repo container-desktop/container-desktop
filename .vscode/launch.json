@@ -12,7 +12,7 @@
             "program": "${fileDirname}",
             "args":[
                 "--listen-address",
-                "http://localhost:5555",
+                "npipe:////./pipe/proxytest",
                 "--target-address",
                 "https://localhost:2376",
                 "--tls-key",

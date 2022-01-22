@@ -13,6 +13,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"net/textproto"
 	"net/url"
 	"strings"
@@ -229,8 +230,10 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 		}()
 	}
+	conntrace := &traceWithConn{}
 
 	outreq := req.Clone(ctx)
+	outreq = conntrace.init(outreq)
 	if req.ContentLength == 0 {
 		outreq.Body = nil // Issue 16036: nil Body for http.Transport retries
 	}
@@ -305,7 +308,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if !p.modifyResponse(rw, res, outreq) {
 			return
 		}
-		p.handleUpgradeResponse(rw, outreq, res)
+		p.handleUpgradeResponse(rw, outreq, res, conntrace)
 		return
 	}
 
@@ -368,6 +371,20 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			rw.Header().Add(k, v)
 		}
 	}
+}
+
+type traceWithConn struct {
+	Conn net.Conn
+	httptrace.ClientTrace
+}
+
+func (t *traceWithConn) init(req *http.Request) *http.Request {
+	t.ClientTrace = httptrace.ClientTrace{
+		GotConn: func(connInfo httptrace.GotConnInfo) {
+			t.Conn = connInfo.Conn
+		},
+	}
+	return req.WithContext(httptrace.WithClientTrace(req.Context(), &t.ClientTrace))
 }
 
 var inOurTests bool // whether we're in our own tests
@@ -550,7 +567,7 @@ func upgradeType(h http.Header) string {
 	return h.Get("Upgrade")
 }
 
-func (p *ReverseProxy) handleUpgradeResponse(rw http.ResponseWriter, req *http.Request, res *http.Response) {
+func (p *ReverseProxy) handleUpgradeResponse(rw http.ResponseWriter, req *http.Request, res *http.Response, conntrace *traceWithConn) {
 	reqUpType := upgradeType(req.Header)
 	resUpType := upgradeType(res.Header)
 	if !IsPrint(resUpType) { // We know reqUpType is ASCII, it's checked by the caller.
@@ -606,8 +623,8 @@ func (p *ReverseProxy) handleUpgradeResponse(rw http.ResponseWriter, req *http.R
 	}
 	errc := make(chan error, 1)
 	spc := switchProtocolCopier{user: conn, backend: backConn}
-	go spc.copyToBackend(errc)
-	go spc.copyFromBackend(errc)
+	go spc.copyToBackend(conntrace, errc)
+	go spc.copyFromBackend(conntrace, errc)
 	err = <-errc
 	if err == nil {
 		err = <-errc
@@ -615,7 +632,6 @@ func (p *ReverseProxy) handleUpgradeResponse(rw http.ResponseWriter, req *http.R
 	if err != nil {
 		p.getErrorHandler()(rw, req, fmt.Errorf("can't copy: %v", err))
 	}
-	return
 }
 
 // switchProtocolCopier exists so goroutines proxying data back and
@@ -624,17 +640,23 @@ type switchProtocolCopier struct {
 	user, backend io.ReadWriter
 }
 
-func (c switchProtocolCopier) copyFromBackend(errc chan<- error) {
+func (c switchProtocolCopier) copyFromBackend(conntrace *traceWithConn, errc chan<- error) {
 	_, err := io.Copy(c.user, c.backend)
+	if closeReader, ok := conntrace.Conn.(CloseReader); ok {
+		closeReader.CloseRead()
+	}
 	if closeWriter, ok := c.user.(CloseWriter); ok {
 		closeWriter.CloseWrite()
 	}
 	errc <- err
 }
 
-func (c switchProtocolCopier) copyToBackend(errc chan<- error) {
+func (c switchProtocolCopier) copyToBackend(conntrace *traceWithConn, errc chan<- error) {
 	_, err := io.Copy(c.backend, c.user)
-	if closeWriter, ok := c.backend.(CloseWriter); ok {
+	if closeReader, ok := c.user.(CloseReader); ok {
+		closeReader.CloseRead()
+	}
+	if closeWriter, ok := conntrace.Conn.(CloseWriter); ok {
 		closeWriter.CloseWrite()
 	}
 	errc <- err
