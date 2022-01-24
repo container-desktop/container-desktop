@@ -2,8 +2,13 @@
 distro="${1:-$WSL_DISTRO_NAME}"
 mkdir -p /mnt/wsl/$distro
 mount --bind / /mnt/wsl/$distro
+mkdir -p /usr/libexec/docker
+if [ -d /usr/libexec/docker/cli-plugins ]; then
+  rm -rf /usr/libexec/docker/cli-plugins
+fi
 readlink /usr/local/bin/docker || ln -s /mnt/wsl/container-desktop/cli-tools/docker /usr/local/bin/docker
 readlink /usr/local/bin/docker-compose || ln -s /mnt/wsl/container-desktop/cli-tools/docker-compose /usr/local/bin/docker-compose
+readlink /usr/libexec/docker/cli-plugins || ln -s /mnt/wsl/container-desktop/cli-tools/cli-plugins /usr/libexec/docker/cli-plugins
 rm /var/run/docker.sock
 /mnt/wsl/container-desktop/proxy/container-desktop-proxy \
   --listen-address unix:///var/run/docker.sock \

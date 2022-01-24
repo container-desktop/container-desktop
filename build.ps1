@@ -1,5 +1,5 @@
 # This script is dependent on:
-# - dotnet 5.0 SDK
+# - dotnet 6.0 SDK
 # - docker
 # This script must run on Windows because the application is a Windows application.
 $DOCKER_VERSION="20.10.12"
@@ -18,6 +18,8 @@ dotnet clean .\container-desktop\container-desktop.sln
 docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/
 # Download and extract docker cli to /dist/docker
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip && unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d /src/dist"
+# Extract Linux docker cli and plugins 
+docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "mkdir /src/dist/docker/linux && cp -R /usr/libexec/docker/cli-plugins /src/dist/docker/linux"
 # Download docker-compose to /dist/docker
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
