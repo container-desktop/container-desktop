@@ -75,6 +75,37 @@
     },
     {
       "type": "CreateDirectory",
+      "id": "CreateProgramDataDockerCliPluginsFolder",
+      "decription": "Create cli plugin folder",
+      "directory": "%PROGRAMDATA%\\Docker\\cli-plugins",
+      "noUninstall": true
+    },
+    {
+      "type": "CopyFile",
+      "id": "CopyCliPluginDockerApp",
+      "description": "Copy docker app plugin",
+      "source": "%INSTALLDIR%\\cli\\cli-plugins\\docker-app.exe",
+      "target": "%PROGRAMDATA%\\Docker\\cli-plugins\\docker-app.exe",
+      "noUninstall": true
+    },
+    {
+      "type": "CopyFile",
+      "id": "CopyCliPluginDockerBuildx",
+      "description": "Copy docker buildx plugin",
+      "source": "%INSTALLDIR%\\cli\\cli-plugins\\docker-buildx.exe",
+      "target": "%PROGRAMDATA%\\Docker\\cli-plugins\\docker-buildx.exe",
+      "noUninstall": true
+    },
+    {
+      "type": "CopyFile",
+      "id": "CopyCliPluginDockerDockerCompose",
+      "description": "Copy docker compose plugin",
+      "source": "%INSTALLDIR%\\cli\\docker-compose.exe",
+      "target": "%PROGRAMDATA%\\Docker\\cli-plugins\\docker-compose.exe",
+      "noUninstall": true
+    },
+    {
+      "type": "CreateDirectory",
       "id": "CreateAppDataDirectory",
       "description": "Creating Application data directory",
       "directory": "%LOCALAPPDATA%\\%PRODUCT_NAME%"
