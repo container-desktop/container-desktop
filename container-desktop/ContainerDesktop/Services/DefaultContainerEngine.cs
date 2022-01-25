@@ -5,12 +5,15 @@ using ContainerDesktop.Configuration;
 using ContainerDesktop.Processes;
 using ContainerDesktop.Wsl;
 using Docker.DotNet;
+using Polly;
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
+
+#pragma warning disable CA2254
 
 public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 {
@@ -65,25 +68,37 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     public void Start()
     {
-        try
+        var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(3, _ => TimeSpan.FromSeconds(2));
+        retryPolicy.Execute(() =>
         {
-            _cts = new CancellationTokenSource();
-            RunningState = RunningState.Starting;
-            _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
-            InitializeDnsConfigurator();
-            InitializeDataDistro();
-            InitializePortForwardListener();
-            InitializeAndStartDaemon();
-            StartProxy();
-            WarmupDaemon();
-            InitializeDistros();
-            RunningState = RunningState.Started;
-        }
-        catch
-        {
-            Stop();
-            throw;
-        }
+            try
+            {
+                _cts = new CancellationTokenSource();
+                RunningState = RunningState.Starting;
+                _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
+                InitializeDnsConfigurator();
+                InitializeDataDistro();
+                InitializePortForwardListener();
+                InitializeAndStartDaemon();
+                StartProxy();
+                WarmupDaemon();
+                InitializeDistros();
+                RunningState = RunningState.Started;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Stop();
+                }
+                catch (Exception stopEx)
+                {
+                    var msg = $"{ex.Message}\r\n{stopEx.Message}";
+                    throw new AggregateException(msg, ex, stopEx);
+                }
+                throw;
+            }
+        });
     }
 
     private void InitializePortForwardListener()
@@ -250,12 +265,21 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
             StopDistros();
             StopProxy();
             _cts.Cancel();
+            StopDaemon();
             _wslService.Terminate(_productInformation.ContainerDesktopDistroName);
             _wslService.Terminate(_productInformation.ContainerDesktopDataDistroName);
         }
         finally
         {
             RunningState = RunningState.Stopped;
+        }
+    }
+
+    private void StopDaemon()
+    {
+        if(_wslService.ExecuteCommand($"pkill -TERM dockerd", _productInformation.ContainerDesktopDistroName))
+        {
+            _ = SpinWait.SpinUntil(() => !_wslService.ExecuteCommand("pgrep dockerd", _productInformation.ContainerDesktopDistroName), TimeSpan.FromSeconds(5));
         }
     }
 
@@ -468,3 +492,5 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         }
     }
 }
+
+#pragma warning restore CA2254

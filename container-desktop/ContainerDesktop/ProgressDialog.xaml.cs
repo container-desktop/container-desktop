@@ -16,8 +16,10 @@ public partial class ProgressDialog : Window
 
     public static IDisposableProgress Show(string caption, int max)
     {
-        var dlg = new ProgressDialog();
-        dlg.Title = caption;
+        var dlg = new ProgressDialog
+        {
+            Title = caption
+        };
         dlg.txtMessage.Text = string.Empty;
         dlg.progressBar.Minimum = 0;
         dlg.progressBar.Maximum = max;

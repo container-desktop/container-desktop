@@ -55,7 +55,9 @@ internal static class NativeMethods
         MinorMMC = 0x00000019,
         MinorNetworkConnectivity = 0x00000014,
         MinorNetworkCard = 0x00000009,
+#pragma warning disable CA1069 // Enums values should not be duplicated
         MinorOther = 0x00000000,
+#pragma warning restore CA1069 // Enums values should not be duplicated
         MinorOtherDriver = 0x0000000e,
         MinorPowerSupply = 0x0000000a,
         MinorProcessor = 0x00000008,

@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using System.Threading;
 
+#pragma warning disable CA2254
+
 public sealed class WslService : IWslService
 {
     private const string RegKeyLxss = "Software\\Microsoft\\Windows\\CurrentVersion\\Lxss";
@@ -113,3 +115,5 @@ public sealed class WslService : IWslService
         _logger.LogInformation(s);
     }
 }
+
+#pragma warning restore CA2254

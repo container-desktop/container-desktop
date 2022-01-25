@@ -18,7 +18,7 @@ public class WindowsVersionCheck : ResourceBase
         {
             var minorVersionNumber = (int)key.GetValue(CurrentMinorVersionNumber, 0);
             var majorVersionNumber = (int) key.GetValue(CurrentMajorVersionNumber, 0);
-            int.TryParse((string)key.GetValue(CurrentBuildNumber, "0"), out var buildNumber);
+            _ = int.TryParse((string)key.GetValue(CurrentBuildNumber, "0"), out var buildNumber);
             var minorBuildNumber = (int)key.GetValue(CurrentMinorBuildNumber, 0);
 
             if(majorVersionNumber >= 10)

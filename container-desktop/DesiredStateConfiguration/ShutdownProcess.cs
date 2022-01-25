@@ -82,7 +82,7 @@ public class ShutdownProcess : ResourceBase
         var handles = new List<IntPtr>();
         PInvoke.User32.EnumWindows((hwnd, lparam) =>
         {
-            PInvoke.User32.GetWindowThreadProcessId(hwnd, out var processId);
+            _ = PInvoke.User32.GetWindowThreadProcessId(hwnd, out var processId);
             if(processId == process.Id)
             {
                 handles.Add(hwnd);

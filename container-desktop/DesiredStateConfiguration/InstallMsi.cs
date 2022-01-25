@@ -1,6 +1,7 @@
 ﻿using ContainerDesktop.Processes;
 using Microsoft.Win32;
 using System.Net;
+using System.Net.Http;
 
 namespace ContainerDesktop.DesiredStateConfiguration;
 
@@ -34,10 +35,8 @@ public class InstallMsi : ResourceBase
         var tmpFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
-
-            var request = WebRequest.Create(Uri);
-            using (var response = request.GetResponse())
-            using (var s = response.GetResponseStream())
+            using (var client = new HttpClient())
+            using (var s = client.GetStreamAsync(Uri).GetAwaiter().GetResult())
             using (var fs = context.FileSystem.File.Create(tmpFileName))
             {
                 s.CopyTo(fs);
