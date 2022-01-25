@@ -10,6 +10,8 @@ using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
+#pragma warning disable CA2254
+
 public partial class App : ApplicationWithContext
 {
     public App()
@@ -61,3 +63,5 @@ public partial class App : ApplicationWithContext
         mainWindow.ShowSettings();
     }
 }
+
+#pragma warning restore CA2254

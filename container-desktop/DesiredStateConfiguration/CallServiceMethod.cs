@@ -50,7 +50,7 @@ public class CallServiceMethod : ResourceBase
         return false;
     }
 
-    private object[] GetParsedParameters(MethodInfo methodInfo, List<string> parameters)
+    private static object[] GetParsedParameters(MethodInfo methodInfo, List<string> parameters)
     {
         var methodParams = methodInfo.GetParameters();
         var ret = new object[Math.Min(parameters.Count, methodParams.Length)];

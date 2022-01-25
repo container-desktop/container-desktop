@@ -4,6 +4,8 @@ using ContainerDesktop.Common;
 using Newtonsoft.Json;
 using System.IO.Abstractions;
 
+#pragma warning disable CA2254
+
 public class ConfigurationContext
 {
     private readonly IUserInteraction _userInteraction;
@@ -109,3 +111,5 @@ public class ConfigurationContext
         State.Clear();
     }
 }
+
+#pragma warning restore CA2254

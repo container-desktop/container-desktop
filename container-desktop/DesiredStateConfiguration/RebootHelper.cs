@@ -25,7 +25,7 @@ public static class RebootHelper
                     args.AddRange(argsToAdd);
                 }
                 var cmdLine = string.Join(" ", args);
-                RegisterApplicationRestart(cmdLine, 0);
+                _ = RegisterApplicationRestart(cmdLine, 0);
                 exitFlags |= ExitWindows.RestartApps;
             }
             var shutdownReason = ShutdownReason.FlagPlanned | ShutdownReason.MajorSoftware | ShutdownReason.MinorInstallation;

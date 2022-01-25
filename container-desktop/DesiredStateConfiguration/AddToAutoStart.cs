@@ -4,8 +4,6 @@ namespace ContainerDesktop.DesiredStateConfiguration;
 
 public class AddToAutoStart : ResourceBase
 {
-    private const string RunRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-
     public string ExePath { get; set; }
 
     private string ExpandedExePath => Environment.ExpandEnvironmentVariables(ExePath);

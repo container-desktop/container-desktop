@@ -8,7 +8,7 @@ namespace ContainerDesktop.Abstractions
 {
     public abstract class ConfigurationObject : NotifyObject, IDataErrorInfo, IConfigurationObject
     {
-        private Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
 
         [JsonIgnore]
         [Hide]

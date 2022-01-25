@@ -1,6 +1,4 @@
-﻿namespace ContainerDesktop.ViewModels;
-
-using ContainerDesktop.Abstractions;
+﻿using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
 using ContainerDesktop.Configuration;
 using ContainerDesktop.Pages;
@@ -17,6 +15,10 @@ using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+
+namespace ContainerDesktop.ViewModels;
+
+#pragma warning disable CA2254
 
 public class MainViewModel : NotifyObject
 {
@@ -378,4 +380,5 @@ public class MainViewModel : NotifyObject
 
     private record ReleaseVersion(ReleaseInfo Release, SemanticVersion SemanticVersion);
 }
+#pragma warning restore CA2254
 

@@ -1,16 +1,17 @@
-﻿namespace ContainerDesktop.Installer.ViewModels;
-
-using ContainerDesktop.Abstractions;
+﻿using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
 using ContainerDesktop.Configuration;
 using ContainerDesktop.DesiredStateConfiguration;
 using ContainerDesktop.UI.Wpf.Input;
-using System;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
+
+namespace ContainerDesktop.Installer.ViewModels;
+
+#pragma warning disable CA2254
 
 public class MainViewModel : NotifyObject, IUserInteraction
 {
@@ -240,3 +241,5 @@ public class MainViewModel : NotifyObject, IUserInteraction
         Logger.LogInformation("[{ProgressAt}/{ProgressMax}] {ProgressMessage}. {ProgressExtraInformation}", value, max, message, extraInformation);
     }
 }
+#pragma warning restore CA2254
+
