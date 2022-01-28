@@ -1,4 +1,5 @@
-﻿using ContainerDesktop.Common;
+﻿using ContainerDesktop.Abstractions;
+using ContainerDesktop.Common;
 using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -55,7 +56,8 @@ public class ConfigurationService : IConfigurationService
                 if (notify)
                 {
                     var changedProperties = result.Differences.Select(x => x.PropertyName).ToArray();
-                    ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(changedProperties));
+                    var restartRequested = Configuration.GetType().GetProperties().Any(x => changedProperties.Contains(x.Name) && x.IsDefined(typeof(RestartRequiredAttribute), true));
+                    ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(restartRequested, changedProperties));
                 }
                 _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation);
                 JsonConvert.PopulateObject(json, _loadedConfiguration);
@@ -75,7 +77,7 @@ public class ConfigurationService : IConfigurationService
             if (notify)
             {
                 var changedProperties = result.Differences.Select(x => x.PropertyName).ToArray();
-                ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(changedProperties));
+                ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(false, changedProperties));
             }
         }
         _loadedConfiguration = loaded;

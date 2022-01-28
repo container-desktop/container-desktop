@@ -28,7 +28,7 @@ public partial class MainPage : Page
 
     private void NavigationViewLoaded(object sender, RoutedEventArgs e)
     {
-
+        
     }
 
     private void NavigationViewSelectionChanged(ModernWpf.Controls.NavigationView sender, ModernWpf.Controls.NavigationViewSelectionChangedEventArgs args)

@@ -10,6 +10,8 @@ public class SettingsViewModel : NotifyObject
 {
     private readonly IConfigurationService _configurationService;
     private ObservableCollection<SettingsCategory> _settingsCategories;
+    private readonly Dictionary<string, ObservableCollection<SettingsCategory>> _settingsCategoriesMap;
+    private string _selectedCategory;
 
     public SettingsViewModel(IConfigurationService configurationService)
     {
@@ -18,7 +20,10 @@ public class SettingsViewModel : NotifyObject
         DiscardChangesCommand = new DelegateCommand(DiscardChanges, () => _configurationService.IsChanged());
         _configurationService.Configuration.PropertyChanged += (_,_) => UpdateButtonState();
         ConfigurationChangedEventManager.AddHandler(_configurationService, (_,_) => UpdateButtonState());
-        LoadSettings();
+        Categories = ConfigurationCategories.All;
+        _settingsCategoriesMap = LoadSettings();
+        _selectedCategory = Categories.First();
+        _settingsCategories = _settingsCategoriesMap[_selectedCategory];
     }
 
     public DelegateCommand SaveChangesCommand { get; }
@@ -26,25 +31,41 @@ public class SettingsViewModel : NotifyObject
     public DelegateCommand DiscardChangesCommand { get; }
 
     public IConfigurationObject SettingsObject => _configurationService.Configuration;
-           
+
+    public IReadOnlyCollection<string> Categories { get; set; }
+
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            if (SetValueAndNotify(ref _selectedCategory, value))
+            {
+                SettingsCategories = _settingsCategoriesMap[_selectedCategory];
+            }
+        }
+    }
+
     public ObservableCollection<SettingsCategory> SettingsCategories 
     {
         get => _settingsCategories; 
         set => SetValueAndNotify(ref _settingsCategories, value); 
     } 
 
-    private void LoadSettings()
+    private Dictionary<string, ObservableCollection<SettingsCategory>> LoadSettings()
     {
-        if(SettingsObject != null)
+        var ret = new Dictionary<string, ObservableCollection<SettingsCategory>>();
+        foreach (var categoryName in ConfigurationCategories.All)
         {
-            var categories = new List<SettingsCategory>();
-            var groupedProperties = SettingsProperty.CreateSettingsProperties(SettingsObject).GroupBy(x => x.Category);
-            foreach (var settingsCategory in groupedProperties)
+            var groupedByGroupName = SettingsProperty.CreateSettingsProperties(SettingsObject).Where(x => x.Category == categoryName).GroupBy(x => x.GroupName);
+            var groups = new List<SettingsCategory>();
+            foreach (var group in groupedByGroupName)
             {
-                categories.Add(new SettingsCategory(settingsCategory.Key, settingsCategory.OrderBy(x => x.Order).ThenBy(x => x.DisplayName)));
+                groups.Add(new SettingsCategory(group.Key, group.OrderBy(x => x.Order).ThenBy(x => x.DisplayName)));
             }
-            SettingsCategories = new ObservableCollection<SettingsCategory>(categories.OrderBy(x => ConfigurationGroups.GetGroupOrder(x.Name)));
+            ret.Add(categoryName, new ObservableCollection<SettingsCategory>(groups));
         }
+        return ret;
     }
 
     private void SaveChanges()

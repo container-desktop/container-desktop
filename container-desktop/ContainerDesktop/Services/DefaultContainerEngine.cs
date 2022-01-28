@@ -5,6 +5,8 @@ using ContainerDesktop.Configuration;
 using ContainerDesktop.Processes;
 using ContainerDesktop.Wsl;
 using Docker.DotNet;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Polly;
 using System.Diagnostics;
 using System.Net;
@@ -79,11 +81,13 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                 InitializeDnsConfigurator();
                 InitializeDataDistro();
                 InitializePortForwardListener();
+                UpdateDaemonConfig();
+                UpdateCertificates();
                 InitializeAndStartDaemon();
                 StartProxy();
                 WarmupDaemon();
                 InitializeDistros();
-                RunningState = RunningState.Started;
+                RunningState = RunningState.Running;
             }
             catch (Exception ex)
             {
@@ -99,6 +103,65 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                 throw;
             }
         });
+    }
+
+    private void UpdateCertificates()
+    {
+        var existingCerts = new List<string>();
+        if(!_wslService.ExecuteCommand("ls -1 /usr/local/share/ca-certificates/cd-*.crt", _productInformation.ContainerDesktopDistroName, stdout: s => existingCerts.Add(Path.GetFileName(s))))
+        {
+            existingCerts.Clear();
+        }
+        var addedCerts = _configurationService.Configuration.Certificates.Where(x => !existingCerts.Contains(x.FileName));
+        var removedCerts = existingCerts.Where(x => !_configurationService.Configuration.Certificates.Any(y => y.FileName == x));
+        foreach(var removedCert in removedCerts)
+        {
+            var path = $"/usr/local/share/ca-certificates/{removedCert}";
+            if(_wslService.ExecuteCommand($"rm {path}", _productInformation.ContainerDesktopDistroName))
+            {
+                _logger.LogInformation($"Removed certificate '{path}'");
+            }
+            else
+            {
+                _logger.LogError($"Could not remove certificate '{path}'");
+            }
+        }
+        foreach(var addedCert in addedCerts)
+        {
+            var path = $"/usr/local/share/ca-certificates/{addedCert.FileName}";
+            var pem = addedCert.GetPem();
+            if (_wslService.ExecuteCommand($"cat <<EOF > {path}\n{pem}\nEOF\n", _productInformation.ContainerDesktopDistroName))
+            {
+                _logger.LogInformation($"Added certificate '{path}'");
+            }
+            else
+            {
+                _logger.LogError($"Could not add certificate '{path}'");
+            }
+        }
+        var output = new StringBuilder();
+        if(_wslService.ExecuteCommand("update-ca-certificates", _productInformation.ContainerDesktopDistroName, stdout: s => output.AppendLine(s)))
+        {
+            _logger.LogInformation("Updated ca certificates");
+        }
+        else
+        {
+            _logger.LogError("Failed to update ca certificates: {output}", output.ToString());
+        }
+    }
+
+    private void UpdateDaemonConfig()
+    {
+        _logger.LogInformation("Updating daemon configuration.");
+        var json = _configurationService.Configuration.DaemonConfig.Replace("\r\n", "\n");
+        if (_wslService.ExecuteCommand($"cat <<EOF > /etc/docker/daemon.json\n{json}\nEOF\n", _productInformation.ContainerDesktopDistroName))
+        {
+            _logger.LogInformation("Daemon configuration updated.");
+        }
+        else
+        {
+            _logger.LogError("Daemon configuration not updated.");
+        }
     }
 
     private void InitializePortForwardListener()
@@ -462,7 +525,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private async void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
-        if (RunningState == RunningState.Started && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
+        if (RunningState == RunningState.Running && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
         {
             try
             {
@@ -479,16 +542,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                         _portforwardListenerCts.Cancel();
                         await _portForwardListenerTask;
                     }
-                    if(!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-org /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
+                    if (!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-org /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
                     {
                         _logger.LogError("Could not disable port forwarding");
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to change the {nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting.");
             }
+        }
+        if(e.PropertiesChanged.Contains(nameof(ContainerDesktopConfiguration.Certificates)))
+        {
+            _ = Task.Run(() => UpdateCertificates());
         }
     }
 }

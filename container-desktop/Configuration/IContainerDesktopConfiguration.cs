@@ -1,4 +1,5 @@
 ﻿using ContainerDesktop.Abstractions;
+using System.Collections.ObjectModel;
 
 namespace ContainerDesktop.Configuration;
 
@@ -11,4 +12,6 @@ public interface IContainerDesktopConfiguration : IConfigurationObject
     string? DnsAddresses { get; set; }
     bool AutoStart { get; set; }
     bool PortForwardingEnabled { get; set; }
+    string DaemonConfig { get; set; }
+    ObservableCollection<CertificateInfo> Certificates { get; }
 }

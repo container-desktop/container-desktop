@@ -7,6 +7,8 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:wpf="http://container-desktop.io/wpf"
     xmlns:c="clr-namespace:ContainerDesktop.Converters"
+    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+    
     Startup="AppStartup">
     <Application.Resources>
         <ResourceDictionary>
@@ -20,6 +22,9 @@
             <c:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
             <c:EnumNameConverter x:Key="EnumNameConverter"/>
             <c:EnumTooltipConverter x:Key="EnumTooltipConverter"/>
+            <c:RunningStateToColorConverter x:Key="RunningStateToColorConverter"/>
+            <FontFamily x:Key="CascadiaCodePL">pack://application:,,,/Fonts/#Cascadia Code PL</FontFamily>
+            <FontFamily x:Key="SegoeFluent">pack://application:,,,/Fonts/#Segoe Fluent Icons</FontFamily>
             <Style x:Key="RadioButtonList" TargetType="{x:Type ListBox}">
                 <!-- ControlTemplate taken from MSDN http://msdn.microsoft.com/en-us/library/ms754242.aspx -->
                 <Setter Property="SnapsToDevicePixels" Value="true"/>
@@ -66,6 +71,60 @@
                                              IsChecked="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsSelected, Mode=TwoWay}">
                                                 <ContentPresenter />
                                             </RadioButton>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="CheckboxList" TargetType="{x:Type ListBox}">
+                <!-- ControlTemplate taken from MSDN http://msdn.microsoft.com/en-us/library/ms754242.aspx -->
+                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                <Setter Property="OverridesDefaultStyle" Value="true"/>
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+                <Setter Property="MinWidth" Value="120"/>
+                <Setter Property="MinHeight" Value="95"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBox">
+                            <Border Name="Border" Background="Transparent"
+                        BorderBrush="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=BorderBrush}"
+                        BorderThickness="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=BorderThickness}"
+                        CornerRadius="2">
+                                <ScrollViewer Margin="0" Focusable="false">
+                                    <StackPanel Margin="2" IsItemsHost="True" />
+                                </ScrollViewer>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter TargetName="Border" Property="Background"
+                                Value="Transparent" />
+                                    <Setter TargetName="Border" Property="BorderBrush"
+                                Value="Transparent" />
+                                </Trigger>
+                                <Trigger Property="IsGrouping" Value="true">
+                                    <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ListBoxItem}" >
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <Border Name="theBorder" Background="Transparent">
+                                            <CheckBox Focusable="False" 
+                                             IsChecked="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsSelected, Mode=TwoWay}">
+                                                <ContentPresenter />
+                                            </CheckBox>
                                         </Border>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -131,6 +190,42 @@
                         </StackPanel>
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.EnumTemplate>
+                <local:SettingsPropertyTemplateSelector.JsonTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding DisplayName}" />
+                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}"/>
+                            </StackPanel>
+                            <Border Margin="0 8 0 0" BorderBrush="{ui:ThemeResource NavigationViewExpandedPaneBackground}" BorderThickness="1">
+                                <avalonEdit:TextEditor ShowLineNumbers="True" 
+                                                       MinHeight="200"
+                                                       FontFamily="{StaticResource CascadiaCodePL}" 
+                                                       SyntaxHighlighting="Json" 
+                                                       local:AvalonEditorProperties.IsAttached="True"
+                                                       local:AvalonEditorProperties.Text="{Binding Value, Mode=TwoWay,NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
+
+                                </avalonEdit:TextEditor>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.JsonTemplate>
+                <local:SettingsPropertyTemplateSelector.CheckboxListTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <Label Content="{Binding DisplayName}"/>
+                            <ListBox SelectionMode="Multiple" 
+                                     ItemsSource="{Binding Items}" 
+                                     Style="{StaticResource CheckboxList}"
+                                     local:ListBoxProperties.IsAttached="True"
+                                     local:ListBoxProperties.SelectedItems="{Binding Value}"
+                                     BorderBrush="{ui:ThemeResource NavigationViewExpandedPaneBackground}"
+                                     BorderThickness="1"
+                                     Height="250"
+                                     Margin="0 8 0 0"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.CheckboxListTemplate>
                 <!--<local:SettingsPropertyTemplateSelector.FileTemplate>
                     <DataTemplate>
                         <local:FileSelector Header="{Binding DisplayName}" FileName="{Binding Value, Mode=TwoWay}" />

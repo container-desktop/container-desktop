@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
@@ -6,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace ContainerDesktop.Abstractions
 {
-    public abstract class ConfigurationObject : NotifyObject, IDataErrorInfo, IConfigurationObject
+    public abstract class ConfigurationObject : NotifyObject, IConfigurationObject
     {
         private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
 
@@ -69,6 +70,13 @@ namespace ContainerDesktop.Abstractions
                     return string.Join(Environment.NewLine, validationResults.Select(x => $"[{string.Join(",", x.MemberNames)}] {x.ErrorMessage}"));
                 }
             }
+        }
+
+        protected ObservableCollection<T> CreateObservableCollection<T>([CallerMemberName] string propertyName = null)
+        {
+            var ret = new ObservableCollection<T>();
+            ret.CollectionChanged += (_, _) => NotifyPropertyChanged(propertyName);
+            return ret;
         }
     }
 }

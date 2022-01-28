@@ -16,12 +16,14 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Fonts\CascadiaCodePL.ttf" />
+    <None Remove="Fonts\Segoe Fluent Icons.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="..\Assets\app.ico" Link="app.ico" />
     <Resource Include="..\Assets\app_run.ico" Link="app_run.ico" />
     <Resource Include="..\Assets\app_stop.ico" Link="app_stop.ico" />
     <Resource Include="Fonts\CascadiaCodePL.ttf" />
+    <Resource Include="Fonts\Segoe Fluent Icons.ttf" />
     <Content Include="Container.ico" />
   </ItemGroup>
 

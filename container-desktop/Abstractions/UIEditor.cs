@@ -11,5 +11,7 @@ public enum UIEditor
     Password,
     File,
     Numeric,
-    RadioList
+    RadioList,
+    CheckboxList,
+    Json
 }

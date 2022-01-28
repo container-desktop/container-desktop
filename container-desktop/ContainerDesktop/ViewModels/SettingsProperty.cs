@@ -1,5 +1,6 @@
 ﻿using ContainerDesktop.Abstractions;
 using ContainerDesktop.Common;
+using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -16,8 +17,10 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         SettingsObject = settingsObject;
         PropertyChangedEventManager.AddHandler(settingsObject, SettingsObjectPropertyChanged, propertyInfo.Name);
         PropertyInfo = propertyInfo;
-        (DisplayName, Tooltip, Order, Category) = GetDisplayAttributes(propertyInfo);
+        (DisplayName, Tooltip, Order, GroupName) = GetDisplayAttributes(propertyInfo);
+        Category = GetCategory(propertyInfo);
         UIEditor = GetUIEditor(propertyInfo);
+        Items = GetItems(propertyInfo);
     }
 
     public event EventHandler ValueChanged;
@@ -26,6 +29,8 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
     protected PropertyInfo PropertyInfo { get; }
     public string DisplayName { get; }
 
+    public string GroupName { get; }
+
     public string Category { get; }
 
     public int Order { get; }
@@ -33,6 +38,8 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
     public string Tooltip { get; }
 
     public UIEditor UIEditor { get; }
+
+    public IEnumerable Items { get; } 
 
     public object Value
     {
@@ -96,6 +103,10 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
 
     public static IEnumerable<SettingsProperty> CreateSettingsProperties(IConfigurationObject settingsObject)
     {
+        if(settingsObject == null)
+        {
+            return Enumerable.Empty<SettingsProperty>();
+        }
         var properties = settingsObject.GetType().GetProperties().Select(
             x => new SettingsProperty(settingsObject, x)).ToList();
         foreach (var property in properties)
@@ -111,9 +122,32 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         return (attr?.GetName() ?? property.Name, attr?.GetDescription(), attr?.GetOrder() ?? 0, attr?.GetGroupName());
     }
 
+    private static string GetCategory(PropertyInfo property)
+    {
+        return property.GetCustomAttribute<CategoryAttribute>()?.Category ?? ConfigurationCategories.Basic;
+    }
+
     private static UIEditor GetUIEditor(PropertyInfo property)
     {
         return property.GetCustomAttribute<UIEditorAttribute>()?.Editor ?? UIEditorAttribute.GetDefaultEditorForType(property.PropertyType);
+    }
+
+    private IEnumerable GetItems(PropertyInfo property)
+    {
+        var methodName = property.GetCustomAttribute<ItemsSourceAttribute>()?.MethodName;
+        if (methodName == null)
+        {
+            yield break;
+        }
+        var method = SettingsObject?.GetType().GetMethod(methodName);
+        if(method == null || !typeof(IEnumerable).IsAssignableFrom(method.ReturnType) || method.GetParameters().Length > 0)
+        {
+            yield break;
+        }
+        foreach(var item in (IEnumerable) method.Invoke(SettingsObject, null))
+        {
+            yield return item;
+        }
     }
 
     private void NotifyValueChanged()

@@ -12,7 +12,7 @@
     <Grid>
         <ui:NavigationView IsSettingsVisible="True" 
                            OpenPaneLength="180"
-                           AlwaysShowHeader="True"
+                           AlwaysShowHeader="False"
                            IsBackButtonVisible="Collapsed"
                            Loaded="NavigationViewLoaded" 
                            SelectionChanged="NavigationViewSelectionChanged"
@@ -20,10 +20,12 @@
                            MenuItemTemplateSelector="{StaticResource menuItemSelector}"
                            SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
                            x:Name="navigationView">
+            <ui:NavigationView.PaneCustomContent>
+                <TextBlock Text="{Binding Engine.RunningState}" Background="{Binding Engine.RunningState, Converter={StaticResource RunningStateToColorConverter}}" TextAlignment="Center" FontWeight="DemiBold"/>
+            </ui:NavigationView.PaneCustomContent>
             
-            <ScrollViewer>
                 <ui:Frame x:Name="contentFrame" IsTabStop="True"></ui:Frame>
-            </ScrollViewer>
+            
         </ui:NavigationView>
     </Grid>
 </Page>
