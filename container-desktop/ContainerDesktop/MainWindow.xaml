@@ -57,6 +57,6 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <ui:Frame x:Name="mainFrame"/>
+        <ui:Frame x:Name="mainFrame" />
     </Grid>
 </Window>

@@ -1,4 +1,6 @@
-﻿using ContainerDesktop.ViewModels;
+﻿using ContainerDesktop.Abstractions;
+using ContainerDesktop.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
 
 namespace ContainerDesktop.Pages;

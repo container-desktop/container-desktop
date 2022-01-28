@@ -82,7 +82,7 @@ public class ConfigurationContext
     public void LoadState()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInformation.Name, "installer-state.json");
-        if(FileSystem.File.Exists(path))
+        if (FileSystem.File.Exists(path))
         {
             var json = FileSystem.File.ReadAllText(path);
             JsonConvert.PopulateObject(json, State);

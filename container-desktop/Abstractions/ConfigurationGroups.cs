@@ -4,8 +4,9 @@ public static class ConfigurationGroups
 {
     public const string Network = nameof(Network);
     public const string Miscellaneous = nameof(Miscellaneous);
+    public const string Daemon = nameof(Daemon);
 
-    private static readonly string[] _groupOrder = new[] { Network, Miscellaneous };
+    private static readonly string[] _groupOrder = new[] { Network, Daemon, Miscellaneous };
 
 
     public static int GetGroupOrder(string groupName)

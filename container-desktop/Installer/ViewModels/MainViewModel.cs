@@ -3,6 +3,8 @@ using ContainerDesktop.Common;
 using ContainerDesktop.Configuration;
 using ContainerDesktop.DesiredStateConfiguration;
 using ContainerDesktop.UI.Wpf.Input;
+using Newtonsoft.Json;
+using System.IO.Abstractions;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reflection;
@@ -29,14 +31,17 @@ public class MainViewModel : NotifyObject, IUserInteraction
     private readonly IInstallationRunner _runner;
     private readonly IApplicationContext _applicationContext;
     private readonly IConfigurationService _configurationService;
+    private readonly IFileSystem _fileSystem;
 
     public MainViewModel(
+        IFileSystem fileSystem,
         IInstallationRunner runner, 
         IApplicationContext applicationContext, 
         IProductInformation productInformation, 
         IConfigurationService configurationService,
         ILogger<MainViewModel> logger)
     {
+        _fileSystem = fileSystem;
         ProductInformation = productInformation;
         Title = $"{ProductInformation.DisplayName} Installer ({ProductInformation.Version})";
         ShowApplyButton = true;
@@ -49,15 +54,40 @@ public class MainViewModel : NotifyObject, IUserInteraction
         Uninstalling = runner.InstallationMode == InstallationMode.Uninstall;
         Logger = logger;
         ShowOptions = _runner.InstallationMode == InstallationMode.Install;
+        OptionalResources = GetOptionalResources();
         if (runner.Options.AutoStart)
         {
             Apply();
         }
     }
 
+    private IEnumerable<IResource> GetOptionalResources()
+    {
+        var optionalResources = _runner.ConfigurationManifest.Resources.Where(x => x.Optional).ToList();
+        var optionsFileName = Path.Combine(ProductInformation.ContainerDesktopAppDataDir, "installer-optionals.json");
+        if(_fileSystem.File.Exists(optionsFileName))
+        {
+            var json = _fileSystem.File.ReadAllText(optionsFileName);
+            var optionals = JsonConvert.DeserializeObject<string[]>(json);
+            foreach(var resource in optionalResources.OfType<ResourceBase>())
+            {
+                resource.Enabled = optionals.Contains(resource.Id);
+            }
+        }
+        return optionalResources;
+    }
+
+    private void SaveOptionalResources()
+    {
+        var optionsFileName = Path.Combine(ProductInformation.ContainerDesktopAppDataDir, "installer-optionals.json");
+        var optionals = OptionalResources.Where(x => x.Enabled).Select(x => x.Id).ToList();
+        var json = JsonConvert.SerializeObject(optionals);
+        _fileSystem.File.WriteAllText(optionsFileName, json);
+    }
+
     public IProductInformation ProductInformation { get; }
 
-    public IEnumerable<IResource> OptionalResources => _runner.ConfigurationManifest.Resources.Where(x => x.Optional);
+    public IEnumerable<IResource> OptionalResources { get; }
 
     public bool ShowOptions
     {
@@ -147,6 +177,8 @@ public class MainViewModel : NotifyObject, IUserInteraction
                 return;
             }
         }
+
+        SaveOptionalResources();
 
         ShowApplyButton = false;
         ShowProgress = true;

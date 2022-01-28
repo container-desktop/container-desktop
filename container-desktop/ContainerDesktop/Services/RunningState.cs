@@ -5,6 +5,6 @@ public enum RunningState
     Stopped,
     Stopping,
     Starting,
-    Started
+    Running
 }
 

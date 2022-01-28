@@ -60,11 +60,12 @@ public class MainViewModel : NotifyObject
         ProductInformation = productInformation;
         _fileSystem = fileSystem;
         _logger = logger;
+        ConfigurationChangedEventManager.AddHandler(_configurationService, ConfigurationChanged);
         OpenCommand = new DelegateCommand(Open);
         QuitCommand = new DelegateCommand(Quit);
         StartCommand = new DelegateCommand(Start, () => _containerEngine.RunningState == RunningState.Stopped);
-        StopCommand = new DelegateCommand(Stop, () => _containerEngine.RunningState == RunningState.Started);
-        RestartCommand = new DelegateCommand(Restart, () => _containerEngine.RunningState == RunningState.Started);
+        StopCommand = new DelegateCommand(Stop, () => _containerEngine.RunningState == RunningState.Running);
+        RestartCommand = new DelegateCommand(Restart, () => _containerEngine.RunningState == RunningState.Running);
         CheckWslDistroCommand = new DelegateCommand<WslDistributionItem>(ToggleWslDistro);
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
         ViewLogStreamCommand = new DelegateCommand(ViewLogStream);
@@ -109,6 +110,8 @@ public class MainViewModel : NotifyObject
             }
         }
     }
+
+    public IContainerEngine Engine => _containerEngine;
 
     public bool IsStopped => !IsStarted;
 
@@ -202,14 +205,14 @@ public class MainViewModel : NotifyObject
     {
         _applicationContext.InvokeOnDispatcher(() =>
         {
-            IsStarted = _containerEngine.RunningState == RunningState.Started;
+            IsStarted = _containerEngine.RunningState == RunningState.Running;
             StartCommand.RaiseCanExecuteChanged();
             StopCommand.RaiseCanExecuteChanged();
             RestartCommand.RaiseCanExecuteChanged();
             ResetCommand.RaiseCanExecuteChanged();
             TrayIcon = _containerEngine.RunningState switch
             {
-                RunningState.Started => _runIcon,
+                RunningState.Running => _runIcon,
                 RunningState.Stopped => _stopIcon,
                 _ => _icon
             };
@@ -222,7 +225,7 @@ public class MainViewModel : NotifyObject
         {
             SafeExecute($"{(distro.Enabled ? "enable" : "disable")} distribution", () =>
             {
-                if (_containerEngine.RunningState == RunningState.Started)
+                if (_containerEngine.RunningState == RunningState.Running)
                 {
                     _containerEngine.EnableDistro(distro.Name, distro.Enabled);
                 }
@@ -378,7 +381,19 @@ public class MainViewModel : NotifyObject
         }
     }
 
-    private record ReleaseVersion(ReleaseInfo Release, SemanticVersion SemanticVersion);
+    private void ConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
+    {
+        if(_containerEngine.RunningState == RunningState.Running && e.RestartRequested)
+        {
+            var result = MessageBox.Show(_applicationContext.MainWindow, $"The configuration changes you made are only applied when {ProductInformation.DisplayName} is restarted.\r\nDo you want to restart now ?", "Restart needed", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                Task.Run(() => _containerEngine.Restart());
+            }
+        }
+    }
+
+    private sealed record ReleaseVersion(ReleaseInfo Release, SemanticVersion SemanticVersion);
 }
 #pragma warning restore CA2254
 

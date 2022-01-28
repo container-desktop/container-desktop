@@ -8,7 +8,9 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Settings">
-
+    <Page.Resources>
+        <FontFamily x:Key="CascadiaCodePL">pack://application:,,,/Fonts/#Cascadia Code PL</FontFamily>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -16,29 +18,35 @@
             <RowDefinition Height="5"/>
             <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
-        <ScrollViewer>
-            <Grid Margin="12">
-                <ItemsControl ItemsSource="{Binding SettingsCategories}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Vertical" Margin="0 0 0 12">
-                                <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0 0 0 12"/>
-                                <ItemsControl ItemsSource="{Binding Properties, Mode=OneWay}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0 0 0 12" Visibility="{Binding Visibility, Mode=OneWay}">
-                                                <TextBlock Text="{Binding DisplayName}"/>
-                                                <ContentControl Content="{Binding}" ContentTemplateSelector="{StaticResource settingsPropertySelector}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
-        </ScrollViewer>
+        <ui:NavigationView IsBackButtonVisible="Collapsed"
+                           IsSettingsVisible="False"
+                           PaneDisplayMode="Top"
+                           MenuItemsSource="{Binding Categories}"
+                           SelectedItem="{Binding SelectedCategory, Mode=TwoWay}">
+            <ScrollViewer>
+                <Grid Margin="12 12 20 12">
+                    <ItemsControl ItemsSource="{Binding SettingsCategories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0 0 0 12">
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0 0 0 12"/>
+                                    <ItemsControl ItemsSource="{Binding Properties, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0 0 0 12" Visibility="{Binding Visibility, Mode=OneWay}">
+                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                    <ContentControl Content="{Binding}" ContentTemplateSelector="{StaticResource settingsPropertySelector}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ScrollViewer>
+        </ui:NavigationView>
         <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderBrush="{ui:ThemeResource NavigationViewExpandedPaneBackground}" BorderThickness="1" Height="1" />
         <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right">
             <Button Content="Discard changes" Margin="0,0,12,0" Command="{Binding DiscardChangesCommand}"></Button>

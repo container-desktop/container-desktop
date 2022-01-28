@@ -34,6 +34,12 @@ public class SettingsPropertyTemplateSelector : DataTemplateSelector
     [UIEditor(UIEditor.RadioList)]
     public DataTemplate EnumTemplate { get; set; }
 
+    [UIEditor(UIEditor.Json)]
+    public DataTemplate JsonTemplate { get; set; }
+
+    [UIEditor(UIEditor.CheckboxList)]
+    public DataTemplate CheckboxListTemplate { get; set; }
+
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
         if (item is SettingsProperty settingsProperty &&

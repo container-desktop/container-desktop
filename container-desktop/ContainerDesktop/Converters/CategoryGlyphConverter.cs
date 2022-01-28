@@ -7,6 +7,10 @@ public class CategoryGlyphConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        if(value == null)
+        {
+            return Binding.DoNothing;
+        }
         if (targetType == typeof(Abstractions.Symbol))
         {
             return (Abstractions.Symbol)value;
