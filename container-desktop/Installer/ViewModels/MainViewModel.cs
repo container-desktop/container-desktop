@@ -80,6 +80,10 @@ public class MainViewModel : NotifyObject, IUserInteraction
     private void SaveOptionalResources()
     {
         var optionsFileName = Path.Combine(ProductInformation.ContainerDesktopAppDataDir, "installer-optionals.json");
+        if(!_fileSystem.Directory.Exists(ProductInformation.ContainerDesktopAppDataDir))
+        {
+            _fileSystem.Directory.CreateDirectory(ProductInformation.ContainerDesktopAppDataDir);
+        }
         var optionals = OptionalResources.Where(x => x.Enabled).Select(x => x.Id).ToList();
         var json = JsonConvert.SerializeObject(optionals);
         _fileSystem.File.WriteAllText(optionsFileName, json);
