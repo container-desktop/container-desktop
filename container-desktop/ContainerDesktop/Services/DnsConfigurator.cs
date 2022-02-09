@@ -34,7 +34,6 @@ public sealed class DnsConfigurator : IDisposable
     {
         lock (_lock)
         {
-            //ConfigureWslConf();
             ConfigureResolvConf();
             StartDnsForwarder();
         }
@@ -44,7 +43,27 @@ public sealed class DnsConfigurator : IDisposable
     {
         ConfigurationChangedEventManager.RemoveHandler(_configurationService, OnConfigurationChanged);
         NetworkChange.NetworkAddressChanged -= NetworkAddressChanged;
-        _dnsForwarderCts.Cancel();
+        StopDnsForwarder();
+    }
+
+    private void StopDnsForwarder()
+    {
+        _wslService.ExecuteCommand("pkill -TERM -x dns-forwarder", _productInformation.ContainerDesktopDistroName);
+        if(_dnsForwarderTask != null)
+        {
+            try
+            {
+                _dnsForwarderCts.Cancel();
+                if (!_dnsForwarderTask.Wait(5000))
+                {
+                    int i = 0;
+                }
+            }
+            catch
+            {
+                // Do nothing, this is expected.
+            }
+        }
     }
 
     private void StartDnsForwarder()
@@ -62,24 +81,7 @@ public sealed class DnsConfigurator : IDisposable
         }
         else
         {
-
-            if (_dnsForwarderTask != null)
-            {
-                _dnsForwarderCts.Cancel();
-                try
-                {
-                    if (!_dnsForwarderTask.Wait(5000))
-                    {
-                        _logger.LogError("Could not stop DNS forwarder.");
-                        //TODO: try to kill it
-                        return;
-                    }
-                }
-                catch (Exception)
-                {
-                    // Expected, do nothing
-                }
-            }
+            StopDnsForwarder();
             _dnsForwarderCts = new CancellationTokenSource();
             var distroIpAddress = GetDistroIpAddress();
             var nameservers = string.Join(',', ipAddresses);
