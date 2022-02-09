@@ -1,7 +1,6 @@
 ﻿using ContainerDesktop.Common;
 using ContainerDesktop.Configuration;
 using ContainerDesktop.Wsl;
-using IniParser.Parser;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -12,9 +11,6 @@ namespace ContainerDesktop.Services;
 
 public sealed class DnsConfigurator : IDisposable
 {
-    private const string WslConfNetworkSection = "network";
-    private const string WslConfGenerateResolvConf = "generateResolvConf";
-
     private readonly IWslService _wslService;
     private readonly IConfigurationService _configurationService;
     private readonly IProductInformation _productInformation;
@@ -49,43 +45,6 @@ public sealed class DnsConfigurator : IDisposable
         ConfigurationChangedEventManager.RemoveHandler(_configurationService, OnConfigurationChanged);
         NetworkChange.NetworkAddressChanged -= NetworkAddressChanged;
         _dnsForwarderCts.Cancel();
-    }
-
-    private void ConfigureWslConf()
-    {
-        var generateResolvConf = _configurationService.Configuration.DnsMode switch
-        {
-            DnsMode.Wsl => true,
-            _ => false
-        };
-        var parser = new IniDataParser();
-        var output = new StringBuilder();
-        _logger.LogInformation("Reading existing wsl.conf");
-        if (_wslService.ExecuteCommand("cat /etc/wsl.conf", _productInformation.ContainerDesktopDistroName, output))
-        {
-            var data = parser.Parse(output.ToString());
-            var existingGenerateReolveConf = bool.Parse(data[WslConfNetworkSection][WslConfGenerateResolvConf] ?? bool.TrueString);
-            if(generateResolvConf != existingGenerateReolveConf)
-            {
-                _logger.LogInformation($"Trying to set {WslConfNetworkSection}/{WslConfGenerateResolvConf}={{generateResolvConf}} in /etc/wsl.conf", generateResolvConf);
-                data[WslConfNetworkSection][WslConfGenerateResolvConf] = generateResolvConf.ToString().ToLowerInvariant();
-                var newContent = data.ToString().Replace(Environment.NewLine, "\n");
-                _logger.LogDebug("The new wsl.conf content: {wslconf}", newContent);
-                if (!_wslService.ExecuteCommand($"cat <<EOF > /etc/wsl.conf\n{newContent}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
-                {
-                    _logger.LogError($"Failed to set {WslConfNetworkSection}/{WslConfGenerateResolvConf}={{generateResolvConf}} in /etc/wsl.conf", generateResolvConf);
-                }
-                _logger.LogInformation($"Successfully set {WslConfNetworkSection}/{WslConfGenerateResolvConf}={{generateResolvConf}} in /etc/wsl.conf", generateResolvConf);
-            }
-            else
-            {
-                _logger.LogInformation($"Skipped setting {WslConfNetworkSection}/{WslConfGenerateResolvConf}={{generateResolvConf}} in /etc/wsl.conf because it is not changed", generateResolvConf);
-            }
-        }
-        else
-        {
-            _logger.LogError("Failed to read /etc/wsl.conf: {output}", output);
-        }
     }
 
     private void StartDnsForwarder()
@@ -140,30 +99,6 @@ public sealed class DnsConfigurator : IDisposable
         {
             _logger.LogError("Failed to update /etc/resolv.conf with: nameserver {distroIPAddress}", distroIpAddress);
         }
-
-        //var ipAddresses = _configurationService.Configuration.DnsMode switch
-        //{
-        //    DnsMode.Wsl => GetWslDnsAddresses(),
-        //    DnsMode.Auto => GetPrimaryAdapterDnsAddresses(),
-        //    DnsMode.Static => GetStaticDnsAddresses(),
-        //    _ => Array.Empty<string>()
-        //};
-        //if (ipAddresses.Length == 0)
-        //{
-        //    _logger.LogWarning("Could not resolve DNS IP addresses for DNS Mode={dnsMode}", _configurationService.Configuration.DnsMode);
-        //}
-        //else
-        //{
-        //    var content = string.Join('\n', ipAddresses.Select(x => $"nameserver {x}"));
-        //    if (_wslService.ExecuteCommand($"cat <<EOF > /etc/resolv.conf\n{content}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
-        //    {
-        //        _logger.LogInformation("Successfully updated /etc/resolv.conf to :{content}", content);
-        //    }
-        //    else
-        //    {
-        //        _logger.LogError("Failed to update /etc/resolv.conf with: {content}", content);
-        //    }
-        //}
     }
 
     private string GetDistroIpAddress()
