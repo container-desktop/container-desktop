@@ -11,6 +11,8 @@ namespace ContainerDesktop.Services;
 
 public sealed class DnsConfigurator : IDisposable
 {
+    private const string DnsHostAddress = "192.168.33.1";
+
     private readonly IWslService _wslService;
     private readonly IConfigurationService _configurationService;
     private readonly IProductInformation _productInformation;
@@ -54,10 +56,7 @@ public sealed class DnsConfigurator : IDisposable
             try
             {
                 _dnsForwarderCts.Cancel();
-                if (!_dnsForwarderTask.Wait(5000))
-                {
-                    int i = 0;
-                }
+                _dnsForwarderTask.Wait(5000);
             }
             catch
             {
@@ -83,34 +82,26 @@ public sealed class DnsConfigurator : IDisposable
         {
             StopDnsForwarder();
             _dnsForwarderCts = new CancellationTokenSource();
-            var distroIpAddress = GetDistroIpAddress();
+            if(!_wslService.ExecuteCommand($"ip addr show eth0 | grep {DnsHostAddress}", _productInformation.ContainerDesktopDistroName))
+            {
+                _wslService.ExecuteCommand($"ip addr add {DnsHostAddress}/ 24 dev eth0", _productInformation.ContainerDesktopDistroName);
+            }
             var nameservers = string.Join(',', ipAddresses);
-            _dnsForwarderTask = Task.Run(() => _wslService.ExecuteCommandAsync($"dns-forwarder -l {distroIpAddress}:53 -n {nameservers}", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s), cancellationToken: _dnsForwarderCts.Token));
+            _dnsForwarderTask = Task.Run(() => _wslService.ExecuteCommandAsync($"dns-forwarder -l {DnsHostAddress}:53 -n {nameservers}", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s), cancellationToken: _dnsForwarderCts.Token));
             _logger.LogInformation("Started DNS forwarder for name servers {NameServers}.", nameservers);
         }
     }
 
     private void ConfigureResolvConf()
     {
-        var distroIpAddress = GetDistroIpAddress();
-        if (_wslService.ExecuteCommand($"cat <<EOF > /etc/resolv.conf\nnameserver {distroIpAddress}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
+        if (_wslService.ExecuteCommand($"cat <<EOF > /etc/resolv.conf\nnameserver {DnsHostAddress}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
         {
-            _logger.LogInformation("Successfully updated /etc/resolv.conf to: nameserver {distroIPAddress}", distroIpAddress);
+            _logger.LogInformation("Successfully updated /etc/resolv.conf to: nameserver {DnsHostAddress}", DnsHostAddress);
         }
         else
         {
-            _logger.LogError("Failed to update /etc/resolv.conf with: nameserver {distroIPAddress}", distroIpAddress);
+            _logger.LogError("Failed to update /etc/resolv.conf with: nameserver {DnsHostAddress}", DnsHostAddress);
         }
-    }
-
-    private string GetDistroIpAddress()
-    {
-        string ipAddress = string.Empty;
-        if (_wslService.ExecuteCommand("ip addr show eth0 | grep \"inet\\b\" | awk '{print $2}' | cut -d/ -f1", _productInformation.ContainerDesktopDistroName, stdout: s => ipAddress = s))
-        {
-            return ipAddress.Trim();
-        }
-        return string.Empty;
     }
 
     private static string[] GetWslDnsAddresses()
