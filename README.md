@@ -79,9 +79,8 @@ Container Desktop is made possible by using the following great projects:
 * [Reactive Extensions](https://github.com/dotnet/reactive)
 * [CompareNetObject](https://github.com/GregFinzer/Compare-Net-Objects)
 * [AvalonEdit](https://github.com/icsharpcode/AvalonEdit)
-* [INI File Parser](https://github.com/rickyah/ini-parser])
 * [NuGet.Versioning](https://github.com/NuGet/Home)
 * [Docker CLI](https://github.com/docker/cli)
 * [Docker Compose CLI](https://github.com/docker/compose-cli)
 * [The Moby Project](https://github.com/moby/moby)
-
+* [go-dnsmasq](https://github.com/janeczku/go-dnsmasq)
