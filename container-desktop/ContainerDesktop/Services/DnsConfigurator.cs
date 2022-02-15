@@ -82,9 +82,9 @@ public sealed class DnsConfigurator : IDisposable
         {
             StopDnsForwarder();
             _dnsForwarderCts = new CancellationTokenSource();
-            if(!_wslService.ExecuteCommand($"ip addr show eth0 | grep {DnsHostAddress}", _productInformation.ContainerDesktopDistroName))
+            if(!_wslService.ExecuteCommand($"ip addr show eth0 | grep '{DnsHostAddress}'", _productInformation.ContainerDesktopDistroName))
             {
-                _wslService.ExecuteCommand($"ip addr add {DnsHostAddress}/ 24 dev eth0", _productInformation.ContainerDesktopDistroName);
+                _wslService.ExecuteCommand($"ip addr add {DnsHostAddress} dev eth0", _productInformation.ContainerDesktopDistroName);
             }
             var nameservers = string.Join(',', ipAddresses);
             _dnsForwarderTask = Task.Run(() => _wslService.ExecuteCommandAsync($"dns-forwarder -l {DnsHostAddress}:53 -n {nameservers}", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s), cancellationToken: _dnsForwarderCts.Token));
