@@ -154,14 +154,14 @@ public sealed class DnsConfigurator : IDisposable
 
     private void NetworkAddressChanged(object sender, EventArgs e)
     {
-        Configure();
+        Task.Run(Configure);
     }
 
     private void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
         if (e.PropertiesChanged.Any(x => x.StartsWith("Dns")))
         {
-            Configure();
+            Task.Run(Configure);
         }
     }
 }
