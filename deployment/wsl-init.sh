@@ -26,5 +26,5 @@ while [ ! -S /var/run/docker.sock ]; do
     fi
 done
 echo "Docker daemon started."
-mkdir -p $1
-cp /certs/client/*.pem $1
+mkdir -p "$1"
+cp /certs/client/*.pem "$1"

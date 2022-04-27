@@ -443,9 +443,9 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         var args = new ArgumentBuilder()
             .Add("--listen-address", "npipe:////./pipe/docker_engine")
             .Add("--target-address", "https://localhost:2376")
-            .Add("--tls-key", Path.Combine(LocalCertsPath, "key.pem"))
-            .Add("--tls-cert", Path.Combine(LocalCertsPath, "cert.pem"))
-            .Add("--tls-ca", Path.Combine(LocalCertsPath, "ca.pem"))
+            .Add("--tls-key", Path.Combine(LocalCertsPath, "key.pem"), true)
+            .Add("--tls-cert", Path.Combine(LocalCertsPath, "cert.pem"), true)
+            .Add("--tls-ca", Path.Combine(LocalCertsPath, "ca.pem"), true)
             .Build();
         _proxyProcess = _processExecutor.Start(proxyPath, args);
         // Give it some time to startup
