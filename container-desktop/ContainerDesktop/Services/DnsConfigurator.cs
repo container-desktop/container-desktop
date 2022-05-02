@@ -110,7 +110,7 @@ public sealed class DnsConfigurator : IDisposable
         var hostFileContent = new StringBuilder();
         var ipAddress = _configurationService.Configuration.HostEntryMode switch
         {
-            HostEntryMode.Wsl => GetWslDnsAddresses().FirstOrDefault(),
+            HostEntryMode.Wsl => GetWslAddress(),
             HostEntryMode.Auto => GetPrimaryAdapterAddress(),
             HostEntryMode.Static => GetAdapterAddress(_configurationService.Configuration.HostEntryAdapter),
             _ => null
@@ -193,6 +193,16 @@ public sealed class DnsConfigurator : IDisposable
             {
                 return ipAddress.ToString();
             }
+        }
+        return null;
+    }
+
+    private string GetWslAddress()
+    {
+        var sb = new StringBuilder();
+        if(_wslService.ExecuteCommand("ip addr show eth0 | grep \"inet\\b\" | awk '{print $2}' | cut -d/ -f1", _productInformation.ContainerDesktopDistroName, stdout: s => sb.AppendLine(s)))
+        {
+            return sb.ToString().Split('\n').Select(x => x.Trim()).FirstOrDefault();
         }
         return null;
     }
