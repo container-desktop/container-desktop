@@ -37,6 +37,7 @@ public sealed class DnsConfigurator : IDisposable
         lock (_lock)
         {
             ConfigureResolvConf();
+            ConfigureCustomHostFile();
             StartDnsForwarder();
         }
     }
@@ -87,7 +88,7 @@ public sealed class DnsConfigurator : IDisposable
                 _wslService.ExecuteCommand($"ip addr add {DnsHostAddress} dev eth0", _productInformation.ContainerDesktopDistroName);
             }
             var nameservers = string.Join(',', ipAddresses);
-            _dnsForwarderTask = Task.Run(() => _wslService.ExecuteCommandAsync($"dns-forwarder -l {DnsHostAddress}:53 -n {nameservers}", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s), cancellationToken: _dnsForwarderCts.Token));
+            _dnsForwarderTask = Task.Run(() => _wslService.ExecuteCommandAsync($"dns-forwarder -l {DnsHostAddress}:53 -n {nameservers} -f /etc/hostfile.containerdesktop -p 2", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s), cancellationToken: _dnsForwarderCts.Token));
             _logger.LogInformation("Started DNS forwarder for name servers {NameServers}.", nameservers);
         }
     }
@@ -101,6 +102,35 @@ public sealed class DnsConfigurator : IDisposable
         else
         {
             _logger.LogError("Failed to update /etc/resolv.conf with: nameserver {DnsHostAddress}", DnsHostAddress);
+        }
+    }
+
+    private void ConfigureCustomHostFile()
+    {
+        var hostFileContent = new StringBuilder();
+        var ipAddress = _configurationService.Configuration.HostEntryMode switch
+        {
+            HostEntryMode.Wsl => GetWslDnsAddresses().FirstOrDefault(),
+            HostEntryMode.Auto => GetPrimaryAdapterAddress(),
+            HostEntryMode.Static => GetAdapterAddress(_configurationService.Configuration.HostEntryAdapter),
+            _ => null
+        };
+        if (ipAddress == null)
+        {
+            _logger.LogWarning("Could not resolve  IP addresses for Host Entry Mode={hostEntryMode}", _configurationService.Configuration.HostEntryMode);
+        }
+        else
+        {
+            hostFileContent.Append($"{ipAddress}\thost.docker.internal\n");
+            hostFileContent.Append($"{ipAddress}\tgateway.docker.internal\n");
+        }
+        if(_wslService.ExecuteCommand($"cat <<EOF > /etc/hostfile.containerdesktop\n{hostFileContent}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
+        {
+            _logger.LogInformation("Successfully updated /etc/hostfile.containerdesktop");
+        }
+        else
+        {
+            _logger.LogError("Failed to update /etc/hostfile.containerdesktop");
         }
     }
 
@@ -152,6 +182,38 @@ public sealed class DnsConfigurator : IDisposable
         return Array.Empty<string>();
     }
 
+    private string GetPrimaryAdapterAddress()
+    {
+        var interfaceList = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback).ToList();
+        if (interfaceList.Count > 0)
+        {
+            var i = interfaceList.FirstOrDefault(x => x.Name.Equals("ethernet", StringComparison.OrdinalIgnoreCase)) ?? interfaceList[0];
+            var ipAddress = i.GetIPProperties().UnicastAddresses.FirstOrDefault(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+            if (ipAddress != null)
+            {
+                return ipAddress.ToString();
+            }
+        }
+        return null;
+    }
+
+    private string GetAdapterAddress(AdapterInfo adapterInfo)
+    {
+        if (adapterInfo != null)
+        {
+            var i = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(x => x.Id == adapterInfo.Id);
+            if (i != null)
+            {
+                var ipAddress = i.GetIPProperties().UnicastAddresses.FirstOrDefault(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+                if (ipAddress != null)
+                {
+                    return ipAddress.ToString();
+                }
+            }
+        }
+        return null;
+    }
+
     private void NetworkAddressChanged(object sender, EventArgs e)
     {
         Task.Run(Configure);
@@ -159,7 +221,7 @@ public sealed class DnsConfigurator : IDisposable
 
     private void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
-        if (e.PropertiesChanged.Any(x => x.StartsWith("Dns")))
+        if (e.PropertiesChanged.Any(x => x.StartsWith("Dns") || x.StartsWith("HostEntry")))
         {
             Task.Run(Configure);
         }

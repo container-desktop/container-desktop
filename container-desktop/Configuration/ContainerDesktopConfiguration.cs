@@ -81,4 +81,27 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     public ObservableCollection<CertificateInfo> Certificates { get; }
 
     public IEnumerable<CertificateInfo> GetCertificates() => CertificateInfo.GetCertificates();
+
+    [UIEditor(UIEditor.RadioList)]
+    [Display(Name = "Host Entry Mode", GroupName = ConfigurationGroups.Network, Description = "Determines how the ip address for the host entries 'host.docker.internal' and 'gateway.docker.internal' are set.", Order = 3)]
+    [Category(ConfigurationCategories.Basic)]
+    public HostEntryMode HostEntryMode
+    {
+        get => GetValue<HostEntryMode>();
+        set => SetValueAndNotify(value);
+    }
+
+    [Display(Name = "Host Entry Adapter", GroupName = ConfigurationGroups.Network, Order = 4)]
+    [Category(ConfigurationCategories.Basic)]
+    [Show(nameof(HostEntryMode), HostEntryMode.Static)]
+    [UIEditor(UIEditor.DropdownList)]
+    [ItemsSource(nameof(GetAdapters))]
+    [RequiredIf(nameof(HostEntryMode), HostEntryMode.Static)]
+    public AdapterInfo HostEntryAdapter
+    {
+        get => GetValue<AdapterInfo>();
+        set => SetValueAndNotify(value);
+    }
+
+    public IEnumerable<AdapterInfo> GetAdapters() => AdapterInfo.GetAdapters();
 }
