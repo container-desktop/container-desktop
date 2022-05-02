@@ -111,7 +111,6 @@ public sealed class DnsConfigurator : IDisposable
         var ipAddress = _configurationService.Configuration.HostEntryMode switch
         {
             HostEntryMode.Wsl => GetWslAddress(),
-            HostEntryMode.Auto => GetPrimaryAdapterAddress(),
             HostEntryMode.Static => GetAdapterAddress(_configurationService.Configuration.HostEntryAdapter),
             _ => null
         };

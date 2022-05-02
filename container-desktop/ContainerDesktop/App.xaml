@@ -223,10 +223,19 @@
                 <local:SettingsPropertyTemplateSelector.CheckboxListTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding DisplayName}" />
-                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
-                            </StackPanel>
+                            <Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                    <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" VerticalAlignment="Center" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                </StackPanel>
+                                <Button Margin="8 4 0 0" 
+                                        HorizontalAlignment="Right" 
+                                        ToolTip="Refresh" 
+                                        Command="{Binding RefreshItemsCommand}"
+                                        Visibility="{Binding ItemsRefreshable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluent}" Text="&#xe72c;"/>
+                                </Button>
+                            </Grid>
                             <ListBox SelectionMode="Multiple" 
                                      ItemsSource="{Binding Items}" 
                                      Style="{StaticResource CheckboxList}"
@@ -242,10 +251,19 @@
                 <local:SettingsPropertyTemplateSelector.DropdownList>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding DisplayName}" />
-                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
-                            </StackPanel>
+                            <Grid Margin="0 0 0 4">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                    <Label Content="{Binding DisplayName}" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" VerticalAlignment="Center" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                </StackPanel>
+                                <Button Margin="8 4 0 0" 
+                                        HorizontalAlignment="Right" 
+                                        ToolTip="Refresh" 
+                                        Command="{Binding RefreshItemsCommand}"
+                                        Visibility="{Binding ItemsRefreshable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluent}" Text="&#xe72c;"/>
+                                </Button>
+                            </Grid>
                             <ComboBox ItemsSource="{Binding Items}"
                                   SelectedItem="{Binding Value, Mode=TwoWay,NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                                   HorizontalAlignment="Stretch" />

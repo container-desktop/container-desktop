@@ -10,8 +10,8 @@ namespace ContainerDesktop.Configuration;
 public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesktopConfiguration
 {
     private readonly IProductInformation _productInformation;
-
-    public ContainerDesktopConfiguration(IProductInformation productInformation)
+    
+    public ContainerDesktopConfiguration(IProductInformation productInformation, IApplicationContext appContext)
     {
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
         HiddenDistributions = new HashSet<string> { productInformation.ContainerDesktopDistroName, productInformation.ContainerDesktopDataDistroName, "docker-desktop", "docker-desktop-data" };
@@ -77,7 +77,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     [Display(Name = "Root Certificates", GroupName = ConfigurationGroups.Daemon, Description = "Select root/intermediary CA certificates to import.")]
     [Category(ConfigurationCategories.Advanced)]
     [UIEditor(UIEditor.CheckboxList)]
-    [ItemsSource(nameof(GetCertificates))]
+    [ItemsSource(nameof(GetCertificates), typeof(CertificateInfo), Refreshable = true)]
     public ObservableCollection<CertificateInfo> Certificates { get; }
 
     public IEnumerable<CertificateInfo> GetCertificates() => CertificateInfo.GetCertificates();
@@ -95,7 +95,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     [Category(ConfigurationCategories.Basic)]
     [Show(nameof(HostEntryMode), HostEntryMode.Static)]
     [UIEditor(UIEditor.DropdownList)]
-    [ItemsSource(nameof(GetAdapters))]
+    [ItemsSource(nameof(GetAdapters), typeof(AdapterInfo), Refreshable = true)]
     [RequiredIf(nameof(HostEntryMode), HostEntryMode.Static)]
     public AdapterInfo HostEntryAdapter
     {
