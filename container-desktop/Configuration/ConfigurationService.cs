@@ -46,7 +46,7 @@ public class ConfigurationService : IConfigurationService
 
     public void Load() => Load(true);
 
-    protected void Save(bool notify)
+    public void Save(bool notify)
     {
         if (Configuration.IsValid)
         {

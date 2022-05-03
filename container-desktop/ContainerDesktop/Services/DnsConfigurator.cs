@@ -4,6 +4,7 @@ using ContainerDesktop.Wsl;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace ContainerDesktop.Services;
 
@@ -21,7 +22,11 @@ public sealed class DnsConfigurator : IDisposable
     private Task _dnsForwarderTask = null;
     private CancellationTokenSource _dnsForwarderCts = new();
 
-    public DnsConfigurator(IWslService wslService, IConfigurationService configurationService, IProductInformation productInformation, ILogger logger)
+    public DnsConfigurator(
+        IWslService wslService, 
+        IConfigurationService configurationService, 
+        IProductInformation productInformation, 
+        ILogger logger)
     {
         _wslService = wslService ?? throw new ArgumentNullException(nameof(wslService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -122,6 +127,8 @@ public sealed class DnsConfigurator : IDisposable
         {
             hostFileContent.Append($"{ipAddress}\thost.docker.internal\n");
             hostFileContent.Append($"{ipAddress}\tgateway.docker.internal\n");
+            hostFileContent.Append($"{ipAddress}\thost.container-desktop.internal\n");
+            hostFileContent.Append($"{ipAddress}\tgateway.container-desktop.internal\n");
         }
         if(_wslService.ExecuteCommand($"cat <<EOF > /etc/hostfile.containerdesktop\n{hostFileContent}\nEOF\n", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s), stderr: s => _logger.LogError(s)))
         {
@@ -179,21 +186,6 @@ public sealed class DnsConfigurator : IDisposable
             }
         }
         return Array.Empty<string>();
-    }
-
-    private string GetPrimaryAdapterAddress()
-    {
-        var interfaceList = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback).ToList();
-        if (interfaceList.Count > 0)
-        {
-            var i = interfaceList.FirstOrDefault(x => x.Name.Equals("ethernet", StringComparison.OrdinalIgnoreCase)) ?? interfaceList[0];
-            var ipAddress = i.GetIPProperties().UnicastAddresses.FirstOrDefault(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
-            if (ipAddress != null)
-            {
-                return ipAddress.ToString();
-            }
-        }
-        return null;
     }
 
     private string GetWslAddress()
