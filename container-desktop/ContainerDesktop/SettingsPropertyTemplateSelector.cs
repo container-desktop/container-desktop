@@ -40,6 +40,9 @@ public class SettingsPropertyTemplateSelector : DataTemplateSelector
     [UIEditor(UIEditor.CheckboxList)]
     public DataTemplate CheckboxListTemplate { get; set; }
 
+    [UIEditor(UIEditor.DropdownList)]
+    public DataTemplate DropdownList { get; set; }
+
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
         if (item is SettingsProperty settingsProperty &&

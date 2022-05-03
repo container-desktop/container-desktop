@@ -1,16 +1,18 @@
 ﻿using ContainerDesktop.Abstractions;
-using ContainerDesktop.Common;
+using ContainerDesktop.UI.Wpf.Input;
 using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
 
 namespace ContainerDesktop.ViewModels;
 
 public class SettingsProperty : NotifyObject, IDataErrorInfo
 {
     private Visibility _visibility;
+    private IEnumerable _items;
 
     private SettingsProperty(IConfigurationObject settingsObject, PropertyInfo propertyInfo)
     {
@@ -20,7 +22,8 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         (DisplayName, Tooltip, Order, GroupName) = GetDisplayAttributes(propertyInfo);
         Category = GetCategory(propertyInfo);
         UIEditor = GetUIEditor(propertyInfo);
-        Items = GetItems(propertyInfo);
+        (Items, ItemsRefreshable) = GetItems(propertyInfo);
+        RefreshItemsCommand = new DelegateCommand(RefreshItems, () => ItemsRefreshable);
     }
 
     public event EventHandler ValueChanged;
@@ -39,7 +42,15 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
 
     public UIEditor UIEditor { get; }
 
-    public IEnumerable Items { get; } 
+    public IEnumerable Items 
+    { 
+        get => _items; 
+        set => SetValueAndNotify(ref _items, value);
+    } 
+
+    public bool ItemsRefreshable { get; }
+
+    public ICommand RefreshItemsCommand { get; }
 
     public object Value
     {
@@ -132,22 +143,31 @@ public class SettingsProperty : NotifyObject, IDataErrorInfo
         return property.GetCustomAttribute<UIEditorAttribute>()?.Editor ?? UIEditorAttribute.GetDefaultEditorForType(property.PropertyType);
     }
 
-    private IEnumerable GetItems(PropertyInfo property)
+    private (IEnumerable, bool) GetItems(PropertyInfo property)
     {
-        var methodName = property.GetCustomAttribute<ItemsSourceAttribute>()?.MethodName;
+        var attr = property.GetCustomAttribute<ItemsSourceAttribute>();
+        var methodName = attr?.MethodName;
         if (methodName == null)
         {
-            yield break;
+            return (EmptyEnum(), false);
         }
         var method = SettingsObject?.GetType().GetMethod(methodName);
         if(method == null || !typeof(IEnumerable).IsAssignableFrom(method.ReturnType) || method.GetParameters().Length > 0)
         {
-            yield break;
+            return (EmptyEnum(), false);
         }
-        foreach(var item in (IEnumerable) method.Invoke(SettingsObject, null))
-        {
-            yield return item;
-        }
+        var items = (IEnumerable) method.Invoke(SettingsObject, null);
+        return (items, attr.Refreshable);
+    }
+
+    private void RefreshItems()
+    {
+        (Items, _) = GetItems(PropertyInfo);
+    }
+
+    private IEnumerable EmptyEnum()
+    {
+        yield break;
     }
 
     private void NotifyValueChanged()

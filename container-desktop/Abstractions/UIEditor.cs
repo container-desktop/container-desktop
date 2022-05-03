@@ -13,5 +13,6 @@ public enum UIEditor
     Numeric,
     RadioList,
     CheckboxList,
-    Json
+    Json,
+    DropdownList
 }

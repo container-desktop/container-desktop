@@ -40,6 +40,7 @@ public class MainViewModel : NotifyObject
     private bool _updateAvailable;
     private string _updateAvailableTooltip;
     private ReleaseVersion _latestAvailableVersion;
+    private bool _inValidateHostEntryMode;
 
     public MainViewModel(
         IApplicationContext applicationContext, 
@@ -69,7 +70,7 @@ public class MainViewModel : NotifyObject
         CheckWslDistroCommand = new DelegateCommand<WslDistributionItem>(ToggleWslDistro);
         OpenDocumentationCommand = new DelegateCommand(OpenDocumentation);
         ViewLogStreamCommand = new DelegateCommand(ViewLogStream);
-        CheckNetworkInterfaceCommand = new DelegateCommand<PortForwardInterface>(TogglePortForwardInterface);
+        CheckNetworkInterfaceCommand = new DelegateCommand<PortForwardInterface>(x => TogglePortForwardInterface(x));
         OpenSettingsCommand = new DelegateCommand(OpenSettings);
         ShowLatestReleaseCommand = new DelegateCommand(ShowLatestRelease, () => UpdateAvailable);
         ResetCommand = new DelegateCommand(Reset, () => _containerEngine.RunningState != RunningState.Starting);
@@ -245,7 +246,7 @@ public class MainViewModel : NotifyObject
         });
     }
 
-    private void TogglePortForwardInterface(PortForwardInterface portForwardInterface)
+    private void TogglePortForwardInterface(PortForwardInterface portForwardInterface, bool notify = true)
     {
         Task.Run(() =>
         {
@@ -263,7 +264,7 @@ public class MainViewModel : NotifyObject
                 {
                     _configurationService.Configuration.PortForwardInterfaces.Remove(portForwardInterface.Id);
                 }
-                _configurationService.Save();
+                _configurationService.Save(notify);
             });
         });
     }
@@ -383,12 +384,49 @@ public class MainViewModel : NotifyObject
 
     private void ConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
-        if(_containerEngine.RunningState == RunningState.Running && e.RestartRequested)
+        ValidateHostEntryMode();
+        if (_containerEngine.RunningState == RunningState.Running && e.RestartRequested)
         {
             var result = MessageBox.Show(_applicationContext.MainWindow, $"The configuration changes you made are only applied when {ProductInformation.DisplayName} is restarted.\r\nDo you want to restart now ?", "Restart needed", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 Task.Run(() => _containerEngine.Restart());
+            }
+        }
+    }
+
+    private void ValidateHostEntryMode()
+    {
+        if (!_inValidateHostEntryMode)
+        {
+            _inValidateHostEntryMode = true;
+            try
+            {
+                if (_configurationService.Configuration.HostEntryMode == HostEntryMode.Static &&
+                        (!_configurationService.Configuration.PortForwardingEnabled ||
+                         !_configurationService.Configuration.PortForwardInterfaces.Contains(_configurationService.Configuration.HostEntryAdapter?.Id)))
+                {
+                    _applicationContext.InvokeOnDispatcher(() =>
+                    {
+                        var result = MessageBox.Show(_applicationContext.MainWindow, "To make Host Entry Mode 'Specific Adapter' work, you need to enabled port forwarding on the choosen interface.\r\n\r\nDo you want to enable port forwarding ?", $"Enable Port Forwarding", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            _configurationService.Configuration.PortForwardingEnabled = true;
+                            if (!_configurationService.Configuration.PortForwardInterfaces.Contains(_configurationService.Configuration.HostEntryAdapter?.Id))
+                            {
+                                var portForwardInterface = NetworkInterfaces.First(x => x.Id == _configurationService.Configuration.HostEntryAdapter.Id);
+                                portForwardInterface.Forwarded = true;
+                                TogglePortForwardInterface(portForwardInterface, false);
+                                NotifyPropertyChanged(nameof(NetworkInterfaces));
+                            }
+                            _configurationService.Save(false);
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                _inValidateHostEntryMode = false;
             }
         }
     }

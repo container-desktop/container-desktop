@@ -14,6 +14,7 @@ RUN chmod +x /usr/local/bin/wsl-init.sh && \
     chmod +x /distro/wsl-distro-init.sh && \
     chmod +x /distro/wsl-distro-rm.sh && \
     chmod +x /usr/local/bin/docker-proxy && \
+    chmod +x /usr/local/bin/docker-proxy-shim && \
     chmod +x /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/dns-forwarder && \
     find /usr/libexec/docker/cli-plugins -type f -exec chmod +x {} \;

@@ -14,4 +14,6 @@ public interface IContainerDesktopConfiguration : IConfigurationObject
     bool PortForwardingEnabled { get; set; }
     string DaemonConfig { get; set; }
     ObservableCollection<CertificateInfo> Certificates { get; }
+    HostEntryMode HostEntryMode { get; set; }
+    AdapterInfo HostEntryAdapter { get; set; }
 }

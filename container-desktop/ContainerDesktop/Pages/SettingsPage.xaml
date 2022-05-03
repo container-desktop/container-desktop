@@ -34,7 +34,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid Margin="0 0 0 12" Visibility="{Binding Visibility, Mode=OneWay}">
-                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                    <!--<TextBlock Text="{Binding DisplayName}"/>-->
                                                     <ContentControl Content="{Binding}" ContentTemplateSelector="{StaticResource settingsPropertySelector}" />
                                                 </Grid>
                                             </DataTemplate>

@@ -15,15 +15,17 @@ public class ConfigurationService : IConfigurationService
     private readonly IProductInformation _productInformation;
     private ContainerDesktopConfiguration? _loadedConfiguration;
     private readonly CompareLogic _comparer;
+    private readonly IApplicationContext _applicationContext;
 
-    public ConfigurationService(IFileSystem fileSystem, IProductInformation productInformation, IOptions<ConfigurationOptions> options)
+    public ConfigurationService(IFileSystem fileSystem, IProductInformation productInformation, IApplicationContext appContext, IOptions<ConfigurationOptions> options)
     {
         _comparer = new CompareLogic(new ComparisonConfig {  MaxDifferences = int.MaxValue});
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
+        _applicationContext = appContext ?? throw new ArgumentNullException(nameof(appContext));
         var configOptions = options?.Value ?? new ConfigurationOptions();
         _configurationFilePath = Path.Combine(productInformation.ContainerDesktopAppDataDir, "config.json");
-        Configuration = new ContainerDesktopConfiguration(productInformation);
+        Configuration = new ContainerDesktopConfiguration(productInformation, appContext);
         if (_fileSystem.File.Exists(_configurationFilePath))
         {
             Load(false);
@@ -44,7 +46,7 @@ public class ConfigurationService : IConfigurationService
 
     public void Load() => Load(true);
 
-    protected void Save(bool notify)
+    public void Save(bool notify)
     {
         if (Configuration.IsValid)
         {
@@ -59,7 +61,7 @@ public class ConfigurationService : IConfigurationService
                     var restartRequested = Configuration.GetType().GetProperties().Any(x => changedProperties.Contains(x.Name) && x.IsDefined(typeof(RestartRequiredAttribute), true));
                     ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(restartRequested, changedProperties));
                 }
-                _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation);
+                _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation, _applicationContext);
                 JsonConvert.PopulateObject(json, _loadedConfiguration);
             }
         }
@@ -68,7 +70,7 @@ public class ConfigurationService : IConfigurationService
     protected void Load(bool notify)
     {
         var json = _fileSystem.File.ReadAllText(_configurationFilePath);
-        var loaded = new ContainerDesktopConfiguration(_productInformation);
+        var loaded = new ContainerDesktopConfiguration(_productInformation, _applicationContext);
         JsonConvert.PopulateObject(json, loaded);
         var result = _comparer.Compare(Configuration, loaded);
         if(!result.AreEqual)
