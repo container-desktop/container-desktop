@@ -9,7 +9,9 @@ RUN apk add netcat-openbsd
 COPY dist/docker/docker-compose /usr/local/bin/docker-compose
 COPY dist/docker/linux/cli-plugins /usr/libexec/docker/cli-plugins/
 COPY dist/docker/docker-compose /usr/libexec/docker/cli-plugins/docker-compose
+RUN true
 COPY dist/bin/dns-forwarder /usr/local/bin/dns-forwarder
+RUN true
 RUN chmod +x /usr/local/bin/wsl-init.sh && \
     chmod +x /distro/wsl-distro-init.sh && \
     chmod +x /distro/wsl-distro-rm.sh && \
