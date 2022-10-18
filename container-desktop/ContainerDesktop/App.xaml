@@ -23,6 +23,7 @@
             <c:EnumNameConverter x:Key="EnumNameConverter"/>
             <c:EnumTooltipConverter x:Key="EnumTooltipConverter"/>
             <c:RunningStateToColorConverter x:Key="RunningStateToColorConverter"/>
+            <c:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
             <FontFamily x:Key="CascadiaCodePL">pack://application:,,,/Fonts/#Cascadia Code PL</FontFamily>
             <FontFamily x:Key="SegoeFluent">pack://application:,,,/Fonts/#Segoe Fluent Icons</FontFamily>
             <Style x:Key="RadioButtonList" TargetType="{x:Type ListBox}">
@@ -157,13 +158,16 @@
             <local:SettingsPropertyTemplateSelector x:Key="settingsPropertySelector">
                 <local:SettingsPropertyTemplateSelector.BooleanTemplate>
                     <DataTemplate>
-                        <ui:ToggleSwitch Header="{Binding DisplayName}" IsOn="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:ToggleSwitch Header="{Binding DisplayName}" IsOn="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Tooltip}" />
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.BooleanTemplate>
                 <local:SettingsPropertyTemplateSelector.StringTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <Label Content="{Binding DisplayName}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding DisplayName}" />
+                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                            </StackPanel>
                             <TextBox Text="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" />    
                         </StackPanel>
                     </DataTemplate>
@@ -171,7 +175,10 @@
                 <local:SettingsPropertyTemplateSelector.PasswordTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <Label Content="{Binding DisplayName}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding DisplayName}" />
+                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                            </StackPanel>
                             <PasswordBox Password="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" />
                         </StackPanel>
                     </DataTemplate>
@@ -179,7 +186,10 @@
                 <local:SettingsPropertyTemplateSelector.EnumTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <Label Content="{Binding DisplayName}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding DisplayName}" />
+                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                            </StackPanel>
                             <ListBox Style="{DynamicResource RadioButtonList}" ItemsSource="{Binding EnumValues}" SelectedValue="{Binding Value, Mode=TwoWay, NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
@@ -195,7 +205,7 @@
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="{Binding DisplayName}" />
-                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}"/>
+                                <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
                             </StackPanel>
                             <Border Margin="0 8 0 0" BorderBrush="{ui:ThemeResource NavigationViewExpandedPaneBackground}" BorderThickness="1">
                                 <avalonEdit:TextEditor ShowLineNumbers="True" 
@@ -213,7 +223,19 @@
                 <local:SettingsPropertyTemplateSelector.CheckboxListTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
-                            <Label Content="{Binding DisplayName}"/>
+                            <Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                    <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" VerticalAlignment="Center" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                </StackPanel>
+                                <Button Margin="8 4 0 0" 
+                                        HorizontalAlignment="Right" 
+                                        ToolTip="Refresh" 
+                                        Command="{Binding RefreshItemsCommand}"
+                                        Visibility="{Binding ItemsRefreshable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluent}" Text="&#xe72c;"/>
+                                </Button>
+                            </Grid>
                             <ListBox SelectionMode="Multiple" 
                                      ItemsSource="{Binding Items}" 
                                      Style="{StaticResource CheckboxList}"
@@ -226,6 +248,28 @@
                         </StackPanel>
                     </DataTemplate>
                 </local:SettingsPropertyTemplateSelector.CheckboxListTemplate>
+                <local:SettingsPropertyTemplateSelector.DropdownList>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <Grid Margin="0 0 0 4">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                    <Label Content="{Binding DisplayName}" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8 4 0 0" FontFamily="{StaticResource SegoeFluent}" VerticalAlignment="Center" Text="&#xe946;" ToolTip="{Binding Tooltip}" Visibility="{Binding Tooltip, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                </StackPanel>
+                                <Button Margin="8 4 0 0" 
+                                        HorizontalAlignment="Right" 
+                                        ToolTip="Refresh" 
+                                        Command="{Binding RefreshItemsCommand}"
+                                        Visibility="{Binding ItemsRefreshable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluent}" Text="&#xe72c;"/>
+                                </Button>
+                            </Grid>
+                            <ComboBox ItemsSource="{Binding Items}"
+                                  SelectedItem="{Binding Value, Mode=TwoWay,NotifyOnValidationError=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                                  HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </DataTemplate>
+                </local:SettingsPropertyTemplateSelector.DropdownList>
                 <!--<local:SettingsPropertyTemplateSelector.FileTemplate>
                     <DataTemplate>
                         <local:FileSelector Header="{Binding DisplayName}" FileName="{Binding Value, Mode=TwoWay}" />

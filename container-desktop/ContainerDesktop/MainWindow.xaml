@@ -11,7 +11,7 @@
     mc:Ignorable="d"
     Title="{Binding ProductInformation.DisplayName}"
     Icon="/ContainerDesktop;component/app.ico"
-    ui:WindowHelper.UseModernWindowStyle="True" Width="1024" Height="640" MinWidth="660" MinHeight="210" WindowStartupLocation="CenterScreen" >
+    ui:WindowHelper.UseModernWindowStyle="True" Width="1024" Height="640" MinWidth="660" MinHeight="210" WindowStartupLocation="CenterScreen" ShowActivated="false">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:UpdateIconConverter x:Key="UpdateIconConverter"/>
