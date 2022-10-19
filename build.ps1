@@ -2,8 +2,8 @@
 # - dotnet 6.0 SDK
 # - docker
 # This script must run on Windows because the application is a Windows application.
-$DOCKER_VERSION="20.10.12"
-$DOCKER_COMPOSE_VERSION="v2.2.3"
+$DOCKER_VERSION="20.10.19"
+$DOCKER_COMPOSE_VERSION="v2.11.2"
 # clean or create dist folder
 if ((Test-Path dist/)) {
     Remove-Item dist/* -Recurse
@@ -23,6 +23,9 @@ docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "mkdir /sr
 # Download docker-compose to /dist/docker
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
+# Download dns-forwarder (go-dnsmasq)
+docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "mkdir /src/dist/bin/"
+docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64"
 # Build proxy for Windows and Linux and copy to /dist
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
 docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64

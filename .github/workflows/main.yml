@@ -20,8 +20,8 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_VERSION: "20.10.12"
-  DOCKER_COMPOSE_VERSION: "v2.2.3"
+  DOCKER_VERSION: "20.10.19"
+  DOCKER_COMPOSE_VERSION: "v2.11.2"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -33,7 +33,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -58,7 +58,12 @@ jobs:
         run: |
           docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
           docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
-      
+
+      - name: Download dns-forwarder (go-dnsmasq)
+        run: |
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir /src/dist/bin/"
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64"
+
       - name: Build proxy for Windows
         run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:1.17 go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
       
@@ -87,7 +92,7 @@ jobs:
           docker rm $sha
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
@@ -96,10 +101,10 @@ jobs:
     runs-on: windows-latest
     needs: build-linux
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
+      # Action need to be updated due deprecation of Node.js 12 https://github.com/dotnet/nbgv/issues when available.
       - uses: dotnet/nbgv@v0.4.0
         id: nbgv
 
@@ -140,7 +145,7 @@ jobs:
         run: 7z a -bd -mx9 -tzip ContainerDesktopInstaller.zip ContainerDesktopInstaller.exe 
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist-installer
@@ -150,7 +155,7 @@ jobs:
     needs: build-windows
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
