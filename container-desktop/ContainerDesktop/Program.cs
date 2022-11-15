@@ -39,7 +39,7 @@ static class Program
             {
                 var productInfo = sp.GetRequiredService<IProductInformation>();
                 config.WriteTo.File(Path.Combine(productInfo.ContainerDesktopAppDataDir, "logs", "log.txt"), fileSizeLimitBytes: 1024 * 1024 * 10, rollOnFileSizeLimit: true);
-                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.DisplayName));
+                config.WriteTo.Conditional(e => e.Level >= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.DisplayName));
                 config.WriteTo.Observers(observable =>
                 {
                     foreach(var logObserver in sp.GetServices<ILogObserver>())
