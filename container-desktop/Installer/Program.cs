@@ -50,7 +50,7 @@ static class Program
             {
                 var productInfo = sp.GetRequiredService<IProductInformation>();
                 config.WriteTo.Console(theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true);
-                config.WriteTo.Conditional(e => e.Level <= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.InstallerDisplayName, manageEventSource: true));
+                config.WriteTo.Conditional(e => e.Level >= Serilog.Events.LogEventLevel.Warning, x => x.EventLog(productInfo.InstallerDisplayName, manageEventSource: true));
             });
 
     static void ConfigureServices(IServiceCollection services, InstallerOptions options)
