@@ -264,7 +264,7 @@ public class MainViewModel : NotifyObject
                 {
                     _configurationService.Configuration.PortForwardInterfaces.Remove(portForwardInterface.Id);
                 }
-                _configurationService.Save(notify);
+                _configurationService.SaveAndNotify(notify);
             });
         });
     }
@@ -419,7 +419,7 @@ public class MainViewModel : NotifyObject
                                 TogglePortForwardInterface(portForwardInterface, false);
                                 NotifyPropertyChanged(nameof(NetworkInterfaces));
                             }
-                            _configurationService.Save(false);
+                            _configurationService.SaveAndNotify(false);
                         }
                     });
                 }

@@ -25,14 +25,14 @@ public class ConfigurationService : IConfigurationService
         _applicationContext = appContext ?? throw new ArgumentNullException(nameof(appContext));
         var configOptions = options?.Value ?? new ConfigurationOptions();
         _configurationFilePath = Path.Combine(productInformation.ContainerDesktopAppDataDir, "config.json");
-        Configuration = new ContainerDesktopConfiguration(productInformation, appContext);
+        Configuration = new ContainerDesktopConfiguration(productInformation);
         if (_fileSystem.File.Exists(_configurationFilePath))
         {
             Load(false);
         }
         else if(configOptions.SaveOnInitialize)
         {
-            Save(false);
+            SaveAndNotify(false);
         }
     }
 
@@ -42,11 +42,11 @@ public class ConfigurationService : IConfigurationService
 
     public IContainerDesktopConfiguration Configuration { get; }
 
-    public void Save() => Save(true);
-
     public void Load() => Load(true);
 
-    public void Save(bool notify)
+    public void Save() => SaveAndNotify(true);
+
+    public void SaveAndNotify(bool notify)
     {
         if (Configuration.IsValid)
         {
@@ -61,7 +61,7 @@ public class ConfigurationService : IConfigurationService
                     var restartRequested = Configuration.GetType().GetProperties().Any(x => changedProperties.Contains(x.Name) && x.IsDefined(typeof(RestartRequiredAttribute), true));
                     ConfigurationChanged?.Invoke(this, new ConfigurationChangedEventArgs(restartRequested, changedProperties));
                 }
-                _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation, _applicationContext);
+                _loadedConfiguration = new ContainerDesktopConfiguration(_productInformation);
                 JsonConvert.PopulateObject(json, _loadedConfiguration);
             }
         }
@@ -70,7 +70,7 @@ public class ConfigurationService : IConfigurationService
     protected void Load(bool notify)
     {
         var json = _fileSystem.File.ReadAllText(_configurationFilePath);
-        var loaded = new ContainerDesktopConfiguration(_productInformation, _applicationContext);
+        var loaded = new ContainerDesktopConfiguration(_productInformation);
         JsonConvert.PopulateObject(json, loaded);
         var result = _comparer.Compare(Configuration, loaded);
         if(!result.AreEqual)
