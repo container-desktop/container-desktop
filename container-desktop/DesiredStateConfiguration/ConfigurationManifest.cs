@@ -38,10 +38,12 @@ public class ConfigurationManifest : IConfigurationManifest
             var prefix = ctx.Uninstall ? "Undoing" : "Applying";
             var count = initialCount;
             var processedResources = new Stack<IResource>();
+            IResource currentResource = null;
             try
             {
                 foreach (var resource in resources)
                 {
+                    currentResource = resource;
                     var test = resource.Test(context);
                     if(resource.RunAllways)
                     {
@@ -94,8 +96,9 @@ public class ConfigurationManifest : IConfigurationManifest
                     count += countModifier;
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                context.Logger?.LogError(ex, $"Failed to {prefix.ToLowerInvariant()} at [{{ResourceId}}] {{ResourceDescription}}: {{Message}}", currentResource?.Id, currentResource?.Description, ex.Message);
                 if (!ctx.Uninstall)
                 {
                     Apply(processedResources, ctx.WithUninstall(true), count, -1);
