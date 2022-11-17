@@ -6,5 +6,5 @@ public interface IConfigurationService : INotifyConfigurationChanged
     bool IsChanged();
     void Load();
     void Save();
-    void Save(bool notify);
+    void SaveAndNotify(bool notify);
 }

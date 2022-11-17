@@ -11,7 +11,7 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
 {
     private readonly IProductInformation _productInformation;
     
-    public ContainerDesktopConfiguration(IProductInformation productInformation, IApplicationContext appContext)
+    public ContainerDesktopConfiguration(IProductInformation productInformation)
     {
         _productInformation = productInformation ?? throw new ArgumentNullException(nameof(productInformation));
         HiddenDistributions = new HashSet<string> { productInformation.ContainerDesktopDistroName, productInformation.ContainerDesktopDataDistroName, "docker-desktop", "docker-desktop-data" };
