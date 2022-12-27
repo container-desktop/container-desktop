@@ -26,7 +26,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     private readonly ILogger<DefaultContainerEngine> _logger;
     private readonly Dictionary<string, (Task task, CancellationTokenSource cts)> _enabledDistroProxies = new();
     private readonly Dictionary<string, PortForwarder> _portForwarders = new();
-    private readonly List<int> _ports = new();
+    private readonly List<PortAndProtocol> _ports = new();
     private Process _proxyProcess;
     private RunningState _runningState;
     private Task _dataDistroInitTask;
@@ -208,6 +208,9 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private static readonly Regex _hostipParser = new(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex _hostPortParser = new(@"-host-port (?'p'\d+)", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex _protoParser = new(@"-proto (?'p'(tcp|udp))", RegexOptions.Singleline | RegexOptions.Compiled);
+
+    public sealed record PortAndProtocol(int Port, string Protocol);
 
     private void ForwardPort(string line)
     {
@@ -215,35 +218,35 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         {
             var cmdLine = line[2..];
             var enabled = line.StartsWith('O');
-            (var ipAddress, var port) = ParsePortForwardCmdLine(cmdLine);
-            _logger.LogInformation("Received port forward command. Enabled={Enabled}, IP Address={IPAddress}, Port={Port}", enabled, ipAddress, port);
+            (var ipAddress, var portAndProto) = ParsePortForwardCmdLine(cmdLine);
+            _logger.LogInformation("Received port forward command. Enabled={Enabled}, IP Address={IPAddress}, Port={Port}, Protocol={Protocol}", enabled, ipAddress, portAndProto.Port, portAndProto.Protocol);
             if (ipAddress == IPAddress.Any)
             {
                 _logger.LogInformation("Processing port forward command for IPv4");
                 if (enabled)
                 {
-                    _logger.LogInformation("Start port forward for port={Port}", port);
-                    if (!_ports.Contains(port))
+                    _logger.LogInformation("Start port forward for port={Port} protocol={Protocol}", portAndProto.Port, portAndProto.Protocol);
+                    if (!_ports.Contains(portAndProto))
                     {
-                        _ports.Add(port);
-                        _logger.LogInformation("Added Port={Port} to the list of forwarded ports", port);
+                        _ports.Add(portAndProto);
+                        _logger.LogInformation("Added Port={Port} Protocol={Protocol} to the list of forwarded ports", portAndProto.Port, portAndProto.Protocol);
                     }
                     else
                     {
-                        _logger.LogInformation("Port={Port} is already in the list of forwarded ports", port);
+                        _logger.LogInformation("Port={Port} Protocol={Protocol} is already in the list of forwarded ports", portAndProto.Protocol);
                     }
                 }
                 else
                 {
-                    _logger.LogInformation("Stop port forward for port={Port}", port);
-                    _ports.Remove(port);
-                    _logger.LogInformation("Removed Port={Port} to the list of forwarded ports", port);
+                    _logger.LogInformation("Stop port forward for port={Port} protocol={Protocol}", portAndProto.Port, portAndProto.Protocol);
+                    _ports.Remove(portAndProto);
+                    _logger.LogInformation("Removed Port={Port} Protocol={Protocol} to the list of forwarded ports", portAndProto.Port, portAndProto.Protocol);
                 }
                 if (_configurationService.Configuration.PortForwardInterfaces.Count > 0 && ipAddress == IPAddress.Any)
                 {
                     foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces().Where(x => _configurationService.Configuration.PortForwardInterfaces.Contains(x.Id)))
                     {
-                        EnablePortForwardingInterface(networkInterface, new[] { port }, enabled);
+                        EnablePortForwardingInterface(networkInterface, new[] { portAndProto }, enabled);
                     }
                 }
                 else
@@ -277,13 +280,15 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         _portForwarders.Clear();
     }
 
-    private static (IPAddress ipAddress, int port) ParsePortForwardCmdLine(string cmdLine)
+    private static (IPAddress ipAddress, PortAndProtocol portAndProto) ParsePortForwardCmdLine(string cmdLine)
     {
         var m = _hostipParser.Match(cmdLine);
         var ipAddress = m.Success && m.Groups["h"].Value == "::" ? IPAddress.IPv6Any : IPAddress.Any;
         m = _hostPortParser.Match(cmdLine);
         var port = m.Success && int.TryParse(m.Groups["p"].Value, out var v) ? v : 0;
-        return (ipAddress, port);
+        m = _protoParser.Match(cmdLine);
+        var proto = m.Success ? m.Groups["p"].Value : "tcp";
+        return (ipAddress, new(port, proto));
     }
 
     private void InitializeDataDistro()
@@ -489,20 +494,20 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         EnablePortForwardingInterface(networkInterface, _ports, enabled);
     }
 
-    public void EnablePortForwardingInterface(NetworkInterface networkInterface, IEnumerable<int> ports, bool enabled)
+    public void EnablePortForwardingInterface(NetworkInterface networkInterface, IEnumerable<PortAndProtocol> ports, bool enabled)
     {
         var ipProps = networkInterface.GetIPProperties();
         var addresses = ipProps.UnicastAddresses.Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address);
-        foreach (var port in ports)
+        foreach (var portAndProto in ports)
         {
             foreach (var address in addresses)
             {
                 try
                 {
-                    var key = $"{address}:{port}";
+                    var key = $"{address}:{portAndProto.Port}:{portAndProto.Protocol}";
                     if (_portForwarders.TryGetValue(key, out var existing))
                     {
-                        _logger.LogInformation("Stop port forwarding on {Address}:{Port}", address.ToString(), port);
+                        _logger.LogInformation("Stop port forwarding on {Address}:{Port}:{Protocol}", address.ToString(), portAndProto.Port, portAndProto.Protocol);
                         existing.Stop();
                         _portForwarders.Remove(key);
                     }
@@ -510,14 +515,14 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     if (enabled)
                     {
                         var forwarder = new PortForwarder(_processExecutor);
-                        _logger.LogInformation("Start port forwarding on {Address}:{Port}", address.ToString(), port);
-                        forwarder.Start(new IPEndPoint(address, port), new IPEndPoint(IPAddress.Loopback, port));
+                        _logger.LogInformation("Start port forwarding on {Address}:{Port}:{Protocol}", address.ToString(), portAndProto.Port, portAndProto.Protocol);
+                        forwarder.Start(new IPEndPoint(address, portAndProto.Port), new IPEndPoint(IPAddress.Loopback, portAndProto.Port), portAndProto.Protocol);
                         _portForwarders.Add(key, forwarder);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to forward port on {Address}:{Port}: {Message}", address.ToString(), port, ex.Message);
+                    _logger.LogError(ex, "Failed to forward port on {Address}:{Port}:{Protocol}: {Message}", address.ToString(), portAndProto.Port, portAndProto.Protocol, ex.Message);
                 }
             }
         }

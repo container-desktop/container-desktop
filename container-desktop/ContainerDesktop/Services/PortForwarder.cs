@@ -14,11 +14,11 @@ public class PortForwarder
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
     }
 
-    public void Start(IPEndPoint local, IPEndPoint remote)
+    public void Start(IPEndPoint local, IPEndPoint remote, string protocol = "tcp")
     {
         var proxyPath = Path.Combine(AppContext.BaseDirectory, "Resources", "container-desktop-port-forwarder.exe");
         var args = new ArgumentBuilder()
-            .Add("-proto", "tcp")
+            .Add("-proto", protocol)
             .Add("-frontend-ip", local.Address.ToString())
             .Add("-frontend-port", local.Port.ToString())
             .Add("-backend-ip", remote.Address.ToString())
