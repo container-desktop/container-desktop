@@ -166,8 +166,8 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private void InitializePortForwardListener()
     {
-        if (_configurationService.Configuration.PortForwardingEnabled)
-        {
+        //if (_configurationService.Configuration.PortForwardingEnabled)
+        //{
             _portforwardListenerCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
             if(!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-shim /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
             {
@@ -199,11 +199,11 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     _logger.LogInformation("Stopped listening for port forward messages.");
                 }
             });
-        }
-        else
-        {
-            _portForwardListenerTask = Task.CompletedTask;
-        }
+        //}
+        //else
+        //{
+        //    _portForwardListenerTask = Task.CompletedTask;
+        //}
     }
 
     private static readonly Regex _hostipParser = new(@"-host-ip (?'h'::|0\.0\.0\.0)", RegexOptions.Singleline | RegexOptions.Compiled);
@@ -252,6 +252,11 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                 else
                 {
                     _logger.LogInformation("No interfaces enabled to port forward to. Doing nothing");
+                }
+                if(portAndProto.Protocol == "udp")
+                {
+                    var loopbackInterface = NetworkInterface.GetAllNetworkInterfaces().First(x => x.NetworkInterfaceType == NetworkInterfaceType.Loopback);
+                    EnablePortForwardingInterface(loopbackInterface, new[] { portAndProto }, enabled);
                 }
             }
         }
@@ -498,6 +503,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
     {
         var ipProps = networkInterface.GetIPProperties();
         var addresses = ipProps.UnicastAddresses.Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address);
+        var targetAddress = IPAddress.Parse(_dnsConfigurator.GetWslAddress()); // IPAddress.Loopback;
         foreach (var portAndProto in ports)
         {
             foreach (var address in addresses)
@@ -516,7 +522,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     {
                         var forwarder = new PortForwarder(_processExecutor);
                         _logger.LogInformation("Start port forwarding on {Address}:{Port}:{Protocol}", address.ToString(), portAndProto.Port, portAndProto.Protocol);
-                        forwarder.Start(new IPEndPoint(address, portAndProto.Port), new IPEndPoint(IPAddress.Loopback, portAndProto.Port), portAndProto.Protocol);
+                        forwarder.Start(new IPEndPoint(address, portAndProto.Port), new IPEndPoint(targetAddress, portAndProto.Port), portAndProto.Protocol);
                         _portForwarders.Add(key, forwarder);
                     }
                 }
@@ -530,34 +536,34 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
 
     private async void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
-        if (RunningState == RunningState.Running && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
-        {
-            try
-            {
-                if (_configurationService.Configuration.PortForwardingEnabled)
-                {
-                    _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to true, trying to initialize port forwarding");
-                    InitializePortForwardListener();
-                }
-                else
-                {
-                    _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to false, trying to stop port forwarding");
-                    if (_portforwardListenerCts != null)
-                    {
-                        _portforwardListenerCts.Cancel();
-                        await _portForwardListenerTask;
-                    }
-                    if (!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-org /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
-                    {
-                        _logger.LogError("Could not disable port forwarding");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to change the {nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting.");
-            }
-        }
+        //if (RunningState == RunningState.Running && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
+        //{
+        //    try
+        //    {
+        //        if (_configurationService.Configuration.PortForwardingEnabled)
+        //        {
+        //            _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to true, trying to initialize port forwarding");
+        //            InitializePortForwardListener();
+        //        }
+        //        else
+        //        {
+        //            _logger.LogInformation($"{nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting changed to false, trying to stop port forwarding");
+        //            if (_portforwardListenerCts != null)
+        //            {
+        //                _portforwardListenerCts.Cancel();
+        //                await _portForwardListenerTask;
+        //            }
+        //            if (!_wslService.ExecuteCommand("cp /usr/local/bin/docker-proxy-org /usr/local/bin/docker-proxy", _productInformation.ContainerDesktopDistroName, stdout: s => _logger.LogInformation(s)))
+        //            {
+        //                _logger.LogError("Could not disable port forwarding");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"Failed to change the {nameof(IContainerDesktopConfiguration.PortForwardingEnabled)} setting.");
+        //    }
+        //}
         if(e.PropertiesChanged.Contains(nameof(ContainerDesktopConfiguration.Certificates)))
         {
             _ = Task.Run(() => UpdateCertificates());

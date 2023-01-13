@@ -188,7 +188,7 @@ public sealed class DnsConfigurator : IDisposable
         return Array.Empty<string>();
     }
 
-    private string GetWslAddress()
+    public string GetWslAddress()
     {
         var sb = new StringBuilder();
         if(_wslService.ExecuteCommand("ip addr show eth0 | grep \"inet\\b\" | awk '{print $2}' | cut -d/ -f1", _productInformation.ContainerDesktopDistroName, stdout: s => sb.AppendLine(s)))
