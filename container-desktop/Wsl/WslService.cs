@@ -64,9 +64,9 @@ public sealed class WslService : IWslService
                 {
                     var name = (string)distroKey.GetValue("DistributionName");
                     if (name != null)
-					{
-						distros.Add(name);
-					}
+                    {
+                        distros.Add(name);
+                    }
                 }
             }
         }
