@@ -93,7 +93,8 @@ jobs:
       
       - name: build port-forwarder for Windows and copy to /dist 
         run: |
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-port-forwarder.exe cmd/container-desktop-port-forwarder/
+          cd cmd/container-desktop-port-forwarder/
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o ../../dist/container-desktop-port-forwarder.exe 
 
       - name: Build distro image
         run: docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSION .
