@@ -233,7 +233,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
                     }
                     else
                     {
-                        _logger.LogInformation("Port={Port} Protocol={Protocol} is already in the list of forwarded ports", portAndProto.Protocol);
+                        _logger.LogInformation("Port={Port} Protocol={Protocol} is already in the list of forwarded ports", portAndProto.Port, portAndProto.Protocol);
                     }
                 }
                 else
@@ -534,7 +534,7 @@ public sealed class DefaultContainerEngine : IContainerEngine, IDisposable
         }
     }
 
-    private async void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
+    private void OnConfigurationChanged(object sender, ConfigurationChangedEventArgs e)
     {
         //if (RunningState == RunningState.Running && e.PropertiesChanged.Contains(nameof(IContainerDesktopConfiguration.PortForwardingEnabled)))
         //{

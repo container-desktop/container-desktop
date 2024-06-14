@@ -5,9 +5,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -52,7 +52,7 @@ var rootCmd = &cobra.Command{
 			logger.Fatal(err)
 		}
 
-		caCert, err := ioutil.ReadFile(flags.tlsCa)
+		caCert, err := os.ReadFile(flags.tlsCa)
 		if err != nil {
 			logger.Fatal(err)
 		}
