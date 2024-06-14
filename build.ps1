@@ -55,12 +55,12 @@ ExitOnFailure("Failed to download dns-forwarder")
 docker run --rm -v "$($PWD):/src" container-desktop-tools:build sh -c "curl -L -o /src/dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64"
 ExitOnFailure("Failed to download dns-forwarder")
 # Build proxy for Windows and Linux and copy to /dist
-docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
+docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e CGO_ENABLED=0 -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
 ExitOnFailure("Failed to build container-desktop-proxy for Windows")
-docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
+docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-proxy -e CGO_ENABLED=0 -e GOOS=linux -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
 ExitOnFailure("Failed to build container-desktop-proxy for Linux")
 # build port-forwarder for Windows and copy to /dist
-docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-port-forwarder -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
+docker run --rm -v "$($PWD):/go/src" -w /go/src/cmd/container-desktop-port-forwarder -e CGO_ENABLED=0 -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
 ExitOnFailure("Failed to build container-desktop-port-forwarder for Windows")
 # Build distro image
 docker build -t container-desktop:build --build-arg DOCKER_VERSION="$DOCKER_VERSION" .

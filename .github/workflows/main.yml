@@ -46,43 +46,57 @@ jobs:
         run: |
           rm -rf dist/*
           mkdir -p dist
-          
+      
       - name: Build tools image
         run: docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/
 
       - name: Download and extract docker cli
-        run: docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip && unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d /src/dist"
+        run: |
+          curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip 
+          unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d src/dist"
       
       - name: Extract Linux docker cli and plugins 
-        run: docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir /src/dist/docker/linux && cp -R /usr/libexec/docker/cli-plugins /src/dist/docker/linux"
+        run: |
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir /src/dist/docker/linux && cp -R /usr/libexec/docker/cli-plugins /src/dist/docker/linux"
 
       - name: Download docker compose
         run: |
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
+          curl -L -o src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe
+          curl -L -o src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64
 
       - name: Download buildx
         run: |
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir -p /src/dist/docker/cli-plugins"
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/cli-plugins/docker-buildx.exe https://github.com/docker/buildx/releases/download/$DOCKER_BUILDX_VERSION/buildx-$DOCKER_BUILDX_VERSION.windows-amd64.exe"
+          mkdir -p src/dist/docker/cli-plugins
+          curl -L -o src/dist/docker/cli-plugins/docker-buildx.exe https://github.com/docker/buildx/releases/download/$DOCKER_BUILDX_VERSION/buildx-$DOCKER_BUILDX_VERSION.windows-amd64.exe
 
       - name: Download WSL Kernel MSI
         run: |
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/wsl_update_x64.msi https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+          curl -L -o src/dist/wsl_update_x64.msi https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi
 
       - name: Download dns-forwarder (go-dnsmasq)
         run: |
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir /src/dist/bin/"
-          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64"
+          mkdir src/dist/bin/
+          curl -L -o /src/dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: '${{ github.workspace }}/go.mod'
+      
       - name: Build proxy for Windows
-        run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-proxy -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-windows-amd64.exe
+        run: |
+          cd src/cmd/container-desktop-proxy
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o src/dist/container-desktop-proxy-windows-amd64.exe
       
       - name: Build proxy for Linux 
-        run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-proxy -e GOOS=linux -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-proxy-linux-amd64
+        run: |
+          cd src/cmd/container-desktop-proxy
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o src/dist/container-desktop-proxy-linux-amd64
       
       - name: build port-forwarder for Windows and copy to /dist 
-        run: docker run --rm -v $PWD:/go/src -w /go/src/cmd/container-desktop-port-forwarder -e GOOS=windows -e GOARCH=amd64 golang:$GO_VERSION go build -v -o /go/src/dist/container-desktop-port-forwarder.exe
+        run: |
+          cd src/cmd/container-desktop-port-forwarder
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o src/dist/container-desktop-port-forwarder.exe
 
       - name: Build distro image
         run: docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSION .
@@ -90,16 +104,17 @@ jobs:
       - name: Create WSL distro from the distro image
         run: |
           sha=$(docker create container-desktop:build)
-          docker run --rm -v $PWD:/src --privileged -v /var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export $sha | gzip > /src/dist/container-desktop-distro.tar.gz"
+          docker export $sha | gzip > src/dist/container-desktop-distro.tar.gz
           docker rm $sha
       
       - name: Build Data distro image
-        run: docker build -t container-desktop-data:build --build-arg DOCKER_VERSION=$DOCKER_VERSION deployment/container-desktop-data
+        run: |
+          docker build -t container-desktop-data:build --build-arg DOCKER_VERSION=$DOCKER_VERSION deployment/container-desktop-data
       
       - name: Create WSL Data distro from the data distro image
         run: |
           sha=$(docker create container-desktop-data:build)
-          docker run --rm -v $PWD:/src --privileged -v /var/run/docker.sock:/var/run/docker.sock container-desktop-tools:build sh -c "docker export $sha | gzip > /src/dist/container-desktop-data-distro.tar.gz"
+          docker export $sha | gzip > /src/dist/container-desktop-data-distro.tar.gz
           docker rm $sha
 
       - name: Upload artifacts
