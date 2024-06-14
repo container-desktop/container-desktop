@@ -53,7 +53,7 @@ jobs:
       - name: Download and extract docker cli
         run: |
           curl -LO https://download.docker.com/win/static/stable/x86_64/docker-$DOCKER_VERSION.zip 
-          unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d src/dist"
+          unzip -o docker-$DOCKER_VERSION.zip -x docker/dockerd.exe -d src/dist
       
       - name: Extract Linux docker cli and plugins 
         run: |
