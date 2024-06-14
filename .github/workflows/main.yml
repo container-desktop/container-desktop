@@ -85,7 +85,7 @@ jobs:
       
       - name: Build proxy for Windows
         run: |
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-proxy-windows-amd64.exe cmd/container-desktop-proxy\main.go
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-proxy-windows-amd64.exe cmd/container-desktop-proxy/main.go
       
       - name: Build proxy for Linux 
         run: |
