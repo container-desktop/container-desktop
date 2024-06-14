@@ -1,6 +1,5 @@
 ﻿using ContainerDesktop.Processes;
 using Microsoft.Win32;
-using System.Net;
 using System.Net.Http;
 
 namespace ContainerDesktop.DesiredStateConfiguration;
@@ -19,6 +18,9 @@ public class InstallMsi : ResourceBase
 
     public string UninstallDisplayName { get; set; }
 
+    public string FallbackPath { get; set; }
+
+    private string ExpandedFallbackPath => Environment.ExpandEnvironmentVariables(FallbackPath);
 
     public override void Set(ConfigurationContext context)
     {
@@ -46,6 +48,22 @@ public class InstallMsi : ResourceBase
             if (exitCode != 0)
             {
                 throw new ResourceException($"Could not install msi package from '{Uri}'.");
+            }
+        }
+        catch
+        {
+            if (!string.IsNullOrEmpty(FallbackPath) && File.Exists(ExpandedFallbackPath))
+            {
+                var cmd = uninstall ? "/u" : "/i";
+                var exitCode = _processExecutor.Execute("msiexec.exe", $"{cmd} \"{ExpandedFallbackPath}\" /quiet /norestart");
+                if (exitCode != 0)
+                {
+                    throw new ResourceException($"Could not install msi package from '{ExpandedFallbackPath}'.");
+                }
+            }
+            else
+            {
+                throw;
             }
         }
         finally

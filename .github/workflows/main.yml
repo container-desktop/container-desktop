@@ -20,8 +20,9 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_VERSION: "20.10.19"
-  DOCKER_COMPOSE_VERSION: "v2.11.2"
+  DOCKER_VERSION: "26.1.4"
+  DOCKER_COMPOSE_VERSION: "v2.27.1"
+  DOCKER_BUILDX_VERSION: "v0.15.0"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -58,6 +59,15 @@ jobs:
         run: |
           docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose.exe https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-Windows-x86_64.exe"
           docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/docker-compose https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
+
+      - name: Download buildx
+        run: |
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "mkdir -p /src/dist/docker/cli-plugins"
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/docker/cli-plugins/docker-buildx.exe https://github.com/docker/buildx/releases/download/$DOCKER_BUILDX_VERSION/buildx-$DOCKER_BUILDX_VERSION.windows-amd64.exe"
+
+      - name: Download WSL Kernel MSI
+        run: |
+          docker run --rm -v $PWD:/src container-desktop-tools:build sh -c "curl -L -o /src/dist/wsl_update_x64.msi https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
 
       - name: Download dns-forwarder (go-dnsmasq)
         run: |

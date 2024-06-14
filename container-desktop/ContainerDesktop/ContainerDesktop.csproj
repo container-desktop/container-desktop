@@ -76,9 +76,6 @@
     <None Include="..\..\dist\container-desktop-proxy-windows-amd64.exe" Link="Resources\container-desktop-proxy-windows-amd64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\dist\docker\cli-plugins\docker-app.exe" Link="cli\cli-plugins\docker-app.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="..\..\dist\docker\cli-plugins\docker-buildx.exe" Link="cli\cli-plugins\docker-buildx.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

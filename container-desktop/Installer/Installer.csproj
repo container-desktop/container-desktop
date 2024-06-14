@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="..\..\dist\wsl_update_x64.msi" Link="Resources\wsl_update_x64.msi" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="..\..\dist\container-desktop-data-distro.tar.gz" Link="Resources\container-desktop-data-distro.tar.gz" />
   </ItemGroup>
 
