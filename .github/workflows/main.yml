@@ -85,18 +85,15 @@ jobs:
       
       - name: Build proxy for Windows
         run: |
-          cd cmd/container-desktop-proxy
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-proxy-windows-amd64.exe
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-proxy-windows-amd64.exe cmd/container-desktop-proxy\main.go
       
       - name: Build proxy for Linux 
         run: |
-          cd cmd/container-desktop-proxy
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o dist/container-desktop-proxy-linux-amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o dist/container-desktop-proxy-linux-amd64 cmd/container-desktop-proxy/main.go
       
       - name: build port-forwarder for Windows and copy to /dist 
         run: |
-          cd cmd/container-desktop-port-forwarder
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-port-forwarder.exe
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o dist/container-desktop-port-forwarder.exe cmd/container-desktop-port-forwarder/main.go
 
       - name: Build distro image
         run: docker build -t container-desktop:build --build-arg DOCKER_VERSION=$DOCKER_VERSION .
