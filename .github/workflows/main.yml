@@ -147,7 +147,7 @@ jobs:
           path: dist
 
       - name: Setup dotnet SDK
-        uses: actions/setup-dotnet@v1.8.2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0"
           include-prerelease: false
