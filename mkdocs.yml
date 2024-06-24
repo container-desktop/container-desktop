@@ -3,7 +3,7 @@ site_name: container-desktop
 site_description: Provides an alternative for Docker for Desktop on Windows using WSL2.
 site_url: https://container-desktop.io/
 
-copyright: "Copyright &copy; 2021 container-desktop authors"
+copyright: "Copyright &copy; 2024 container-desktop authors"
 
 # Extra Files
 extra_javascript:
@@ -63,8 +63,8 @@ markdown_extensions:
   - pymdownx.tabbed # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#tabbed
   - pymdownx.details # https://squidfunk.github.io/mkdocs-material/extensions/pymdown/#details
   - pymdownx.emoji: # https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#configuration
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - smarty # https://python-markdown.github.io/extensions/smarty/
   - mdx_truly_sane_lists # https://github.com/radude/mdx_truly_sane_lists -> proper indentation of md list items
 
