@@ -35,11 +35,11 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: dotnet/nbgv@v0.4.0
+      - uses: dotnet/nbgv@v0.4.2
         id: nbgv
 
       - name: Clear dist
@@ -118,7 +118,7 @@ jobs:
           docker rm $sha
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
@@ -127,11 +127,11 @@ jobs:
     runs-on: windows-latest
     needs: build-linux
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       # Action need to be updated due deprecation of Node.js 12 https://github.com/dotnet/nbgv/issues when available.
-      - uses: dotnet/nbgv@v0.4.0
+      - uses: dotnet/nbgv@v0.4.2
         id: nbgv
 
       - name: Clear dist
@@ -141,13 +141,13 @@ jobs:
          mkdir -p dist
           
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
 
       - name: Setup dotnet SDK
-        uses: actions/setup-dotnet@v1.8.2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0"
           include-prerelease: false
@@ -171,7 +171,7 @@ jobs:
         run: 7z a -bd -mx9 -tzip ContainerDesktopInstaller.zip ContainerDesktopInstaller.exe 
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist-installer
@@ -181,11 +181,11 @@ jobs:
     needs: build-windows
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: dotnet/nbgv@v0.4.0
+      - uses: dotnet/nbgv@v0.4.2
         id: nbgv
 
       - name: Clear dist
@@ -195,7 +195,7 @@ jobs:
          mkdir -p dist
 
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist

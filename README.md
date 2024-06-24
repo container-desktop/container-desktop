@@ -4,6 +4,7 @@
 # Container Desktop
 
 Container Desktop is an open-source alternative to Docker Desktop. It enables you to build, push, pull and run Linux containers on Microsoft Windows, by providing a seamless integration with Docker Engine Community Edition running on Windows Subsystem for Linux. The Container Desktop bundles the open-source docker and docker-compose cli clients for a native and simple user experience.
+
 ## How it works?
 
 ![](docs/static/img/container-desktop-overview.png)
@@ -24,6 +25,7 @@ Container Desktop installs the docker and the docker-compose command line interf
 * Enable container-desktop integration in installed WSL2 distributions.
 * Use Port Forwarding to expose containers on a specific network. 
 * Configure DNS Mode for Container Desktop (WLS2/Primary Network Adapter/Static).
+
 ## Installation
 
 **System requirements**
@@ -54,7 +56,7 @@ Container Desktop requires WLS2 which is supported on these Windows versions:
 **Pre-requisites**
 
 * Microsoft Windows with Powershell
-* [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+* [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 * Docker (either container-desktop or docker-for-desktop)
 
 **Build**
