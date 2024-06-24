@@ -22,6 +22,7 @@ jobs:
         run: pip install -r ./docs/requirements.txt
       - name: Build with MkDocs (validation)
         run: |
+          git config --global --add safe.directory /__w/container-desktop/container-desktop
           mkdocs build --verbose --clean
           rm -r site/
       - name: Configure Git
