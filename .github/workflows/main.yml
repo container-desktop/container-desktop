@@ -20,10 +20,10 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_VERSION: "26.1.4"
-  DOCKER_COMPOSE_VERSION: "v2.27.1"
-  DOCKER_BUILDX_VERSION: "v0.15.0"
-  GO_VERSION: "1.22"
+  DOCKER_VERSION: "28.3.0"
+  DOCKER_COMPOSE_VERSION: "v2.37.2"
+  DOCKER_BUILDX_VERSION: "v0.33.0"
+  GO_VERSION: "1.26"
 
   # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -208,7 +208,7 @@ jobs:
           sha256sum ContainerDesktopInstaller.zip >> sha256sum.txt
 
       - name: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.6.2
         with:
           prerelease: ${{ steps.nbgv.outputs.PrereleaseVersion }}
           files: |

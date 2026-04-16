@@ -1,0 +1,7 @@
+{
+  "docker": "28.3.0",
+  "dockerCompose": "v2.37.2",
+  "dockerBuildx": "v0.33.0",
+  "go": "1.26",
+  "goDnsmasq": "1.0.7"
+}

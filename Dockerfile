@@ -1,4 +1,4 @@
-ARG DOCKER_VERSION="26.1.4"
+ARG DOCKER_VERSION="28.3.0"
 FROM docker:${DOCKER_VERSION}-dind
 COPY deployment/wsl.conf /etc/
 COPY deployment/wsl-init.sh /usr/local/bin/

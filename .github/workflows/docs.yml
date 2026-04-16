@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     container:
-      image: python:3.9
+      image: python:3.12
     steps:
       - name: Checkout Project
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
         run: |
           git config --global user.name pipeline-container-desktop.io
           git config --global user.email pipeline@container-desktop.io
-          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Build & Deploy with Mike (versioned)
         if: startsWith(github.ref, 'refs/tags/')
         #mike deploy --branch gh-pages --push test
