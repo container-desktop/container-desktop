@@ -15,7 +15,7 @@ jobs:
       image: python:3.12
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
       - name: Install Requirements

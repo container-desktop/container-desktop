@@ -161,7 +161,6 @@ jobs:
         uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: "8.0"
-          include-prerelease: false
           
       - name: Publish ContainerDesktop
         shell: bash
