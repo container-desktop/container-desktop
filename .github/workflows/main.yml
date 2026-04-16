@@ -24,6 +24,9 @@ env:
   DOCKER_COMPOSE_VERSION: "v2.37.2"
   DOCKER_BUILDX_VERSION: "v0.33.0"
   GO_VERSION: "1.26"
+  # dotnet/nbgv has not yet shipped a Node 24 runtime — opt in explicitly
+  # until a new release is available.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
   # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -38,6 +41,9 @@ jobs:
       - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
 
       - uses: dotnet/nbgv@v0.5.1
         id: nbgv
@@ -133,6 +139,9 @@ jobs:
       - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
       - uses: dotnet/nbgv@v0.5.1
         id: nbgv
 
@@ -186,6 +195,9 @@ jobs:
       - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
 
       - uses: dotnet/nbgv@v0.5.1
         id: nbgv
