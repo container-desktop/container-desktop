@@ -20,10 +20,13 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_VERSION: "26.1.4"
-  DOCKER_COMPOSE_VERSION: "v2.27.1"
-  DOCKER_BUILDX_VERSION: "v0.15.0"
-  GO_VERSION: "1.22"
+  DOCKER_VERSION: "28.3.0"
+  DOCKER_COMPOSE_VERSION: "v2.37.2"
+  DOCKER_BUILDX_VERSION: "v0.33.0"
+  GO_VERSION: "1.26"
+  # dotnet/nbgv has not yet shipped a Node 24 runtime — opt in explicitly
+  # until a new release is available.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
   # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -35,11 +38,14 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
-      - uses: dotnet/nbgv@v0.4.2
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - uses: dotnet/nbgv@v0.5.1
         id: nbgv
 
       - name: Clear dist
@@ -48,7 +54,10 @@ jobs:
           mkdir -p dist
       
       - name: Build tools image
-        run: docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/
+        run: |
+          docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/ \
+          || (echo "Build failed, retrying after 30s..." && sleep 30 \
+              && docker build -t container-desktop-tools:build --build-arg "DOCKER_VERSION=$DOCKER_VERSION" tools/container-desktop-tools/)
 
       - name: Download and extract docker cli
         run: |
@@ -79,7 +88,7 @@ jobs:
           curl -L -o dist/bin/dns-forwarder https://github.com/janeczku/go-dnsmasq/releases/download/1.0.7/go-dnsmasq-min_linux-amd64
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.4.0
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
       
@@ -118,7 +127,7 @@ jobs:
           docker rm $sha
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: dist
           path: dist
@@ -127,11 +136,13 @@ jobs:
     runs-on: windows-latest
     needs: build-linux
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
-      # Action need to be updated due deprecation of Node.js 12 https://github.com/dotnet/nbgv/issues when available.
-      - uses: dotnet/nbgv@v0.4.2
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - uses: dotnet/nbgv@v0.5.1
         id: nbgv
 
       - name: Clear dist
@@ -141,16 +152,15 @@ jobs:
          mkdir -p dist
           
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: dist
           path: dist
 
       - name: Setup dotnet SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: "8.0"
-          include-prerelease: false
           
       - name: Publish ContainerDesktop
         shell: bash
@@ -171,7 +181,7 @@ jobs:
         run: 7z a -bd -mx9 -tzip ContainerDesktopInstaller.zip ContainerDesktopInstaller.exe 
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: dist
           path: dist-installer
@@ -181,11 +191,14 @@ jobs:
     needs: build-windows
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
-      - uses: dotnet/nbgv@v0.4.2
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - uses: dotnet/nbgv@v0.5.1
         id: nbgv
 
       - name: Clear dist
@@ -195,7 +208,7 @@ jobs:
          mkdir -p dist
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: dist
           path: dist
@@ -208,7 +221,7 @@ jobs:
           sha256sum ContainerDesktopInstaller.zip >> sha256sum.txt
 
       - name: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3.0.0
         with:
           prerelease: ${{ steps.nbgv.outputs.PrereleaseVersion }}
           files: |

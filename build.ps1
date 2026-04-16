@@ -2,10 +2,11 @@
 # - dotnet 6.0 SDK
 # - docker
 # This script must run on Windows because the application is a Windows application.
-$DOCKER_VERSION="26.1.4"
-$DOCKER_COMPOSE_VERSION="v2.27.1"
-$DOCKER_BUILDX_VERSION="v0.15.0"
-$GO_VERSION="1.22"
+$v = Get-Content (Join-Path $PSScriptRoot "external-tool-versions.json") | ConvertFrom-Json
+$DOCKER_VERSION         = $v.docker
+$DOCKER_COMPOSE_VERSION = $v.dockerCompose
+$DOCKER_BUILDX_VERSION  = $v.dockerBuildx
+$GO_VERSION             = $v.go
 function ExitOnFailure([string] $message, [string] $sha) {
     if (($LastExitCode -ne 0) -or (-not $?)) {
         $exitCode = $LastExitCode

@@ -3,6 +3,7 @@
 *.exe~
 *.dll
 *.so
+*.cmd
 *.dylib
 
 # Test binary, built with `go test -c`
@@ -15,3 +16,4 @@
 # vendor/
 dist/*
 .vs/
+**/*.local.json
