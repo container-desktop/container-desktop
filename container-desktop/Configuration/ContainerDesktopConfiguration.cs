@@ -104,4 +104,11 @@ public class ContainerDesktopConfiguration : ConfigurationObject, IContainerDesk
     }
 
     public IEnumerable<AdapterInfo> GetAdapters() => AdapterInfo.GetAdapters();
+
+    [Hide]
+    public bool ForceWslKernelInstall
+    {
+        get => GetValue<bool>();
+        set => SetValueAndNotify(value);
+    }
 }

@@ -26,9 +26,11 @@ If you currently have Docker Desktop installed, you need to either _quit_ **Dock
 ## Install and Run Container Desktop
 
 1. Download the latest [ContainerDesktopInstaller](https://github.com/container-desktop/container-desktop/releases/latest) from GitHub Releases. Optionally, you can validate the file checksum against the values in sha256sum.txt with the following PowerShell command:
+
     ```powershell
     Get-FileHash .\ContainerDesktopInstaller.exe -Algorithm SHA256
     ```
+
 2. Double-click **ContainerDesktopInstaller.exe** to run the installer.
 3. User Account Control will prompt you to approve the installation — select **Yes**.
 4. Select your installation options. By default the following options are selected: _Create Start Menu Shortcut_, _Start application when Windows starts_, and _Run application after installation finished_.
@@ -45,6 +47,18 @@ ContainerDesktopInstaller.exe install --unattended
 ```
 
 > **Unattended DNS mode settings:** To configure the DNS mode during unattended installation, see [DNS Mode Examples for Unattended Installations](dns-mode-configuration.md).
+
+### WSL Kernel on Windows 11
+
+On Windows 11 (build 22000 and later), the WSL kernel is built into the OS and kept up to date through Windows Update. The installer automatically skips the WSL kernel MSI step on Windows 11 because the standalone package is redundant and can conflict with the inbox kernel.
+
+On Windows 10, the WSL kernel MSI is always installed.
+
+If you need to force the WSL kernel MSI to install regardless of the Windows version - for example, in a managed environment where Windows Update is restricted - pass `ForceWslKernelInstall=true` as a settings override:
+
+```powershell
+ContainerDesktopInstaller.exe install --unattended --settings ForceWslKernelInstall=true
+```
 
 ## Upgrade Container Desktop
 

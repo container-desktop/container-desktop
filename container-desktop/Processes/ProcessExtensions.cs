@@ -138,7 +138,7 @@ public static class ProcessExtensions
                 PrivilegeCount = 1,
                 Privileges = new LUID_AND_ATTRIBUTES[1]
             };
-            
+
             if (!AdvApi32.LookupPrivilegeValue(null, "SeIncreaseQuotaPrivilege", out tkp.Privileges[0].Luid))
             {
                 return null;

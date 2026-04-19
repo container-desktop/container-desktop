@@ -1,3 +1,4 @@
+using ContainerDesktop.Configuration;
 using ContainerDesktop.Processes;
 using Microsoft.Win32;
 using System.Net.Http;
@@ -15,10 +16,12 @@ public class InstallMsi : ResourceBase
     private static readonly HashSet<int> SuccessExitCodes = new() { 0, 1638, 1641, 3010 };
 
     private readonly IProcessExecutor _processExecutor;
+    private readonly IContainerDesktopConfiguration _configuration;
 
-    public InstallMsi(IProcessExecutor processExecutor)
+    public InstallMsi(IProcessExecutor processExecutor, IContainerDesktopConfiguration configuration)
     {
         _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
     public Uri Uri { get; set; }
@@ -26,6 +29,21 @@ public class InstallMsi : ResourceBase
     public string UninstallDisplayName { get; set; }
 
     public string FallbackPath { get; set; }
+
+    /// <summary>
+    /// When true, the installation is skipped on Windows 11 where the WSL kernel
+    /// is built into the OS and serviced through Windows Update.
+    /// </summary>
+    public bool SkipOnWindows11 { get; set; }
+
+    /// <summary>
+    /// When true, overrides <see cref="SkipOnWindows11"/> and forces the MSI
+    /// installation regardless of the Windows version.
+    /// </summary>
+    public bool ForceInstall { get; set; }
+
+    // Windows 11 starts at build 22000
+    private static bool IsWindows11 => Environment.OSVersion.Version.Build >= 22000;
 
     private string ExpandedFallbackPath => Environment.ExpandEnvironmentVariables(FallbackPath);
 
@@ -104,6 +122,15 @@ public class InstallMsi : ResourceBase
 
     public override bool Test(ConfigurationContext context)
     {
+        var forceInstall = ForceInstall || _configuration.ForceWslKernelInstall;
+        if (SkipOnWindows11 && !forceInstall && IsWindows11)
+        {
+            context.Logger.LogInformation(
+                "Skipping MSI install on Windows 11 — WSL kernel is built into the OS and serviced via Windows Update. " +
+                "Set forceInstall: true in the manifest or --settings ForceWslKernelInstall=true to override.");
+            return true;
+        }
+
         using var key = Registry.LocalMachine.OpenSubKey(UninstallRegistryKey);
         if (key == null) return false;
 

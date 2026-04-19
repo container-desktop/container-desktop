@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\Processes\Processes.csproj" />
     <ProjectReference Include="..\Wsl\Wsl.csproj" />
   </ItemGroup>
