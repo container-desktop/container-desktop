@@ -10,6 +10,7 @@ public static class ServiceCollectionExtensions
         {
             services.Configure(configure);
         }
-        return services.AddSingleton<IConfigurationService, ConfigurationService>();
+        services.AddSingleton<IConfigurationService, ConfigurationService>();
+        return services.AddSingleton<IContainerDesktopConfiguration>(sp => sp.GetRequiredService<IConfigurationService>().Configuration);
     }
 }

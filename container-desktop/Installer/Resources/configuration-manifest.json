@@ -133,6 +133,7 @@
       "fallbackPath": "%INSTALLDIR%\\Resources\\wsl_update_x64.msi",
       "uninstallDisplayName": "Windows Subsystem for Linux Update",
       "noUninstall": true,
+      "skipOnWindows11": true,
       "dependsOn": [ "EnableWsl" ]
     },
     {

@@ -16,4 +16,5 @@ public interface IContainerDesktopConfiguration : IConfigurationObject
     ObservableCollection<CertificateInfo> Certificates { get; }
     HostEntryMode HostEntryMode { get; set; }
     AdapterInfo HostEntryAdapter { get; set; }
+    bool ForceWslKernelInstall { get; set; }
 }
